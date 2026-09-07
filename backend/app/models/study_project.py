@@ -101,6 +101,11 @@ class StudyProject(Base):
         default="ro",
         server_default="ro",
     )
+    prepare_request_id: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+        index=True,
+    )
     combined_markdown_path: Mapped[str | None] = mapped_column(Text)
     combined_markdown_content: Mapped[str | None] = mapped_column(Text)
     prompt_path: Mapped[str | None] = mapped_column(Text)
@@ -191,6 +196,22 @@ class StudyProject(Base):
         uselist=False,
     )
 
+
+class StudyProjectPrepareCancellation(Base):
+    __tablename__ = "study_project_prepare_cancellations"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    request_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
 
 class StudyProjectArchive(Base):
     __tablename__ = "study_project_archives"

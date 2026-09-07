@@ -41,11 +41,16 @@ import {
   getAccountSidebarShellClass,
 } from "@/components/account/account-sidebar-ui";
 import { useLanguage } from "@/components/language-provider";
-import type { AuthUserPlan, LanguagePreference } from "@/lib/auth-api";
+import {
+  getCurrentUser,
+  type AuthUserPlan,
+  type LanguagePreference,
+} from "@/lib/auth-api";
 import { getUsage, type Usage } from "@/lib/usage-api";
 import {
   archiveStudyProject,
   cancelStudyProjectGeneration,
+  cancelStudyProjectPrepare,
   chatWithStudyProjectAi,
   completeQuiz,
   createManualStudyProjectFlashcard,
@@ -152,6 +157,15 @@ type ProjectUploadPlanLimits = {
   allowScannedDocuments: boolean;
 };
 
+type QuizPlanLimits = {
+  quizQuestionsPerQuiz: number;
+  quizzesPerProject: number;
+};
+
+type QuizPlanLimitSnapshot = QuizPlanLimits & {
+  userId: string;
+};
+
 const initialProjects: StudyProject[] = [];
 const AI_ACCESS_UNAVAILABLE_MESSAGE =
   "Funcționalitatea AI nu este disponibilă pe planul curent.";
@@ -201,9 +215,9 @@ const sidebarBillingItems = [
 
 const generationSteps = [
   "Încărcare materiale",
-  "Pregătire conținut",
-  "Creare pachet",
-  "Salvare pachet",
+  "Sumarizare conținut",
+  "Creare flashcarduri",
+  "Pregătire strategie învățare",
 ];
 
 const GENERATION_POLL_INTERVAL_MS = 2000;
@@ -342,6 +356,21 @@ function getProjectUploadPlanLimits(
     projectSizeMb: Math.max(1, Number(userPlan?.project_size_limit_mb ?? 20)),
     estimatedPages: Math.max(1, Number(userPlan?.estimated_page_limit ?? 25)),
     allowScannedDocuments: Boolean(userPlan?.allow_scanned_documents),
+  };
+}
+
+function getQuizPlanLimits(
+  userPlan: AuthUserPlan | null | undefined,
+): QuizPlanLimits {
+  return {
+    quizQuestionsPerQuiz: Math.max(
+      1,
+      Number(userPlan?.quiz_questions_per_quiz ?? 10),
+    ),
+    quizzesPerProject: Math.max(
+      1,
+      Number(userPlan?.quizzes_per_project_limit ?? 3),
+    ),
   };
 }
 
@@ -685,9 +714,13 @@ export function AccountDashboard({
     useState<StudyProjectPrepareResponse | null>(null);
   const [isCancellingGeneration, setIsCancellingGeneration] = useState(false);
   const [usage, setUsage] = useState<Usage | null>(null);
+  const [quizPlanLimitSnapshot, setQuizPlanLimitSnapshot] =
+    useState<QuizPlanLimitSnapshot | null>(null);
   const generationAbortControllerRef = useRef<AbortController | null>(null);
+  const generationPrepareRequestIdRef = useRef<string | null>(null);
   const generationProjectIdRef = useRef<string | null>(null);
   const generationCancelRequestedRef = useRef(false);
+  const quizGenerationAbortControllerRef = useRef<AbortController | null>(null);
   const activeProject = useMemo(
     () => getProjectById(projects, activeProjectId),
     [activeProjectId, projects],
@@ -695,17 +728,18 @@ export function AccountDashboard({
 
   const displayName = user?.full_name.trim() || "student";
   const hasAiAccess = hasPlanAiAccess(user?.current_plan);
+  const accountQuizPlanLimits = getQuizPlanLimits(user?.current_plan);
+  const activeQuizPlanLimits =
+    user?.id &&
+    quizPlanLimitSnapshot &&
+    quizPlanLimitSnapshot.userId === user.id
+      ? quizPlanLimitSnapshot
+      : accountQuizPlanLimits;
   // Upper bound for one generated quiz; the API enforces the same cap.
-  const maxQuizQuestions = Math.max(
-    1,
-    Number(user?.current_plan?.quiz_questions_per_quiz ?? 10),
-  );
+  const maxQuizQuestions = activeQuizPlanLimits.quizQuestionsPerQuiz;
   // How many quizzes one project may hold in total; the API enforces the same
   // ceiling when the generation is requested.
-  const maxQuizzesPerProject = Math.max(
-    1,
-    Number(user?.current_plan?.quizzes_per_project_limit ?? 3),
-  );
+  const maxQuizzesPerProject = activeQuizPlanLimits.quizzesPerProject;
   const uploadPlanLimits = useMemo(
     () => getProjectUploadPlanLimits(user?.current_plan),
     [user?.current_plan],
@@ -781,7 +815,7 @@ export function AccountDashboard({
   }, [isLoading, router, user]);
 
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (isLoading || !user?.id) return;
     let isMounted = true;
     let didLoadInitialProject = false;
 
@@ -922,7 +956,7 @@ export function AccountDashboard({
   }, [activeProjectId, chatBackTab, hasAiAccess, router, useTabPages]);
 
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (isLoading || !user?.id) return;
     let isMounted = true;
 
     getUsage()
@@ -936,16 +970,82 @@ export function AccountDashboard({
     return () => {
       isMounted = false;
     };
-  }, [isLoading, user]);
+  }, [isLoading, user?.id]);
 
-  async function refreshUsageSnapshot() {
+  const refreshUsageSnapshot = useCallback(async () => {
     try {
       const result = await getUsage();
       setUsage(result);
     } catch {
       // Usage is informational; blocking the study flow would be worse.
     }
-  }
+  }, []);
+
+  const refreshQuizPlanLimitSnapshot = useCallback(async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      const nextLimits = getQuizPlanLimits(currentUser.current_plan);
+      setQuizPlanLimitSnapshot((currentLimits) => {
+        if (
+          currentLimits?.quizQuestionsPerQuiz ===
+            nextLimits.quizQuestionsPerQuiz &&
+          currentLimits.quizzesPerProject === nextLimits.quizzesPerProject
+        ) {
+          return currentLimits;
+        }
+
+        const matchesAccountSnapshot =
+          currentUser.id === user?.id &&
+          accountQuizPlanLimits.quizQuestionsPerQuiz ===
+            nextLimits.quizQuestionsPerQuiz &&
+          accountQuizPlanLimits.quizzesPerProject === nextLimits.quizzesPerProject;
+        if (matchesAccountSnapshot) {
+          return currentLimits === null ? currentLimits : null;
+        }
+
+        return { ...nextLimits, userId: currentUser.id };
+      });
+    } catch {
+      // The existing auth guard handles expired sessions; quiz limits stay as-is.
+    }
+  }, [
+    accountQuizPlanLimits.quizQuestionsPerQuiz,
+    accountQuizPlanLimits.quizzesPerProject,
+    user?.id,
+  ]);
+
+  useEffect(() => {
+    if (isLoading || !user?.id || view !== "project" || activeTab !== "quiz") {
+      return;
+    }
+
+    const refreshQuizLimits = () => {
+      void refreshQuizPlanLimitSnapshot();
+    };
+
+    refreshQuizLimits();
+
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshQuizLimits();
+      }
+    };
+
+    window.addEventListener("focus", refreshQuizLimits);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", refreshQuizLimits);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    activeTab,
+    isLoading,
+    refreshQuizPlanLimitSnapshot,
+    user?.id,
+    view,
+  ]);
 
   function toggleSidebarCollapsed() {
     setIsSidebarCollapsed((current) => {
@@ -1268,55 +1368,100 @@ export function AccountDashboard({
     projectId: string,
     config: QuizGenerationConfig,
   ) {
-    const queuedProject = await generateStudyProjectQuiz(projectId, config);
-    storeApiProject(queuedProject);
+    const existingQuizCount =
+      getProjectById(projects, projectId)?.quizzes.length ?? 0;
+    const abortController = new AbortController();
+    quizGenerationAbortControllerRef.current = abortController;
 
-    if (queuedProject.status === "ready" && queuedProject.quizzes.length === 0) {
-      throw new Error(
-        toFriendlyGenerationError(queuedProject.error_message) ||
-          "Quizurile nu au putut fi generate. Încearcă din nou.",
-      );
-    }
+    try {
+      const queuedProject = await generateStudyProjectQuiz(projectId, config, {
+        signal: abortController.signal,
+      });
+      abortController.signal.throwIfAborted();
+      storeApiProject(queuedProject);
 
-    if (queuedProject.status !== "generating_quizzes") {
-      await refreshUsageSnapshot();
-      return mapApiProject(queuedProject);
-    }
-
-    for (
-      let attempt = 0;
-      attempt < QUIZ_GENERATION_POLL_ATTEMPTS;
-      attempt += 1
-    ) {
-      await delay(GENERATION_POLL_INTERVAL_MS);
-      const apiProject = await getStudyProject(projectId);
-      const mappedProject = storeApiProject(apiProject);
-
-      if (apiProject.status === "ready" && apiProject.quizzes.length > 0) {
-        await refreshUsageSnapshot();
-        return mappedProject;
-      }
-
-      if (apiProject.status === "ready" && apiProject.error_message) {
+      if (queuedProject.status === "failed") {
         throw new Error(
-          toFriendlyGenerationError(apiProject.error_message) ||
-            "Quizurile nu au putut fi generate.",
+          toFriendlyGenerationError(queuedProject.error_message) ||
+            "Quizul nu a putut fi generat.",
         );
       }
 
-      if (apiProject.status === "ready" && apiProject.quizzes.length === 0) {
-        throw new Error("Quizurile nu au putut fi generate. Încearcă din nou.");
-      }
-
-      if (apiProject.status === "failed") {
+      if (
+        queuedProject.status === "ready" &&
+        queuedProject.quizzes.length <= existingQuizCount
+      ) {
         throw new Error(
-          toFriendlyGenerationError(apiProject.error_message) ||
-            "Quizurile nu au putut fi generate.",
+          toFriendlyGenerationError(queuedProject.error_message) ||
+            "Quizul nu a putut fi generat. Încearcă din nou.",
         );
       }
-    }
 
-    throw new Error("Generarea quizurilor durează prea mult. Reîncarcă pagina.");
+      if (queuedProject.status !== "generating_quizzes") {
+        void refreshUsageSnapshot();
+        return mapApiProject(queuedProject);
+      }
+
+      for (
+        let attempt = 0;
+        attempt < QUIZ_GENERATION_POLL_ATTEMPTS;
+        attempt += 1
+      ) {
+        await delay(GENERATION_POLL_INTERVAL_MS, abortController.signal);
+        const apiProject = await getStudyProject(projectId, {
+          signal: abortController.signal,
+        });
+        abortController.signal.throwIfAborted();
+        const mappedProject = storeApiProject(apiProject);
+
+        if (
+          apiProject.status === "ready" &&
+          apiProject.quizzes.length > existingQuizCount
+        ) {
+          void refreshUsageSnapshot();
+          return mappedProject;
+        }
+
+        if (apiProject.status === "ready" && apiProject.error_message) {
+          throw new Error(
+            toFriendlyGenerationError(apiProject.error_message) ||
+              "Quizul nu a putut fi generat.",
+          );
+        }
+
+        if (apiProject.status === "ready") {
+          throw new Error("Quizul nu a putut fi generat. Încearcă din nou.");
+        }
+
+        if (apiProject.status === "failed") {
+          throw new Error(
+            toFriendlyGenerationError(apiProject.error_message) ||
+              "Quizul nu a putut fi generat.",
+          );
+        }
+      }
+
+      throw new Error("Generarea quizurilor durează prea mult. Reîncarcă pagina.");
+    } catch (error) {
+      if (isAbortError(error)) {
+        throw new DOMException("Aborted", "AbortError");
+      }
+      throw error;
+    } finally {
+      if (quizGenerationAbortControllerRef.current === abortController) {
+        quizGenerationAbortControllerRef.current = null;
+      }
+    }
+  }
+
+  async function cancelProjectQuizGeneration(projectId: string) {
+    const abortController = quizGenerationAbortControllerRef.current;
+    const apiProject = await cancelStudyProjectGeneration(projectId);
+    // Keep polling when cancellation fails, and never abort a newer request.
+    abortController?.abort();
+    const mappedProject = storeApiProject(apiProject);
+    void refreshUsageSnapshot();
+    return mappedProject;
   }
 
   async function toggleFlashcardReview(
@@ -1409,6 +1554,7 @@ export function AccountDashboard({
   function resetNewProject() {
     generationAbortControllerRef.current?.abort();
     generationAbortControllerRef.current = null;
+    generationPrepareRequestIdRef.current = null;
     generationProjectIdRef.current = null;
     generationCancelRequestedRef.current = false;
     setProjectName("");
@@ -1576,7 +1722,12 @@ export function AccountDashboard({
 
     let transientProjectId: string | null = null;
     const abortController = new AbortController();
+    const prepareRequestId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     generationAbortControllerRef.current = abortController;
+    generationPrepareRequestIdRef.current = prepareRequestId;
     generationProjectIdRef.current = null;
     generationCancelRequestedRef.current = false;
 
@@ -1595,6 +1746,7 @@ export function AccountDashboard({
           files: uploadedFiles.map((file) => file.file),
           materialRightsConfirmed: hasMaterialRights,
           generationLanguage: language,
+          prepareRequestId,
         },
         { signal: abortController.signal },
       );
@@ -1632,6 +1784,7 @@ export function AccountDashboard({
       if (generationAbortControllerRef.current === abortController) {
         generationAbortControllerRef.current = null;
       }
+      generationPrepareRequestIdRef.current = null;
       generationProjectIdRef.current = null;
       generationCancelRequestedRef.current = false;
       setIsCancellingGeneration(false);
@@ -1646,15 +1799,27 @@ export function AccountDashboard({
     generationCancelRequestedRef.current = true;
     setIsCancellingGeneration(true);
 
-    const projectId =
+    const prepareRequestId = generationPrepareRequestIdRef.current;
+    const knownProjectId =
       generationProjectIdRef.current ?? preparedProject?.project.id ?? null;
     generationAbortControllerRef.current?.abort();
 
+    let cancelledProjectId: string | null = null;
+    if (prepareRequestId) {
+      try {
+        const response = await cancelStudyProjectPrepare(prepareRequestId);
+        cancelledProjectId = response.project_id ?? null;
+      } catch {
+        // The local request is already aborted; project-id cleanup below still runs when possible.
+      }
+    }
+
+    const projectId = knownProjectId ?? cancelledProjectId;
     if (projectId) {
       try {
         await cancelStudyProjectGeneration(projectId);
       } catch {
-        // The abort already stopped the local flow; backend cleanup can be retried.
+        // The project may already have been removed by the prepare cancel endpoint.
       }
 
       try {
@@ -1674,12 +1839,13 @@ export function AccountDashboard({
       );
     }
 
+    generationPrepareRequestIdRef.current = null;
+    generationProjectIdRef.current = null;
     setGenerationState("form");
     setCompletedSteps([]);
     setPreparedProject(null);
     setIsCancellingGeneration(false);
   }
-
   function createGeneratedProject() {
     if (!preparedProject) return;
 
@@ -2152,6 +2318,7 @@ export function AccountDashboard({
               onQuizMistake={saveQuizMistakeFlashcard}
               onQuizComplete={completeQuizAttempt}
               onGenerateQuiz={generateProjectQuiz}
+              onCancelQuizGeneration={cancelProjectQuizGeneration}
               onManualFlashcardCreate={addManualFlashcard}
               onToggleFlashcardReview={toggleFlashcardReview}
               onHighlightCreate={addSummaryHighlight}
@@ -2923,6 +3090,7 @@ function ProjectView({
   onQuizMistake,
   onQuizComplete,
   onGenerateQuiz,
+  onCancelQuizGeneration,
   onManualFlashcardCreate,
   onToggleFlashcardReview,
   onHighlightCreate,
@@ -2956,6 +3124,7 @@ function ProjectView({
     projectId: string,
     config: QuizGenerationConfig,
   ) => Promise<StudyProject>;
+  onCancelQuizGeneration: (projectId: string) => Promise<StudyProject>;
   /** Upper bound for one quiz, from the account's plan. */
   maxQuizQuestions: number;
   /** How many quizzes this project may hold, from the account's plan. */
@@ -3155,6 +3324,7 @@ function ProjectView({
                 onQuizMistake={onQuizMistake}
                 onQuizComplete={onQuizComplete}
                 onGenerateQuiz={onGenerateQuiz}
+                onCancelQuizGeneration={onCancelQuizGeneration}
                 maxQuizQuestions={maxQuizQuestions}
                 maxQuizzesPerProject={maxQuizzesPerProject}
               />
@@ -3870,6 +4040,7 @@ type LearningAiResponse = {
 type SummaryAiDialog = {
   text: string;
   paragraphIndex: number;
+  question: string | null;
   status: "loading" | "done";
   response?: LearningAiResponse;
 };
@@ -4894,6 +5065,7 @@ function SummaryPanel({
   const [aiDialog, setAiDialog] = useState<SummaryAiDialog | null>(null);
   const [pendingAiSelection, setPendingAiSelection] =
     useState<PendingSummarySelection | null>(null);
+  const [pendingAiQuestion, setPendingAiQuestion] = useState("");
   const [pendingHighlightSelection, setPendingHighlightSelection] =
     useState<PendingSummarySelection | null>(null);
   const [pendingHighlightColor, setPendingHighlightColor] =
@@ -5000,17 +5172,23 @@ function SummaryPanel({
     }
   }
 
-  async function handleAskAi(selection: PendingSummarySelection) {
+  async function handleAskAi(
+    selection: PendingSummarySelection,
+    studentQuestion: string,
+  ) {
     if (!hasAiAccess) {
       return;
     }
 
+    const cleanQuestion = studentQuestion.trim();
     setPendingAiSelection(null);
+    setPendingAiQuestion("");
     aiRequestIdRef.current += 1;
     const requestId = aiRequestIdRef.current;
 
     setAiDialog({
       ...selection,
+      question: cleanQuestion || null,
       status: "loading",
     });
     window.getSelection()?.removeAllRanges();
@@ -5020,6 +5198,7 @@ function SummaryPanel({
         projectId: project.id,
         paragraphIndex: selection.paragraphIndex,
         selectedText: selection.text,
+        studentQuestion: cleanQuestion || null,
         startOffset: selection.startOffset,
         endOffset: selection.endOffset,
       });
@@ -5031,6 +5210,7 @@ function SummaryPanel({
       void onUsageRefresh();
       setAiDialog({
         ...selection,
+        question: cleanQuestion || null,
         status: "done",
         response,
       });
@@ -5040,6 +5220,7 @@ function SummaryPanel({
       }
       setAiDialog({
         ...selection,
+        question: cleanQuestion || null,
         status: "done",
         response: {
           title: "Explicația nu este disponibilă momentan",
@@ -5143,6 +5324,14 @@ function SummaryPanel({
         return;
       }
 
+      const isSameAiSelection =
+        pendingAiSelection?.paragraphIndex === selectionPayload.paragraphIndex &&
+        pendingAiSelection.text === selectionPayload.text &&
+        pendingAiSelection.startOffset === selectionPayload.startOffset &&
+        pendingAiSelection.endOffset === selectionPayload.endOffset;
+      if (!isSameAiSelection) {
+        setPendingAiQuestion("");
+      }
       setNotePanel(null);
       setPendingHighlightSelection(null);
       setPendingAiSelection(selectionPayload);
@@ -5290,11 +5479,12 @@ function SummaryPanel({
       return;
     }
 
-    void handleAskAi(pendingAiSelection);
+    void handleAskAi(pendingAiSelection, pendingAiQuestion);
   }
 
   function handleCancelAiSelection() {
     setPendingAiSelection(null);
+    setPendingAiQuestion("");
     window.getSelection()?.removeAllRanges();
   }
 
@@ -5327,6 +5517,7 @@ function SummaryPanel({
     setActiveTool((current) => (current === tool ? null : tool));
     setNotePanel(null);
     setPendingAiSelection(null);
+    setPendingAiQuestion("");
     setPendingHighlightSelection(null);
     window.getSelection()?.removeAllRanges();
   }
@@ -5335,6 +5526,7 @@ function SummaryPanel({
     setActiveTool(null);
     setNotePanel(null);
     setPendingAiSelection(null);
+    setPendingAiQuestion("");
     setPendingHighlightSelection(null);
     window.getSelection()?.removeAllRanges();
   }
@@ -5445,17 +5637,41 @@ function SummaryPanel({
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="max-w-none">
           {pendingAiSelection ? (
-            <div className="sticky top-16 z-20 mt-4 w-full max-w-md rounded-xl border border-info-border bg-info-soft p-4 text-info theme-shadow-card">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleConfirmAiSelection();
+              }}
+              className="sticky top-16 z-20 mt-4 w-full max-w-md rounded-xl border border-info-border bg-info-soft p-4 text-info theme-shadow-card"
+            >
               <p className="text-[11px] font-black uppercase tracking-[0.16em]">
                 Text selectat pentru AI
               </p>
               <p className="mt-2 line-clamp-3 text-sm leading-6">
                 “{pendingAiSelection.text}”
               </p>
+              <label
+                htmlFor="summary-ai-question"
+                className="mt-4 block text-[11px] font-black uppercase tracking-[0.16em]"
+              >
+                Întrebarea ta
+              </label>
+              <textarea
+                id="summary-ai-question"
+                value={pendingAiQuestion}
+                onChange={(event) => setPendingAiQuestion(event.target.value)}
+                placeholder="Ex: explică pe scurt pentru examen sau compară cu teoria lui Kant."
+                rows={3}
+                maxLength={1000}
+                className="mt-2 w-full resize-none rounded-md border border-info-border bg-surface px-3 py-2 text-sm leading-6 text-content outline-none transition placeholder:text-muted focus:border-info focus:ring-2 focus:ring-info/15"
+              />
+              <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold text-info/70">
+                <span>Opțional</span>
+                <span>{pendingAiQuestion.length}/1000</span>
+              </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
-                  type="button"
-                  onClick={handleConfirmAiSelection}
+                  type="submit"
                   className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:bg-action-hover"
                 >
                   Întreabă
@@ -5468,7 +5684,7 @@ function SummaryPanel({
                   Anulează
                 </button>
               </div>
-            </div>
+            </form>
           ) : null}
 
           {notePanel ? (
@@ -5758,6 +5974,14 @@ function SummaryPanel({
                   Ai întrebat despre
                 </p>
                 <p className="mt-2 text-sm leading-6">“{aiDialog.text}”</p>
+                {aiDialog.question ? (
+                  <div className="mt-3 border-t border-info-border/60 pt-3">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em]">
+                      Întrebarea ta
+                    </p>
+                    <p className="mt-1 text-sm leading-6">{aiDialog.question}</p>
+                  </div>
+                ) : null}
               </div>
 
               {aiDialog.status === "loading" ? (
@@ -5940,6 +6164,7 @@ type FlashcardAiDialog = {
   text: string;
   side: FlashcardTextSide;
   topic: string;
+  question: string | null;
   status: "loading" | "done";
   response?: LearningAiResponse;
 };
@@ -6381,6 +6606,8 @@ function FlashcardDeckPage({
   const [showAnswer, setShowAnswer] = useState(false);
   const [pendingFlashcardSelection, setPendingFlashcardSelection] =
     useState<PendingFlashcardSelection | null>(null);
+  const [pendingFlashcardQuestion, setPendingFlashcardQuestion] =
+    useState("");
   const [flashcardAiDialog, setFlashcardAiDialog] =
     useState<FlashcardAiDialog | null>(null);
   const hasCards = cards.length > 0;
@@ -6409,6 +6636,7 @@ function FlashcardDeckPage({
     shuffleIdRef.current += 1;
     setShowAnswer(false);
     setPendingFlashcardSelection(null);
+    setPendingFlashcardQuestion("");
     window.getSelection()?.removeAllRanges();
     setShuffle({
       id: shuffleIdRef.current,
@@ -6436,6 +6664,7 @@ function FlashcardDeckPage({
     shuffleIdRef.current += 1;
     setShowAnswer(false);
     setPendingFlashcardSelection(null);
+    setPendingFlashcardQuestion("");
     window.getSelection()?.removeAllRanges();
     setShuffle({
       id: shuffleIdRef.current,
@@ -6456,6 +6685,9 @@ function FlashcardDeckPage({
   }
 
   function toggleReviewOnlyFilter() {
+    setPendingFlashcardSelection(null);
+    setPendingFlashcardQuestion("");
+    window.getSelection()?.removeAllRanges();
     setShowReviewOnly((current) => {
       const next = !current;
       setCards(
@@ -6499,6 +6731,7 @@ function FlashcardDeckPage({
   function toggleFlashcardSide() {
     setShowAnswer((visible) => !visible);
     setPendingFlashcardSelection(null);
+    setPendingFlashcardQuestion("");
     window.getSelection()?.removeAllRanges();
   }
 
@@ -6539,6 +6772,7 @@ function FlashcardDeckPage({
       return;
     }
 
+    setPendingFlashcardQuestion("");
     setPendingFlashcardSelection({
       flashcardId: activeCard.flashcardId,
       text: selectedText,
@@ -6555,12 +6789,15 @@ function FlashcardDeckPage({
     flashcardAiRequestIdRef.current += 1;
     const requestId = flashcardAiRequestIdRef.current;
     const selection = pendingFlashcardSelection;
+    const cleanQuestion = pendingFlashcardQuestion.trim();
 
     setFlashcardAiDialog({
       ...selection,
+      question: cleanQuestion || null,
       status: "loading",
     });
     setPendingFlashcardSelection(null);
+    setPendingFlashcardQuestion("");
     window.getSelection()?.removeAllRanges();
 
     try {
@@ -6569,6 +6806,7 @@ function FlashcardDeckPage({
         flashcardId: selection.flashcardId,
         side: selection.side,
         selectedText: selection.text,
+        studentQuestion: cleanQuestion || null,
       });
 
       if (requestId !== flashcardAiRequestIdRef.current) {
@@ -6578,6 +6816,7 @@ function FlashcardDeckPage({
       void onUsageRefresh();
       setFlashcardAiDialog({
         ...selection,
+        question: cleanQuestion || null,
         status: "done",
         response,
       });
@@ -6587,6 +6826,7 @@ function FlashcardDeckPage({
       }
       setFlashcardAiDialog({
         ...selection,
+        question: cleanQuestion || null,
         status: "done",
         response: {
           title: "Explicația nu este disponibilă momentan",
@@ -6602,7 +6842,6 @@ function FlashcardDeckPage({
       });
     }
   }
-
   function handleCloseFlashcardAiDialog() {
     flashcardAiRequestIdRef.current += 1;
     setFlashcardAiDialog(null);
@@ -6653,7 +6892,13 @@ function FlashcardDeckPage({
             </div>
           </div>
           {pendingFlashcardSelection ? (
-            <div className="sticky top-16 z-20 mt-4 rounded-xl border border-info-border bg-info-soft p-4 text-info theme-shadow-card">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handleAskFlashcardAi();
+              }}
+              className="sticky top-16 z-20 mt-4 rounded-xl border border-info-border bg-info-soft p-4 text-info theme-shadow-card"
+            >
               <p className="text-[11px] font-bold uppercase tracking-[0.16em]">
                 Text selectat din{" "}
                 {pendingFlashcardSelection.side === "question"
@@ -6663,11 +6908,29 @@ function FlashcardDeckPage({
               <p className="mt-2 text-sm leading-6">
                 “{pendingFlashcardSelection.text}”
               </p>
+              <label
+                htmlFor="flashcard-ai-question"
+                className="mt-4 block text-[11px] font-black uppercase tracking-[0.16em]"
+              >
+                Întrebarea ta
+              </label>
+              <textarea
+                id="flashcard-ai-question"
+                value={pendingFlashcardQuestion}
+                onChange={(event) => setPendingFlashcardQuestion(event.target.value)}
+                placeholder="Ex: explică de ce răspunsul e corect sau dă-mi un exemplu simplu."
+                rows={3}
+                maxLength={1000}
+                className="mt-2 w-full resize-none rounded-md border border-info-border bg-surface px-3 py-2 text-sm leading-6 text-content outline-none transition placeholder:text-muted focus:border-info focus:ring-2 focus:ring-info/15"
+              />
+              <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold text-info/70">
+                <span>Opțional</span>
+                <span>{pendingFlashcardQuestion.length}/1000</span>
+              </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="group relative inline-flex">
                   <button
-                    type="button"
-                    onClick={handleAskFlashcardAi}
+                    type="submit"
                     disabled={!hasAiAccess}
                     title={!hasAiAccess ? AI_ACCESS_UNAVAILABLE_MESSAGE : undefined}
                     className={`rounded-md px-4 py-2 text-xs font-bold transition ${
@@ -6688,6 +6951,7 @@ function FlashcardDeckPage({
                   type="button"
                   onClick={() => {
                     setPendingFlashcardSelection(null);
+                    setPendingFlashcardQuestion("");
                     window.getSelection()?.removeAllRanges();
                   }}
                   className="rounded-md border border-info-border px-4 py-2 text-xs font-bold transition hover:bg-info-soft/70"
@@ -6695,7 +6959,7 @@ function FlashcardDeckPage({
                   Anulează
                 </button>
               </div>
-            </div>
+            </form>
           ) : null}
         </div>
         <div className="lg:-mt-2">
@@ -6961,6 +7225,16 @@ function FlashcardDeckPage({
                   <p className="mt-2 text-sm leading-6">
                     “{flashcardAiDialog.text}”
                   </p>
+                  {flashcardAiDialog.question ? (
+                    <div className="mt-3 border-t border-info-border/60 pt-3">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em]">
+                        Întrebarea ta
+                      </p>
+                      <p className="mt-1 text-sm leading-6">
+                        {flashcardAiDialog.question}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
 
                 {flashcardAiDialog.status === "loading" ? (
@@ -7777,6 +8051,7 @@ function QuizPanel({
   onQuizMistake,
   onQuizComplete,
   onGenerateQuiz,
+  onCancelQuizGeneration,
   maxQuizQuestions,
   maxQuizzesPerProject,
 }: {
@@ -7795,6 +8070,7 @@ function QuizPanel({
     projectId: string,
     config: QuizGenerationConfig,
   ) => Promise<StudyProject>;
+  onCancelQuizGeneration: (projectId: string) => Promise<StudyProject>;
   /** Upper bound for one quiz, from the account's plan. */
   maxQuizQuestions: number;
   /** How many quizzes this project may hold, from the account's plan. */
@@ -7815,6 +8091,8 @@ function QuizPanel({
   const [showQuizSummary, setShowQuizSummary] = useState(false);
   const [attemptId, setAttemptId] = useState(0);
   const [isGeneratingQuizzes, setIsGeneratingQuizzes] = useState(false);
+  const [isCancellingQuizGeneration, setIsCancellingQuizGeneration] =
+    useState(false);
   const isPersistingCompletionRef = useRef(false);
   const persistedAttemptRef = useRef<number | null>(null);
   const autoOpenedSummaryRef = useRef<number | null>(null);
@@ -7905,17 +8183,45 @@ function QuizPanel({
     setActiveQuizId(null);
   }
 
+  async function handleCancelQuizGeneration() {
+    if (
+      isCancellingQuizGeneration ||
+      (!isGeneratingQuizzes && project.status !== "generating_quizzes")
+    ) {
+      return;
+    }
+
+    setIsCancellingQuizGeneration(true);
+    try {
+      await onCancelQuizGeneration(project.id);
+      setIsGeneratingQuizzes(false);
+      setIsQuizConfigOpen(false);
+      toast.success("Generarea quizului a fost anulată.");
+    } catch (error) {
+      toast.error(
+        (error instanceof Error
+          ? toFriendlyGenerationError(error.message)
+          : null) ?? "Nu am putut anula generarea quizului.",
+      );
+    } finally {
+      setIsCancellingQuizGeneration(false);
+    }
+  }
+
   const quizConfigModal = isQuizConfigOpen ? (
     <QuizConfigModal
       maxQuestions={maxQuizQuestions}
       isSubmitting={isGeneratingQuizzes}
       onCancel={() => setIsQuizConfigOpen(false)}
       onConfirm={async (config) => {
+        setIsQuizConfigOpen(false);
         setIsGeneratingQuizzes(true);
         try {
           await onGenerateQuiz(project.id, config);
-          setIsQuizConfigOpen(false);
         } catch (error) {
+          if (isAbortError(error)) {
+            return;
+          }
           toast.error(
             (error instanceof Error
               ? toFriendlyGenerationError(error.message)
@@ -7937,7 +8243,9 @@ function QuizPanel({
         errorMessage={project.errorMessage}
         quizzes={quizData.catalog}
         isGenerating={isGeneratingQuizzes}
+        isCancellingGeneration={isCancellingQuizGeneration}
         quizLimit={maxQuizzesPerProject}
+        onCancelGeneration={handleCancelQuizGeneration}
         onOpenQuizConfig={() => {
           if (hasReachedQuizLimit) {
             toast.warning(
@@ -8506,7 +8814,9 @@ function QuizLibrary({
   errorMessage,
   quizzes,
   isGenerating,
+  isCancellingGeneration,
   quizLimit,
+  onCancelGeneration,
   onOpenQuizConfig,
   onStartQuiz,
 }: {
@@ -8514,17 +8824,19 @@ function QuizLibrary({
   errorMessage: string | null;
   quizzes: AccountQuiz[];
   isGenerating: boolean;
+  isCancellingGeneration: boolean;
   /** How many quizzes this project may hold, from the account's plan. */
   quizLimit: number;
+  onCancelGeneration: () => void;
   onOpenQuizConfig: () => void;
   onStartQuiz: (quizId: string) => void;
 }) {
   const { language } = useLanguage();
   const loadingCopy = quizGenerationLoadingCopy[language];
+  const isButtonBusy = isGenerating || projectStatus === "generating_quizzes";
+  const newQuizLabel = { ro: "Quiz nou", en: "New quiz", fr: "Nouveau quiz" }[language];
 
   if (!quizzes.length) {
-    const isBackendGenerating = projectStatus === "generating_quizzes";
-    const isButtonBusy = isGenerating || isBackendGenerating;
 
     return (
       <section className="grid gap-6 rounded-xl border border-subtle bg-surface p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
@@ -8547,24 +8859,43 @@ function QuizLibrary({
           ) : null}
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenQuizConfig}
-          disabled={isButtonBusy}
-          className="inline-flex min-w-56 cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-6 py-4 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:bg-subtle disabled:text-muted"
-        >
-          {isButtonBusy ? loadingCopy.buttonBusy : loadingCopy.buttonIdle}
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={onOpenQuizConfig}
+            disabled={isButtonBusy}
+            className="inline-flex min-w-56 cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-6 py-4 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:bg-subtle disabled:text-muted"
+          >
+            <span data-no-auto-translate>
+              {isButtonBusy ? loadingCopy.buttonBusy : loadingCopy.buttonIdle}
+            </span>
+            {isButtonBusy ? (
+              <span
+                aria-hidden="true"
+                className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-content"
+              />
+            ) : (
+              <Icon>
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </Icon>
+            )}
+          </button>
           {isButtonBusy ? (
-            <span
-              aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-content"
-            />
-          ) : (
-            <Icon>
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </Icon>
-          )}
-        </button>
+            <button
+              type="button"
+              onClick={onCancelGeneration}
+              disabled={isCancellingGeneration}
+              className="inline-flex min-w-56 cursor-pointer items-center justify-center gap-2 rounded-md border border-danger-border bg-danger-soft px-6 py-3 text-sm font-black text-danger transition hover:opacity-85 disabled:cursor-wait disabled:opacity-60"
+            >
+              {isCancellingGeneration
+                ? "Se anulează..."
+                : "Anulare generare quiz"}
+              <Icon>
+                <path d="M18 6 6 18M6 6l12 12" />
+              </Icon>
+            </button>
+          ) : null}
+        </div>
 
         {isButtonBusy ? (
           <div className="border-t border-subtle pt-5 lg:col-span-2">
@@ -8615,7 +8946,7 @@ function QuizLibrary({
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-col gap-4 border-b border-subtle pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-5 border-b border-subtle pb-5">
         <div>
           <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
             Quiz-uri
@@ -8628,27 +8959,62 @@ function QuizLibrary({
             exact ce exersezi.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex w-fit rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-black text-content">
-            {completedCount}/{quizzes.length} completate
-          </span>
-          <span className="inline-flex w-fit rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-black text-content">
-            {quizzes.length}/{quizLimit} generate
-          </span>
-          <button
-            type="button"
-            onClick={onOpenQuizConfig}
-            disabled={isGenerating || projectStatus === "generating_quizzes"}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-action px-4 py-2 text-xs font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:bg-subtle disabled:text-muted"
-          >
-            {isGenerating || projectStatus === "generating_quizzes"
-              ? "Se generează..."
-              : "Quiz nou"}
-            <Icon className="h-3.5 w-3.5">
-              <path d="M12 5v14M5 12h14" />
-            </Icon>
-          </button>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-muted">
+            <span>
+              {completedCount}/{quizzes.length} completate
+            </span>
+            <span>
+              {quizzes.length}/{quizLimit} generate
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onOpenQuizConfig}
+              disabled={isButtonBusy}
+              className="inline-flex min-h-10 min-w-40 cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-4 py-2 text-xs font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:bg-subtle disabled:text-muted"
+            >
+              <span data-no-auto-translate>
+                {isButtonBusy ? loadingCopy.buttonBusy : newQuizLabel}
+              </span>
+              {isButtonBusy ? (
+                <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" />
+              ) : <Icon className="h-3.5 w-3.5">
+                <path d="M12 5v14M5 12h14" />
+              </Icon>}
+            </button>
+            {isButtonBusy ? (
+              <button
+                type="button"
+                onClick={onCancelGeneration}
+                disabled={isCancellingGeneration}
+                className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-danger-border px-4 py-2 text-xs font-black text-danger transition hover:bg-danger-soft disabled:cursor-wait disabled:opacity-60"
+              >
+                {isCancellingGeneration
+                  ? "Se anulează..."
+                  : "Anulare generare quiz"}
+                <Icon className="h-3.5 w-3.5">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </Icon>
+              </button>
+            ) : null}
+          </div>
         </div>
+        {isButtonBusy ? (
+          <div role="status" aria-live="polite" className="space-y-3 border-t border-subtle pt-4">
+            <div className="flex items-center gap-3 text-sm font-semibold text-muted">
+              <span aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-info-border border-t-info motion-reduce:animate-none" />
+              <span data-no-auto-translate>{loadingCopy.title}</span>
+            </div>
+            <div aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-info-soft">
+              <div className="h-full w-full animate-pulse rounded-full bg-info motion-reduce:animate-none" />
+            </div>
+          </div>
+        ) : null}
+        {errorMessage ? (
+          <p role="alert" className="text-sm font-semibold text-danger">{errorMessage}</p>
+        ) : null}
       </div>
 
       <div className="grid items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -10693,7 +11059,7 @@ function GenerationView({
             disabled={isCancellingGeneration}
             className="inline-flex items-center justify-center gap-2 rounded-md border border-subtle bg-app px-5 py-3 text-sm font-black text-content transition hover:border-danger-border hover:bg-danger-soft hover:text-danger disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted"
           >
-            {isCancellingGeneration ? "Se anuleaza..." : "Anulare"}
+            {isCancellingGeneration ? "Se anulează..." : "Anulare"}
             <Icon>
               <path d="M18 6 6 18M6 6l12 12" />
             </Icon>

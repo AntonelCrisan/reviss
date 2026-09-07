@@ -29,6 +29,8 @@ from app.schemas.projects import (
     StudyProjectFlashcardAiSelectionExplainRequest,
     StudyProjectFlashcardReviewUpdate,
     StudyProjectImportResponse,
+    StudyProjectPrepareCancelRequest,
+    StudyProjectPrepareCancelResponse,
     StudyProjectPrepareResponse,
     StudyProjectQuizCompletionCreate,
     StudyProjectQuizMistakeFlashcardCreate,
@@ -43,6 +45,7 @@ from app.services.openai_generation import OpenAIGenerationError
 from app.services.plan_errors import PlanLimitError
 from app.services.projects import (
     ProjectConversionError,
+    ProjectGenerationCancelledError,
     ProjectNotFoundError,
     ProjectValidationError,
     StudyProjectService,
@@ -198,9 +201,26 @@ def _prepare_form_optional_generation_language(form: object) -> str | None:
     return None
 
 
+def _prepare_form_optional_prepare_request_id(form: object) -> str | None:
+    value = form.get("prepare_request_id")  # type: ignore[attr-defined]
+    if value is None:
+        return None
+    if isinstance(value, StarletteUploadFile):
+        _raise_prepare_form_error("prepare_request_id", "Valoare invalida.")
+
+    request_id = str(value).strip()
+    if not request_id:
+        return None
+    if len(request_id) < 8 or len(request_id) > 64:
+        _raise_prepare_form_error("prepare_request_id", "Valoare invalida.")
+    if any(not (character.isalnum() or character in "-_") for character in request_id):
+        _raise_prepare_form_error("prepare_request_id", "Valoare invalida.")
+    return request_id
+
+
 async def _parse_prepare_project_form(
     request: Request,
-) -> tuple[str, str, str, bool, list[UploadFile], str | None]:
+) -> tuple[str, str, str, bool, list[UploadFile], str | None, str | None]:
     try:
         form = await request.form()
     except Exception as exc:
@@ -245,6 +265,7 @@ async def _parse_prepare_project_form(
         _prepare_form_bool(form, "material_rights_confirmed"),
         _prepare_form_uploads(form),
         _prepare_form_optional_generation_language(form),
+        _prepare_form_optional_prepare_request_id(form),
     )
 
 
@@ -330,6 +351,7 @@ async def prepare_project(
         material_rights_confirmed,
         files,
         generation_language,
+        prepare_request_id,
     ) = await _parse_prepare_project_form(request)
     await _enforce_project_rate_limit(current_user, "prepare")
     service = _service(session, settings)
@@ -342,6 +364,8 @@ async def prepare_project(
             material_rights_confirmed=material_rights_confirmed,
             uploads=files,
             generation_language=generation_language,
+            prepare_request_id=prepare_request_id,
+            is_cancelled=request.is_disconnected,
         )
     except PlanLimitError as exc:
         await session.rollback()
@@ -364,6 +388,13 @@ async def prepare_project(
             status_code=422,
             detail=str(exc),
         ) from exc
+    except ProjectGenerationCancelledError as exc:
+        await session.rollback()
+        logger.info("Project prepare cancelled before save.")
+        raise HTTPException(
+            status_code=499,
+            detail="Generarea proiectului a fost anulată.",
+        ) from exc
     except Exception as exc:
         await session.rollback()
         logger.exception("Project prepare failed with an unexpected error.")
@@ -372,11 +403,25 @@ async def prepare_project(
             detail="Proiectul nu a putut fi pregatit momentan.",
         ) from exc
 
-    if await request.is_disconnected():
-        await service.delete_project(user=current_user, project_id=project.id)
+    request_was_cancelled = await request.is_disconnected()
+    if prepare_request_id and not request_was_cancelled:
+        request_was_cancelled = await service.is_prepare_request_cancelled(
+            user=current_user,
+            request_id=prepare_request_id,
+        )
+
+    if request_was_cancelled:
+        cancel_generation_task(project.id)
+        if prepare_request_id:
+            await service.cancel_prepare_request(
+                user=current_user,
+                request_id=prepare_request_id,
+            )
+        else:
+            await service.delete_project(user=current_user, project_id=project.id)
         raise HTTPException(
             status_code=499,
-            detail="Generarea proiectului a fost anulata.",
+            detail="Generarea proiectului a fost anulată.",
         )
 
     await record_study_activity(session, current_user.id)
@@ -405,6 +450,29 @@ async def prepare_project(
         next_step="Generam automat pachetul de studiu.",
     )
 
+
+@router.post(
+    "/prepare/cancel",
+    response_model=StudyProjectPrepareCancelResponse,
+)
+async def cancel_prepare_project(
+    payload: StudyProjectPrepareCancelRequest,
+    current_user: CurrentUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> StudyProjectPrepareCancelResponse:
+    await _enforce_project_rate_limit(current_user, "manage")
+    service = _service(session, settings)
+    project_id = await service.cancel_prepare_request(
+        user=current_user,
+        request_id=payload.request_id,
+    )
+    if project_id is not None:
+        cancel_generation_task(project_id)
+    return StudyProjectPrepareCancelResponse(
+        cancelled=True,
+        project_id=project_id,
+    )
 
 @router.post("/{project_id}/quizzes", response_model=StudyProjectResponse)
 async def generate_project_quiz(
@@ -503,6 +571,7 @@ async def explain_project_summary_selection(
             project_id=project_id,
             paragraph_index=payload.paragraph_index,
             selected_text=payload.selected_text,
+            student_question=payload.student_question,
             start_offset=payload.start_offset,
             end_offset=payload.end_offset,
         )
@@ -597,6 +666,7 @@ async def explain_project_flashcard_selection(
             flashcard_id=payload.flashcard_id,
             side=payload.side,
             selected_text=payload.selected_text,
+            student_question=payload.student_question,
         )
     except PlanLimitError as exc:
         raise HTTPException(

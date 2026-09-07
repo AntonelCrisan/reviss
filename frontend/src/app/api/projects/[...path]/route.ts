@@ -10,6 +10,7 @@ const allowedRoutes = [
   { method: "GET", pattern: /^[0-9a-fA-F-]{36}\/prompt$/ },
   { method: "PATCH", pattern: /^[0-9a-fA-F-]{36}$/ },
   { method: "POST", pattern: /^prepare$/ },
+  { method: "POST", pattern: /^prepare\/cancel$/ },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/cancel-generation$/ },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/quizzes$/ },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/ai\/chat$/ },

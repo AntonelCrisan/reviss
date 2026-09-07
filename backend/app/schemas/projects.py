@@ -241,6 +241,19 @@ class StudyProjectPrepareResponse(BaseModel):
     next_step: str
 
 
+class StudyProjectPrepareCancelRequest(BaseModel):
+    request_id: str = Field(
+        min_length=8,
+        max_length=64,
+        pattern=r"^[A-Za-z0-9_-]+$",
+    )
+
+
+class StudyProjectPrepareCancelResponse(BaseModel):
+    cancelled: bool = True
+    project_id: uuid.UUID | None = None
+
+
 class StudyProjectImportResponse(BaseModel):
     project: StudyProjectResponse
     imported: bool
@@ -258,6 +271,7 @@ class StudyProjectQuizMistakeFlashcardCreate(BaseModel):
 class StudyProjectAiSelectionExplainRequest(BaseModel):
     paragraph_index: int = Field(ge=0)
     selected_text: str = Field(min_length=3, max_length=2000)
+    student_question: str | None = Field(default=None, max_length=1000)
     # The browser knows the exact character range it selected; matching the
     # text again is only the fallback when it cannot supply one.
     start_offset: int | None = Field(default=None, ge=0)
@@ -268,6 +282,7 @@ class StudyProjectFlashcardAiSelectionExplainRequest(BaseModel):
     flashcard_id: uuid.UUID
     side: Literal["question", "answer"]
     selected_text: str = Field(min_length=3, max_length=2000)
+    student_question: str | None = Field(default=None, max_length=1000)
 
 
 class StudyProjectAiSelectionExplainResponse(BaseModel):

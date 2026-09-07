@@ -12,6 +12,7 @@ from app.models import (
     StudyProject,
     StudyProjectFile,
     StudyProjectFlashcard,
+    StudyProjectGenerationJob,
     StudyProjectQuizOption,
     StudyProjectQuizQuestion,
     StudyProjectSummary,
@@ -69,6 +70,7 @@ def _plan_limits(
         monthly_page_limit=1000,
         initial_flashcards=20,
         quiz_questions_per_quiz=8,
+        quizzes_per_project=3,
         allow_scanned_documents=allow_scanned_documents,
     )
 
@@ -94,6 +96,26 @@ class _StoreFileSession:
 
     async def rollback(self) -> None:
         return None
+
+
+class _CancelGenerationSession:
+    def __init__(
+        self,
+        project: StudyProject,
+        jobs: list[StudyProjectGenerationJob],
+    ) -> None:
+        self.project = project
+        self.jobs = jobs
+        self.commits = 0
+
+    async def scalar(self, statement: object) -> StudyProject:
+        return self.project
+
+    async def scalars(self, statement: object) -> list[StudyProjectGenerationJob]:
+        return self.jobs
+
+    async def commit(self) -> None:
+        self.commits += 1
 
 
 def _pdf_upload(filename: str = "scan.pdf") -> UploadFile:
@@ -134,7 +156,7 @@ def test_postgres_quota_lock_key_is_stable_bigint() -> None:
 
 def test_monthly_project_limit_counts_archived_projects(tmp_path) -> None:
     settings = Settings(**BASE_SETTINGS, project_storage_dir=tmp_path)
-    session = _ScalarSession([None, 1])
+    session = _ScalarSession([None, 0, 1])
     service = StudyProjectService(  # type: ignore[arg-type]
         session=session,
         settings=settings,
@@ -149,14 +171,14 @@ def test_monthly_project_limit_counts_archived_projects(tmp_path) -> None:
             )
         )
 
-    project_limit_query = str(session.statements[1])
+    project_limit_query = str(session.statements[2])
     assert "study_projects.created_at" in project_limit_query
     assert "study_project_archives" not in project_limit_query
 
 
 def test_monthly_material_limit_counts_uploaded_files_by_month(tmp_path) -> None:
     settings = Settings(**BASE_SETTINGS, project_storage_dir=tmp_path)
-    session = _ScalarSession([None, 0, 2])
+    session = _ScalarSession([None, 0, 0, 2])
     service = StudyProjectService(  # type: ignore[arg-type]
         session=session,
         settings=settings,
@@ -171,9 +193,50 @@ def test_monthly_material_limit_counts_uploaded_files_by_month(tmp_path) -> None
             )
         )
 
-    material_limit_query = str(session.statements[2])
+    material_limit_query = str(session.statements[3])
     assert "study_project_files.created_at" in material_limit_query
     assert "study_project_archives" not in material_limit_query
+
+
+def test_cancelling_quiz_generation_keeps_project_ready(tmp_path) -> None:
+    settings = Settings(**BASE_SETTINGS, project_storage_dir=tmp_path)
+    project_id = uuid.uuid4()
+    user_id = uuid.uuid4()
+    project = StudyProject(
+        id=project_id,
+        user_id=user_id,
+        name="Etica",
+        subject_name="Filosofie",
+        institution_name="Facultate",
+        slug="etica",
+        status="generating_quizzes",
+        material_rights_confirmed=True,
+    )
+    job = StudyProjectGenerationJob(
+        project_id=project_id,
+        user_id=user_id,
+        job_type="quiz_pack",
+        status="running",
+    )
+    session = _CancelGenerationSession(project, [job])
+    service = StudyProjectService(  # type: ignore[arg-type]
+        session=session,
+        settings=settings,
+    )
+
+    result = asyncio.run(
+        service.cancel_project_generation(
+            user=SimpleNamespace(id=user_id),  # type: ignore[arg-type]
+            project_id=project_id,
+        )
+    )
+
+    assert result.status == "ready"
+    assert result.error_message is None
+    assert job.status == "failed"
+    assert job.error_message == "Generarea quizului a fost anulata."
+    assert job.finished_at is not None
+    assert session.commits == 1
 
 
 def test_project_chat_prompt_extraction_is_refused_without_model_call() -> None:
@@ -350,7 +413,10 @@ def test_non_pro_scanned_pdf_is_rejected_without_mistral_ocr(
     monkeypatch.setattr(projects_module, "_read_markdown", fake_markdown)
     monkeypatch.setattr(projects_module, "extract_scanned_pdf_markdown", fake_ocr)
 
-    with pytest.raises(ProjectValidationError, match="doar pe planul Pro"):
+    with pytest.raises(
+        ProjectValidationError,
+        match="nu include incarcarea documentelor scanate",
+    ):
         asyncio.run(
             service._store_and_convert_file(
                 user=_plan_limit_user(),  # type: ignore[arg-type]
@@ -561,6 +627,90 @@ def test_ai_selection_prompts_target_account_language(tmp_path) -> None:
     assert prompt.count("English") >= 3  # rule header, JSON keys, translation
     assert "romana" not in prompt
 
+
+def test_summary_selection_prompt_includes_student_question(tmp_path) -> None:
+    settings = Settings(**BASE_SETTINGS, project_storage_dir=tmp_path)
+    service = StudyProjectService(  # type: ignore[arg-type]
+        session=None,
+        settings=settings,
+    )
+    project_id = uuid.uuid4()
+    project = StudyProject(
+        id=project_id,
+        user_id=uuid.uuid4(),
+        name="Etica",
+        subject_name="Filosofie",
+        institution_name="Facultate",
+        slug="etica",
+        status="ready",
+    )
+    project.summary = StudyProjectSummary(
+        project_id=project_id,
+        content="Etica cerceteaza problemele morale.",
+        estimated_reading_minutes=1,
+    )
+
+    prompt = service._build_summary_selection_prompt(
+        project=project,
+        selected_text="problemele morale",
+        selected_block="Etica cerceteaza problemele morale.",
+        previous_block="",
+        next_block="",
+        keywords_context="",
+        target_language="ro",
+        student_question="Leaga fragmentul de Kant si spune ce retin pentru examen.",
+    )
+
+    assert "Intrebarea/contextul studentului" in prompt
+    assert "Leaga fragmentul de Kant" in prompt
+    assert "Raspunde cu prioritate la intrebarea/contextul studentului" in prompt
+
+def test_flashcard_selection_prompt_includes_student_question(tmp_path) -> None:
+    settings = Settings(**BASE_SETTINGS, project_storage_dir=tmp_path)
+    service = StudyProjectService(  # type: ignore[arg-type]
+        session=None,
+        settings=settings,
+    )
+    project_id = uuid.uuid4()
+    project = StudyProject(
+        id=project_id,
+        user_id=uuid.uuid4(),
+        name="Etica",
+        subject_name="Filosofie",
+        institution_name="Facultate",
+        slug="etica",
+        status="ready",
+    )
+    project.summary = StudyProjectSummary(
+        project_id=project_id,
+        content="Etica studiaza principiile care ghideaza alegerile.",
+        estimated_reading_minutes=1,
+    )
+    flashcard = StudyProjectFlashcard(
+        project_id=project_id,
+        front="Ce intrebari centrale cerceteaza etica?",
+        back="Etica cerceteaza problemele morale si principiile alegerilor.",
+        category="Etica",
+        difficulty="medium",
+        source_type="generated",
+        sort_order=0,
+    )
+
+    prompt = service._build_flashcard_selection_prompt(
+        project=project,
+        flashcard=flashcard,
+        side="question",
+        selected_text="intrebari centrale",
+        selected_side_text=flashcard.front,
+        summary_context=project.summary.content,
+        keywords_context="",
+        target_language="ro",
+        student_question="Ce sa retin pentru examen din intrebare?",
+    )
+
+    assert "Intrebarea/contextul studentului" in prompt
+    assert "Ce sa retin pentru examen" in prompt
+    assert "Raspunde cu prioritate la intrebarea/contextul studentului" in prompt
 
 def test_flashcard_and_chat_ai_prompts_target_account_language(tmp_path) -> None:
     settings = Settings(**BASE_SETTINGS, project_storage_dir=tmp_path)

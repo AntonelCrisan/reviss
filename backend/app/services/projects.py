@@ -13,7 +13,7 @@ import shutil
 import subprocess
 import unicodedata
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -39,6 +39,7 @@ from app.models import (
     StudyProjectGenerationJob,
     StudyProjectImport,
     StudyProjectKeyword,
+    StudyProjectPrepareCancellation,
     StudyProjectQuiz,
     StudyProjectQuizAttempt,
     StudyProjectQuizOption,
@@ -87,6 +88,7 @@ from app.services.study_activity import record_study_activity
 logger = logging.getLogger("revizzio.projects")
 
 GENERATION_CANCELLED_MESSAGE = "Generarea proiectului a fost anulata."
+QUIZ_GENERATION_CANCELLED_MESSAGE = "Generarea quizului a fost anulata."
 SUPPORTED_GENERATION_LANGUAGES = {"ro", "en", "fr"}
 GENERATION_LANGUAGE_LABELS = {
     "ro": "Romanian with natural diacritics",
@@ -292,6 +294,21 @@ class LegacyOfficeFormatError(ProjectConversionError):
 
 def _clean_text(value: str) -> str:
     return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", value).strip()
+
+
+def _normalize_prepare_request_id(value: str | None) -> str | None:
+    request_id = _clean_text(value or "")
+    if not request_id:
+        return None
+    if len(request_id) < 8 or len(request_id) > 64:
+        raise ProjectValidationError(
+            "Identificatorul cererii de pregatire nu este valid."
+        )
+    if any(not (character.isalnum() or character in "-_") for character in request_id):
+        raise ProjectValidationError(
+            "Identificatorul cererii de pregatire nu este valid."
+        )
+    return request_id
 
 
 def _normalize_summary_selection_text(value: str) -> str:
@@ -2077,6 +2094,105 @@ class StudyProjectService:
         await self.session.commit()
         self._delete_project_storage(project_dir)
 
+    async def is_prepare_request_cancelled(
+        self,
+        *,
+        user: User,
+        request_id: str | None,
+    ) -> bool:
+        clean_request_id = _normalize_prepare_request_id(request_id)
+        if clean_request_id is None:
+            return False
+
+        cancellation_id = await self.session.scalar(
+            select(StudyProjectPrepareCancellation.id)
+            .where(
+                StudyProjectPrepareCancellation.user_id == user.id,
+                StudyProjectPrepareCancellation.request_id == clean_request_id,
+            )
+            .limit(1)
+        )
+        return cancellation_id is not None
+
+    async def mark_prepare_request_cancelled(
+        self,
+        *,
+        user: User,
+        request_id: str | None,
+    ) -> str | None:
+        clean_request_id = _normalize_prepare_request_id(request_id)
+        if clean_request_id is None:
+            return None
+        if await self.is_prepare_request_cancelled(
+            user=user,
+            request_id=clean_request_id,
+        ):
+            return clean_request_id
+
+        self.session.add(
+            StudyProjectPrepareCancellation(
+                user_id=user.id,
+                request_id=clean_request_id,
+            )
+        )
+        await self.session.flush()
+        return clean_request_id
+
+    async def cancel_prepare_request(
+        self,
+        *,
+        user: User,
+        request_id: str,
+    ) -> uuid.UUID | None:
+        clean_request_id = await self.mark_prepare_request_cancelled(
+            user=user,
+            request_id=request_id,
+        )
+        if clean_request_id is None:
+            await self.session.commit()
+            return None
+
+        project = await self.session.scalar(
+            select(StudyProject)
+            .where(
+                StudyProject.user_id == user.id,
+                StudyProject.prepare_request_id == clean_request_id,
+            )
+            .limit(1)
+        )
+        project_id: uuid.UUID | None = None
+        project_dir: Path | None = None
+        if project is not None:
+            project_id = project.id
+            project_dir = self._project_dir(user.id, project.id)
+            await self.session.delete(project)
+
+        await self.session.commit()
+        if project_dir is not None:
+            self._delete_project_storage(project_dir)
+        return project_id
+
+    async def _raise_if_prepare_cancelled(
+        self,
+        *,
+        user: User,
+        prepare_request_id: str | None,
+        is_cancelled: Callable[[], Awaitable[bool]] | None,
+    ) -> None:
+        if prepare_request_id and await self.is_prepare_request_cancelled(
+            user=user,
+            request_id=prepare_request_id,
+        ):
+            raise ProjectGenerationCancelledError(GENERATION_CANCELLED_MESSAGE)
+
+        if is_cancelled is not None and await is_cancelled():
+            if prepare_request_id:
+                await self.mark_prepare_request_cancelled(
+                    user=user,
+                    request_id=prepare_request_id,
+                )
+            raise ProjectGenerationCancelledError(GENERATION_CANCELLED_MESSAGE)
+
     async def delete_all_materials(self, user: User) -> int:
         projects = list(
             (
@@ -2126,6 +2242,8 @@ class StudyProjectService:
         material_rights_confirmed: bool,
         uploads: list[UploadFile],
         generation_language: str | None = None,
+        prepare_request_id: str | None = None,
+        is_cancelled: Callable[[], Awaitable[bool]] | None = None,
     ) -> StudyProject:
         project_name = _clean_text(name)
         subject = _clean_text(subject_name)
@@ -2133,6 +2251,12 @@ class StudyProjectService:
         target_language = _normalize_generation_language(
             generation_language,
             default=_normalize_generation_language(user.language_preference),
+        )
+        clean_prepare_request_id = _normalize_prepare_request_id(prepare_request_id)
+        await self._raise_if_prepare_cancelled(
+            user=user,
+            prepare_request_id=clean_prepare_request_id,
+            is_cancelled=is_cancelled,
         )
         if len(project_name) < 2:
             raise ProjectValidationError("Numele proiectului este prea scurt.")
@@ -2172,12 +2296,18 @@ class StudyProjectService:
             status="processing",
             material_rights_confirmed=True,
             generation_language=target_language,
+            prepare_request_id=clean_prepare_request_id,
         )
         self.session.add(project)
         await self.session.flush()
 
         project_dir = self._project_dir(user.id, project.id)
         try:
+            await self._raise_if_prepare_cancelled(
+                user=user,
+                prepare_request_id=clean_prepare_request_id,
+                is_cancelled=is_cancelled,
+            )
             source_dir = project_dir / "source"
             markdown_dir = project_dir / "markdown"
             source_dir.mkdir(parents=True, exist_ok=True)
@@ -2199,6 +2329,11 @@ class StudyProjectService:
                     max_upload_mb=max_upload_mb,
                     limits=limits,
                 )
+                await self._raise_if_prepare_cancelled(
+                    user=user,
+                    prepare_request_id=clean_prepare_request_id,
+                    is_cancelled=is_cancelled,
+                )
                 if file_model.markdown_path:
                     markdown = Path(file_model.markdown_path).read_text(
                         encoding="utf-8"
@@ -2210,6 +2345,12 @@ class StudyProjectService:
 
             if not markdown_parts:
                 raise ProjectConversionError("Niciun fisier nu a putut fi convertit.")
+
+            await self._raise_if_prepare_cancelled(
+                user=user,
+                prepare_request_id=clean_prepare_request_id,
+                is_cancelled=is_cancelled,
+            )
 
             await self._enforce_converted_plan_limits(
                 user=user, project=project, limits=limits
@@ -2233,6 +2374,11 @@ class StudyProjectService:
             project.combined_markdown_content = combined_markdown
             project.prompt_path = str(prompt_path)
             project.prompt_content = prompt_content
+            await self._raise_if_prepare_cancelled(
+                user=user,
+                prepare_request_id=clean_prepare_request_id,
+                is_cancelled=is_cancelled,
+            )
             project.status = "generating_study_pack"
             project.error_message = None
             project.updated_at = datetime.now(UTC)
@@ -2246,8 +2392,18 @@ class StudyProjectService:
                     prompt_path=str(prompt_path),
                 )
             )
+            await self._raise_if_prepare_cancelled(
+                user=user,
+                prepare_request_id=clean_prepare_request_id,
+                is_cancelled=is_cancelled,
+            )
             await self.session.commit()
+        except ProjectGenerationCancelledError:
+            await self.session.rollback()
+            self._delete_project_storage(project_dir)
+            raise
         except Exception:
+            await self.session.rollback()
             self._delete_project_storage(project_dir)
             raise
 
@@ -2359,8 +2515,14 @@ class StudyProjectService:
             return project
 
         now = datetime.now(UTC)
-        project.status = "failed"
-        project.error_message = GENERATION_CANCELLED_MESSAGE
+        is_quiz_generation = project.status == "generating_quizzes"
+        cancellation_message = (
+            QUIZ_GENERATION_CANCELLED_MESSAGE
+            if is_quiz_generation
+            else GENERATION_CANCELLED_MESSAGE
+        )
+        project.status = "ready" if is_quiz_generation else "failed"
+        project.error_message = None if is_quiz_generation else cancellation_message
         project.updated_at = now
 
         active_jobs = await self.session.scalars(
@@ -2373,7 +2535,7 @@ class StudyProjectService:
         )
         for job in active_jobs:
             job.status = "failed"
-            job.error_message = GENERATION_CANCELLED_MESSAGE
+            job.error_message = cancellation_message
             job.finished_at = now
 
         await self.session.commit()
@@ -2714,6 +2876,7 @@ class StudyProjectService:
         project_id: uuid.UUID,
         paragraph_index: int,
         selected_text: str,
+        student_question: str | None = None,
         start_offset: int | None = None,
         end_offset: int | None = None,
     ) -> dict[str, Any]:
@@ -2727,6 +2890,10 @@ class StudyProjectService:
             raise ProjectValidationError("Rezumatul proiectului nu este disponibil.")
 
         clean_selection = _clean_text(selected_text)
+        clean_student_question = _compact_context_text(
+            _clean_text(student_question or ""),
+            1000,
+        )
         if len(clean_selection) < 3:
             raise ProjectValidationError("Selecteaza un fragment mai clar din rezumat.")
 
@@ -2767,6 +2934,7 @@ class StudyProjectService:
             next_block=next_block,
             keywords_context=keywords_context,
             target_language=target_language,
+            student_question=clean_student_question,
         )
 
         credits_service = AiCreditsService(self.session)
@@ -2813,6 +2981,7 @@ class StudyProjectService:
         flashcard_id: uuid.UUID,
         side: str,
         selected_text: str,
+        student_question: str | None = None,
     ) -> dict[str, Any]:
         if self.settings.openai_api_key is None:
             raise ProjectValidationError(
@@ -2828,6 +2997,10 @@ class StudyProjectService:
             raise ProjectNotFoundError("Flashcardul nu a fost gasit.")
 
         clean_selection = _clean_text(selected_text)
+        clean_student_question = _compact_context_text(
+            _clean_text(student_question or ""),
+            1000,
+        )
         if len(clean_selection) < 3:
             raise ProjectValidationError("Selecteaza un fragment mai clar.")
 
@@ -2875,6 +3048,7 @@ class StudyProjectService:
             summary_context=summary_context,
             keywords_context=keywords_context,
             target_language=target_language,
+            student_question=clean_student_question,
         )
 
         credits_service = AiCreditsService(self.session)
@@ -4356,10 +4530,18 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
         next_block: str,
         keywords_context: str,
         target_language: str,
+        student_question: str = "",
     ) -> str:
         summary = project.summary.content if project.summary else ""
         language_label = _generation_language_label(target_language)
         clean_keywords = keywords_context.strip() or "Nu exista cuvinte cheie salvate."
+        clean_student_question = _clean_text(student_question)
+        question_instruction = (
+            "Raspunde cu prioritate la intrebarea/contextul studentului, "
+            "dar ramai strict in limitele fragmentului, rezumatului si materialului."
+            if clean_student_question
+            else "Studentul nu a adaugat o intrebare specifica; ofera explicatia standard."
+        )
         # Only the parts of the summary that discuss the selection: the
         # fragment's own paragraph and its neighbours are sent separately.
         focused_summary = (
@@ -4377,6 +4559,7 @@ Explica un fragment selectat de student din rezumatul proiectului Reviss.
 
 Reguli stricte:
 {TUTOR_SELECTION_RULES.format(language_label=language_label)}
+{question_instruction}
 
 Date proiect:
 - Nume proiect: {project.name}
@@ -4385,6 +4568,9 @@ Date proiect:
 
 Fragment selectat:
 \"\"\"{selected_text}\"\"\"
+
+Intrebarea/contextul studentului:
+\"\"\"{clean_student_question or "Nu exista."}\"\"\"
 
 Paragraful din care provine:
 \"\"\"{selected_block}\"\"\"
@@ -4414,10 +4600,18 @@ Alte pasaje din rezumat legate de fragment:
         summary_context: str,
         keywords_context: str,
         target_language: str,
+        student_question: str = "",
     ) -> str:
         side_label = "intrebare" if side == "question" else "raspuns"
         language_label = _generation_language_label(target_language)
         clean_keywords = keywords_context.strip() or "Nu exista cuvinte cheie salvate."
+        clean_student_question = _clean_text(student_question)
+        question_instruction = (
+            "Raspunde cu prioritate la intrebarea/contextul studentului, "
+            "dar ramai strict in limitele fragmentului, flashcardului si materialului."
+            if clean_student_question
+            else "Studentul nu a adaugat o intrebare specifica; ofera explicatia standard."
+        )
 
         return f"""
 Explica un fragment selectat de student dintr-un flashcard Reviss.
@@ -4425,6 +4619,7 @@ Explica un fragment selectat de student dintr-un flashcard Reviss.
 Reguli stricte:
 {TUTOR_SELECTION_RULES.format(language_label=language_label)}
 - Explicatia ajuta studentul sa inteleaga cardul, nu sa il memoreze mecanic.
+{question_instruction}
 
 Date proiect:
 - Nume proiect: {project.name}
@@ -4445,6 +4640,9 @@ Raspunsul cardului:
 Partea selectata de student: {side_label}
 Fragment selectat:
 \"\"\"{selected_text}\"\"\"
+
+Intrebarea/contextul studentului:
+\"\"\"{clean_student_question or "Nu exista."}\"\"\"
 
 Textul complet al partii selectate:
 \"\"\"{_truncate_for_openai(selected_side_text, 2600)}\"\"\"

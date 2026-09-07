@@ -161,6 +161,11 @@ export type StudyProjectPrepareResponse = {
   next_step: string;
 };
 
+export type StudyProjectPrepareCancelResponse = {
+  cancelled: boolean;
+  project_id: string | null;
+};
+
 export type StudyProjectImportResponse = {
   project: StudyProject;
   imported: boolean;
@@ -421,6 +426,7 @@ export async function prepareStudyProject(
     files: File[];
     materialRightsConfirmed: boolean;
     generationLanguage?: LanguagePreference;
+    prepareRequestId?: string;
   },
   options: { signal?: AbortSignal } = {},
 ): Promise<StudyProjectPrepareResponse> {
@@ -435,6 +441,9 @@ export async function prepareStudyProject(
   if (payload.generationLanguage) {
     formData.set("generation_language", payload.generationLanguage);
   }
+  if (payload.prepareRequestId) {
+    formData.set("prepare_request_id", payload.prepareRequestId);
+  }
   for (const file of payload.files) {
     formData.append("files", file);
   }
@@ -447,6 +456,21 @@ export async function prepareStudyProject(
     signal: options.signal,
   });
   return parseProjectResponse<StudyProjectPrepareResponse>(response);
+}
+
+export async function cancelStudyProjectPrepare(
+  requestId: string,
+): Promise<StudyProjectPrepareCancelResponse> {
+  const response = await fetch("/api/projects/prepare/cancel", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ request_id: requestId }),
+    cache: "no-store",
+  });
+  return parseProjectResponse<StudyProjectPrepareCancelResponse>(response);
 }
 
 export async function cancelStudyProjectGeneration(
@@ -508,6 +532,7 @@ export type QuizGenerationConfig = {
 export async function generateStudyProjectQuiz(
   projectId: string,
   config: QuizGenerationConfig,
+  options: { signal?: AbortSignal } = {},
 ): Promise<StudyProject> {
   const response = await fetch(`/api/projects/${projectId}/quizzes`, {
     method: "POST",
@@ -519,6 +544,7 @@ export async function generateStudyProjectQuiz(
       question_types: config.questionTypes,
     }),
     cache: "no-store",
+    signal: options.signal,
   });
   return parseProjectResponse<StudyProject>(response);
 }
@@ -527,6 +553,7 @@ export async function explainStudyProjectSummarySelection(payload: {
   projectId: string;
   paragraphIndex: number;
   selectedText: string;
+  studentQuestion?: string | null;
   startOffset?: number | null;
   endOffset?: number | null;
 }): Promise<StudyProjectAiSelectionExplainResponse> {
@@ -541,6 +568,7 @@ export async function explainStudyProjectSummarySelection(payload: {
       body: JSON.stringify({
         paragraph_index: payload.paragraphIndex,
         selected_text: payload.selectedText,
+        student_question: payload.studentQuestion?.trim() || null,
         start_offset: payload.startOffset ?? null,
         end_offset: payload.endOffset ?? null,
       }),
@@ -555,6 +583,7 @@ export async function explainStudyProjectFlashcardSelection(payload: {
   flashcardId: string;
   side: "question" | "answer";
   selectedText: string;
+  studentQuestion?: string | null;
 }): Promise<StudyProjectAiSelectionExplainResponse> {
   const response = await fetch(
     `/api/projects/${payload.projectId}/ai/explain-flashcard-selection`,
@@ -568,6 +597,7 @@ export async function explainStudyProjectFlashcardSelection(payload: {
         flashcard_id: payload.flashcardId,
         side: payload.side,
         selected_text: payload.selectedText,
+        student_question: payload.studentQuestion?.trim() || null,
       }),
       cache: "no-store",
     },

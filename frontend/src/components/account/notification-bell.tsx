@@ -315,6 +315,12 @@ export function NotificationBell() {
               ) : (
                 <ul className="divide-y divide-subtle">
                   {notifications.map((notification) => {
+                    // Quiz and study-pack notifications share the project_ready type.
+                    const projectTab =
+                      notification.type === "project_ready" &&
+                      notification.title === "Quizul e gata"
+                        ? "quizuri"
+                        : "rezumat";
                     const content = (
                       <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-surface-hover">
                         <span
@@ -349,7 +355,7 @@ export function NotificationBell() {
                         <div className="min-w-0 flex-1">
                           {notification.project_id ? (
                             <Link
-                              href={`/myaccount/rezumat?project=${notification.project_id}`}
+                              href={`/myaccount/${projectTab}?${new URLSearchParams({ project: notification.project_id })}`}
                               onClick={() => {
                                 setIsOpen(false);
                                 void handleNotificationClick(notification);
