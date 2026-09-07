@@ -22,6 +22,7 @@ export type StudyProjectKeyword = {
   term: string;
   explanation: string;
   anchor_text: string | null;
+  paragraph_index?: number | null;
   sort_order: number;
 };
 
@@ -52,6 +53,11 @@ export type StudyProjectQuizQuestion = {
   prompt: string;
   question_type: string;
   explanation: string | null;
+  concept?: string | null;
+  review_section?: string | null;
+  review_paragraph_index?: number | null;
+  review_anchor_text?: string | null;
+  review_advice?: string | null;
   sort_order: number;
   options: StudyProjectQuizOption[];
 };

@@ -305,9 +305,9 @@ def _payload(questions):
     }
 
 
-def _question(question_type, options, prompt="Intrebare?"):
+def _question(question_type, options, prompt=None):
     return {
-        "prompt": prompt,
+        "prompt": prompt if prompt is not None else f"Intrebare {question_type}?",
         "type": question_type,
         "explanation": "Pentru ca da.",
         "options": options,

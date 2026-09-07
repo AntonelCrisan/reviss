@@ -37,6 +37,7 @@ class StudyProjectKeywordResponse(BaseModel):
     term: str
     explanation: str
     anchor_text: str | None
+    paragraph_index: int | None = None
     sort_order: int
 
 
@@ -128,6 +129,11 @@ class StudyProjectQuizQuestionResponse(BaseModel):
     prompt: str
     question_type: str
     explanation: str | None
+    concept: str | None = None
+    review_section: str | None = None
+    review_paragraph_index: int | None = None
+    review_anchor_text: str | None = None
+    review_advice: str | None = None
     sort_order: int
     options: list[StudyProjectQuizOptionResponse] = Field(default_factory=list)
 

@@ -39,9 +39,7 @@ class OpenAIGenerationResult:
 class OpenAIStudyGenerator:
     def __init__(self, settings: Settings) -> None:
         if settings.openai_api_key is None:
-            raise OpenAIGenerationError(
-                "Serviciul de generare nu este configurat."
-            )
+            raise OpenAIGenerationError("Serviciul de generare nu este configurat.")
 
         self._settings = settings
         self._client = AsyncOpenAI(
@@ -133,9 +131,7 @@ class OpenAIStudyGenerator:
             ) from exc
 
         if not isinstance(payload, dict):
-            raise OpenAIGenerationError(
-                "Pachetul generat are o structura invalida."
-            )
+            raise OpenAIGenerationError("Pachetul generat are o structura invalida.")
 
         usage = getattr(response, "usage", None)
         input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
@@ -263,7 +259,17 @@ SINGLE_QUIZ_SCHEMA: dict[str, Any] = {
                     "items": {
                         "type": "object",
                         "additionalProperties": False,
-                        "required": ["prompt", "type", "options", "explanation"],
+                        "required": [
+                            "prompt",
+                            "type",
+                            "options",
+                            "explanation",
+                            "concept",
+                            "review_section",
+                            "review_paragraph_index",
+                            "review_anchor_text",
+                            "review_advice",
+                        ],
                         "properties": {
                             "prompt": {"type": "string", "maxLength": 1600},
                             "type": {
@@ -313,6 +319,23 @@ SINGLE_QUIZ_SCHEMA: dict[str, Any] = {
                                 },
                             },
                             "explanation": {"type": "string", "maxLength": 1600},
+                            "concept": {
+                                "type": "string",
+                                "minLength": 2,
+                                "maxLength": 180,
+                            },
+                            "review_section": {"type": "string", "maxLength": 1200},
+                            "review_paragraph_index": {"type": "integer", "minimum": 0},
+                            "review_anchor_text": {
+                                "type": "string",
+                                "minLength": 8,
+                                "maxLength": 240,
+                            },
+                            "review_advice": {
+                                "type": "string",
+                                "minLength": 12,
+                                "maxLength": 700,
+                            },
                         },
                     },
                 },

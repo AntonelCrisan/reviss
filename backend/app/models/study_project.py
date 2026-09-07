@@ -213,6 +213,7 @@ class StudyProjectPrepareCancellation(Base):
         server_default=func.now(),
     )
 
+
 class StudyProjectArchive(Base):
     __tablename__ = "study_project_archives"
     __table_args__ = (
@@ -392,6 +393,7 @@ class StudyProjectKeyword(Base):
     term: Mapped[str] = mapped_column(String(180), nullable=False)
     explanation: Mapped[str] = mapped_column(Text, nullable=False)
     anchor_text: Mapped[str | None] = mapped_column(String(240))
+    paragraph_index: Mapped[int | None] = mapped_column(Integer)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     project: Mapped[StudyProject] = relationship(back_populates="keywords")
@@ -498,6 +500,11 @@ class StudyProjectQuizQuestion(Base):
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
     question_type: Mapped[str] = mapped_column(String(60), nullable=False)
     explanation: Mapped[str | None] = mapped_column(Text)
+    concept: Mapped[str | None] = mapped_column(String(180))
+    review_section: Mapped[str | None] = mapped_column(Text)
+    review_paragraph_index: Mapped[int | None] = mapped_column(Integer)
+    review_anchor_text: Mapped[str | None] = mapped_column(String(240))
+    review_advice: Mapped[str | None] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     quiz: Mapped[StudyProjectQuiz] = relationship(back_populates="questions")

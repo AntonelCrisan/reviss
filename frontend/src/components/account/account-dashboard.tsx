@@ -4207,31 +4207,151 @@ function findParagraphIndexForKeyword(
   paragraphs: SummaryDisplayBlock[],
   anchorText: string,
 ) {
-  const normalizedAnchor = stripSummaryInlineMarkdown(anchorText).toLocaleLowerCase(
-    "ro-RO",
+  const anchor = normalizeSummarySelection(stripSummaryInlineMarkdown(anchorText)).toLowerCase();
+  if (!anchor) return -1;
+  const matches = paragraphs.flatMap((paragraph, index) =>
+    paragraph.kind !== "heading" &&
+    normalizeSummarySelection(stripSummaryInlineMarkdown(paragraph.text)).toLowerCase().includes(anchor)
+      ? [index]
+      : [],
   );
-  const index = paragraphs.findIndex((paragraph) =>
-    stripSummaryInlineMarkdown(paragraph.text)
-      .toLocaleLowerCase("ro-RO")
-      .includes(normalizedAnchor),
-  );
-
-  return index === -1 ? 0 : index;
+  return matches.length === 1 ? matches[0] : -1;
 }
 
 function buildProjectSummaryKeywords(
   keywords: StudyProject["keywords"],
   paragraphs: SummaryDisplayBlock[],
 ): SummaryKeyword[] {
-  return keywords.map((keyword) => {
+  return keywords.flatMap((keyword) => {
     const anchorText = keyword.anchor_text || keyword.term;
-
-    return {
+    const savedIndex = keyword.paragraph_index;
+    const savedBlock = savedIndex == null ? undefined : paragraphs[savedIndex];
+    const anchor = normalizeSummarySelection(stripSummaryInlineMarkdown(anchorText)).toLowerCase();
+    const paragraphIndex =
+      anchor && savedBlock && savedBlock.kind !== "heading" &&
+      normalizeSummarySelection(stripSummaryInlineMarkdown(savedBlock.text)).toLowerCase().includes(anchor)
+        ? savedIndex!
+        : findParagraphIndexForKeyword(paragraphs, anchorText);
+    if (paragraphIndex < 0) return [];
+    return [{
       id: `rezumat-${keyword.id}`,
       label: keyword.term,
-      text: anchorText,
-      paragraphIndex: findParagraphIndexForKeyword(paragraphs, anchorText),
-    };
+      text: normalizeSummarySelection(stripSummaryInlineMarkdown(anchorText)),
+      paragraphIndex,
+    }];
+  });
+}
+
+type QuizReviewLocation = {
+  section: string;
+  paragraphIndex: number;
+  paragraphNumber: number;
+  anchorText: string;
+};
+
+function getQuizReviewLocation(
+  question: ApiStudyProject["quizzes"][number]["questions"][number],
+  paragraphs: SummaryDisplayBlock[],
+): QuizReviewLocation | null {
+  const anchor = normalizeSummarySelection(question.review_anchor_text ?? "");
+  const savedIndex = question.review_paragraph_index;
+  if (!anchor || savedIndex == null || !Number.isInteger(savedIndex) || savedIndex < 0) {
+    return null;
+  }
+  function matches(index: number) {
+    const block = paragraphs[index];
+    return block && block.kind !== "heading" &&
+      normalizeSummarySelection(stripSummaryInlineMarkdown(block.text)).includes(anchor);
+  }
+  // Relocate a moved paragraph only by an unambiguous exact quote.
+  const candidates = paragraphs.flatMap((_, index) => matches(index) ? [index] : []);
+  const index = matches(savedIndex) ? savedIndex : candidates.length === 1 ? candidates[0] : -1;
+  if (index < 0) return null;
+  const headings: Array<{ level: number; text: string }> = [];
+  let paragraphNumber = 0;
+  for (const block of paragraphs.slice(0, index + 1)) {
+    if (block.kind === "heading") {
+      while (headings.length && headings[headings.length - 1].level >= block.level) {
+        headings.pop();
+      }
+      headings.push({ level: block.level, text: stripSummaryInlineMarkdown(block.text) });
+    } else {
+      paragraphNumber += 1;
+    }
+  }
+  return {
+    section: headings.map((heading) => heading.text).join(" / ") || "Rezumat",
+    paragraphIndex: index,
+    paragraphNumber,
+    anchorText: anchor,
+  };
+}
+
+function QuizReviewReference({
+  projectId,
+  review,
+}: {
+  projectId: string;
+  review: QuizReviewLocation;
+}) {
+  return (
+    <div className="mt-3 rounded-md border border-subtle bg-app p-3 text-sm">
+      <p className="font-semibold text-content">
+        {review.section} → paragraful {review.paragraphNumber}
+      </p>
+      <p className="mt-1 leading-6 text-muted">„{review.anchorText}”</p>
+      <Link
+        href={`/myaccount/rezumat?project=${encodeURIComponent(projectId)}#summary-paragraph-${review.paragraphIndex}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-flex font-bold text-action underline underline-offset-4"
+      >
+        Deschide paragraful în rezumat ↗
+      </Link>
+    </div>
+  );
+}
+
+function QuizReviewRecommendations({
+  projectId,
+  questions,
+}: {
+  projectId: string;
+  questions: AccountQuizQuestion[];
+}) {
+  return (
+    <div className="space-y-4">
+      {questions.map((question) => (
+        <div key={question.id}>
+          <p className="text-sm font-semibold text-content">{question.concept}</p>
+          <p className="mt-1 text-sm leading-6 text-muted">{question.aiInsight}</p>
+          {question.review ? (
+            <QuizReviewReference projectId={projectId} review={question.review} />
+          ) : (
+            <p className="mt-1 text-xs text-muted">
+              Acest quiz nu are o trimitere verificabilă la rezumat.
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function getQuizReviewQuestions(
+  questions: AccountQuizQuestion[],
+  submittedAnswers: Record<string, number[]>,
+) {
+  const seen = new Set<string>();
+  return questions.filter((question) => {
+    if (submittedAnswers[question.id] === undefined ||
+        isQuizAnswerCorrect(question, submittedAnswers[question.id])) return false;
+    const key = question.review
+      ? `${question.review.paragraphIndex}:${question.concept.toLocaleLowerCase("ro-RO")}`
+      : question.concept.toLocaleLowerCase("ro-RO");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 }
 
@@ -5128,6 +5248,24 @@ function SummaryPanel({
 
     return groups;
   }, [displayParagraphs]);
+  useEffect(() => {
+    function focusReviewParagraph() {
+      const match = window.location.hash.match(/^#summary-paragraph-(\d+)$/);
+      if (!match) return;
+      const paragraph = summaryRef.current?.querySelector<HTMLElement>(
+        `[data-summary-paragraph="${Number(match[1])}"]`,
+      );
+      paragraph?.scrollIntoView({ block: "center", behavior: "instant" });
+      paragraph?.focus({ preventScroll: true });
+    }
+    const frame = window.requestAnimationFrame(focusReviewParagraph);
+    window.addEventListener("hashchange", focusReviewParagraph);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", focusReviewParagraph);
+    };
+  }, [displayParagraphs]);
+
   const keywordHighlightClass =
     "scroll-mt-28 rounded-md border border-warning-border bg-warning-soft px-1.5 py-0.5 font-semibold text-warning";
   const userHighlightClass =
@@ -5494,6 +5632,12 @@ function SummaryPanel({
     }
 
     setActiveKeywordId(keywordId);
+    const keyword = displayKeywords.find((item) => item.id === keywordId);
+    if (keyword) {
+      summaryRef.current?.querySelector<HTMLElement>(
+        `[data-summary-paragraph="${keyword.paragraphIndex}"]`,
+      )?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
     keywordFocusTimer.current = window.setTimeout(() => {
       setActiveKeywordId((currentKeywordId) =>
         currentKeywordId === keywordId ? null : currentKeywordId,
@@ -5759,6 +5903,8 @@ function SummaryPanel({
                 return (
                   <HeadingTag
                     key={`heading-${group.paragraphIndex}`}
+                    id={`summary-paragraph-${group.paragraphIndex}`}
+                    tabIndex={-1}
                     data-summary-paragraph={group.paragraphIndex}
                     className="select-text font-serif text-xl font-semibold leading-snug text-content sm:text-2xl"
                   >
@@ -5789,8 +5935,10 @@ function SummaryPanel({
                     {group.items.map((item) => (
                       <li
                         key={item.paragraphIndex}
+                        id={`summary-paragraph-${item.paragraphIndex}`}
+                        tabIndex={-1}
                         data-summary-paragraph={item.paragraphIndex}
-                        className="select-text pl-1"
+                        className="scroll-mt-28 rounded-md select-text pl-1 target:bg-warning-soft target:ring-2 target:ring-warning-border"
                       >
                         {renderSummaryText(
                           item.text,
@@ -5815,8 +5963,10 @@ function SummaryPanel({
               return (
                 <p
                   key={`paragraph-${group.paragraphIndex}`}
+                  id={`summary-paragraph-${group.paragraphIndex}`}
+                  tabIndex={-1}
                   data-summary-paragraph={group.paragraphIndex}
-                  className="select-text"
+                  className="scroll-mt-28 rounded-md select-text target:bg-warning-soft target:ring-2 target:ring-warning-border"
                 >
                   {renderSummaryText(
                     group.text,
@@ -7710,6 +7860,7 @@ type AccountQuizQuestion = {
   correctIndexes: number[];
   explanation: string;
   aiInsight: string;
+  review: QuizReviewLocation | null;
   source: string;
 };
 
@@ -7798,6 +7949,7 @@ function buildProjectQuizData(project: StudyProject) {
   }
 
   const questionBank: Record<string, AccountQuizQuestion> = {};
+  const summaryParagraphs = splitSummaryParagraphs(project.summary?.content ?? "");
   const catalog: AccountQuiz[] = project.quizzes
     .map<AccountQuiz | null>((quiz, quizIndex) => {
       const complexity = normalizeGeneratedQuizComplexity(quiz.complexity);
@@ -7853,7 +8005,7 @@ function buildProjectQuizData(project: StudyProject) {
         questionBank[id] = {
           id,
           sourceQuestionId: question.id,
-          concept: quiz.title,
+          concept: question.concept || question.review_section || quiz.title,
           difficulty: complexity,
           mode,
           question: question.prompt,
@@ -7865,7 +8017,9 @@ function buildProjectQuizData(project: StudyProject) {
           explanation:
             question.explanation ??
             "Explicația nu a fost inclusă în JSON, dar răspunsul corect este marcat.",
-          aiInsight: `Întrebarea verifică un concept din ${project.subjectName}. Revizuiește fragmentul din rezumat dacă ai ezitat.`,
+          aiInsight: question.review_advice ||
+            "Explică răspunsul din memorie și compară-l cu variantele apropiate.",
+          review: getQuizReviewLocation(question, summaryParagraphs),
           source: `Quiz generat · ${project.name}`,
         };
       });
@@ -8095,7 +8249,6 @@ function QuizPanel({
     useState(false);
   const isPersistingCompletionRef = useRef(false);
   const persistedAttemptRef = useRef<number | null>(null);
-  const autoOpenedSummaryRef = useRef<number | null>(null);
 
   const quizData = useMemo(() => buildProjectQuizData(project), [project]);
   const hasReachedQuizLimit = quizData.catalog.length >= maxQuizzesPerProject;
@@ -8155,15 +8308,6 @@ function QuizPanel({
     onQuizComplete,
     project.id,
   ]);
-
-  // Finishing the last question opens the summary straight away; closing it
-  // must not reopen it, so each attempt only triggers this once.
-  useEffect(() => {
-    if (!activeQuiz || !isComplete) return;
-    if (autoOpenedSummaryRef.current === attemptId) return;
-    autoOpenedSummaryRef.current = attemptId;
-    setShowQuizSummary(true);
-  }, [activeQuiz, isComplete, attemptId]);
 
   // No resume effect: a quiz can no longer be re-requested without the
   // configuration the student chose, and re-calling was always a no-op anyway
@@ -8301,13 +8445,8 @@ function QuizPanel({
             ? draftAnswer.length === activeQuestion.gapCount &&
               draftAnswer.every((value) => value >= 0)
             : false;
-  const weakConcepts = quizQuestions
-    .filter(
-      (question) =>
-        submittedAnswers[question.id] !== undefined &&
-        !isQuizAnswerCorrect(question, submittedAnswers[question.id]),
-    )
-    .map((question) => question.concept);
+  const reviewQuestions = getQuizReviewQuestions(quizQuestions, submittedAnswers);
+  const weakConcepts = [...new Set(reviewQuestions.map((question) => question.concept))];
 
   function toggleAnswer(answerIndex: number) {
     if (submittedAnswers[activeQuestion.id] !== undefined) {
@@ -8411,9 +8550,13 @@ function QuizPanel({
   const canSaveMistakeFlashcard =
     activeQuestionResult === false && activeQuestion.mode === "single";
   const mistakeCardState = savedMistakeCards[activeQuestion.id];
-  const recommendationText = weakConcepts.length
-    ? `După quiz, revizuiește ${weakConcepts.slice(0, 2).join(" și ")}.`
-    : "Răspunde la primele întrebări ca AI-ul să identifice zonele slabe.";
+  const recommendationText = reviewQuestions.length
+    ? "Revizuiește conceptele de mai jos, apoi răspunde din memorie."
+    : isComplete
+      ? "Ai răspuns corect la toate întrebările. Revino mai târziu pentru o nouă verificare."
+      : answeredCount
+        ? "Până acum ai răspuns corect. Continuă quizul."
+        : "Răspunde la întrebări pentru a vedea ce concepte trebuie reluate.";
 
   return (
     <section className="space-y-6">
@@ -8576,9 +8719,23 @@ function QuizPanel({
                 <h4 className="mt-2 max-w-3xl font-serif text-base font-semibold leading-snug text-content">
                   {activeQuestion.explanation}
                 </h4>
-                <p className="mt-3 max-w-3xl text-sm leading-7">
-                  {activeQuestion.aiInsight}
-                </p>
+                {activeQuestionResult === false ? (
+                  <>
+                    <p className="mt-3 max-w-3xl text-sm leading-7">
+                      {activeQuestion.aiInsight}
+                    </p>
+                    {activeQuestion.review ? (
+                      <QuizReviewReference
+                        projectId={project.id}
+                        review={activeQuestion.review}
+                      />
+                    ) : (
+                      <p className="mt-2 text-xs text-muted">
+                        Acest quiz nu are o trimitere verificabilă la rezumat.
+                      </p>
+                    )}
+                  </>
+                ) : null}
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="rounded-md border border-subtle bg-app px-3 py-1.5 text-xs font-bold text-content">
@@ -8701,15 +8858,6 @@ function QuizPanel({
               />
             </div>
 
-            <div className="mt-6 border-t border-subtle pt-5">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                Recomandare AI
-              </p>
-              <p className="mt-3 text-sm font-semibold leading-6 text-content">
-                {recommendationText}
-              </p>
-            </div>
-
             {activeQuiz.attempts.length ? (
               <div className="mt-6 border-t border-subtle pt-5">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
@@ -8744,7 +8892,7 @@ function QuizPanel({
           aria-modal="true"
           aria-labelledby="quiz-summary-title"
         >
-          <div className="w-full max-w-lg rounded-xl border border-subtle bg-surface p-6 theme-shadow-card">
+          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-xl border border-subtle bg-surface p-6 theme-shadow-card">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
@@ -8771,10 +8919,9 @@ function QuizPanel({
             </div>
 
             <p className="mt-3 text-sm leading-7 text-muted">
-              Pregătirea estimată crește cu {correctCount >= 3 ? "6" : "3"}%.
               {savedMistakeCount
-                ? " Greșelile salvate te așteaptă în flashcard-uri."
-                : " Poți salva ca flashcard orice întrebare greșită."}
+                ? "Greșelile salvate te așteaptă în flashcard-uri."
+                : "Poți salva ca flashcard întrebările greșite cu răspuns unic."}
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -8783,7 +8930,12 @@ function QuizPanel({
                 label="Flashcard-uri salvate"
                 value={String(savedMistakeCount)}
               />
-              <QuizResultCard label="Timp recomandat" value="9 min" />
+              <QuizResultCard label="Concepte de revizuit" value={String(weakConcepts.length)} />
+            </div>
+
+            <div className="mt-6 max-h-[40vh] overflow-y-auto">
+              <p className="mb-3 text-sm font-semibold text-content">{recommendationText}</p>
+              <QuizReviewRecommendations projectId={project.id} questions={reviewQuestions} />
             </div>
 
             <div className="mt-6 flex flex-wrap justify-end gap-3">

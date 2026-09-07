@@ -225,49 +225,6 @@ class ProjectPlanLimits:
     allow_scanned_documents: bool
 
 
-PLAN_LIMITS: dict[str, ProjectPlanLimits] = {
-    "start": ProjectPlanLimits(
-        active_projects=1,
-        monthly_materials=3,
-        files_per_project=2,
-        file_mb=10,
-        total_project_mb=20,
-        estimated_pages=25,
-        monthly_page_limit=40,
-        initial_flashcards=20,
-        quiz_questions_per_quiz=8,
-        quizzes_per_project=3,
-        allow_scanned_documents=False,
-    ),
-    "focus": ProjectPlanLimits(
-        active_projects=10,
-        monthly_materials=30,
-        files_per_project=10,
-        file_mb=50,
-        total_project_mb=200,
-        estimated_pages=200,
-        monthly_page_limit=1000,
-        initial_flashcards=40,
-        quiz_questions_per_quiz=12,
-        quizzes_per_project=10,
-        allow_scanned_documents=False,
-    ),
-    "pro": ProjectPlanLimits(
-        active_projects=50,
-        monthly_materials=100,
-        files_per_project=30,
-        file_mb=150,
-        total_project_mb=500,
-        estimated_pages=500,
-        monthly_page_limit=2500,
-        initial_flashcards=50,
-        quiz_questions_per_quiz=12,
-        quizzes_per_project=25,
-        allow_scanned_documents=True,
-    ),
-}
-
-
 class ProjectError(Exception):
     pass
 
@@ -367,7 +324,7 @@ def _count_phrase(count: int, singular: str, plural: str) -> str:
 
 
 def _study_pack_output_token_budget(flashcard_count: int) -> int:
-    clean_flashcard_count = max(10, min(flashcard_count, 60))
+    clean_flashcard_count = max(1, min(flashcard_count, MAX_GENERATED_FLASHCARDS))
     return max(6_000, min(18_000, 8_000 + clean_flashcard_count * 180))
 
 
@@ -376,7 +333,7 @@ def _single_quiz_output_token_budget(question_count: int) -> int:
     text than a plain single choice, so the per-question allowance is generous.
     """
     questions = max(1, min(question_count, 50))
-    return max(4_000, min(24_000, 1_500 + questions * 420))
+    return max(4_000, min(32_000, 1_500 + questions * 650))
 
 
 def _build_quiz_pack_retry_prompt(original_prompt: str, validation_error: str) -> str:
@@ -401,96 +358,39 @@ def _postgres_advisory_lock_key(user_id: uuid.UUID) -> int:
     return user_id.int % ((2**63) - 1)
 
 
-def _plan_int_limit(plan: object, field: str, fallback: int, minimum: int) -> int:
+def _plan_int_limit(plan: object, field: str, minimum: int) -> int:
     value = getattr(plan, field, None)
-    if isinstance(value, bool):
-        return fallback
-    try:
-        limit = int(value)
-    except (TypeError, ValueError):
-        return fallback
-    return max(minimum, limit)
-
-
-def _plan_bool_limit(plan: object, field: str, fallback: bool) -> bool:
-    value = getattr(plan, field, None)
-    if isinstance(value, bool):
-        return value
-    return fallback
+    if type(value) is not int or value < minimum:
+        logger.error("Invalid database plan limit: %s", field)
+        raise ProjectValidationError(
+            "Limitele planului nu sunt configurate corect. Contacteaza suportul."
+        )
+    return value
 
 
 def limits_for_user(user: User) -> ProjectPlanLimits:
-    fallback = PLAN_LIMITS.get(_user_plan_slug(user), PLAN_LIMITS["start"])
+    # current_plan is loaded from subscription_plans with the authenticated user.
+    # Never silently grant a hardcoded plan when that record is absent or invalid.
     plan = getattr(user, "current_plan", None)
     if plan is None:
-        return fallback
-
+        raise ProjectValidationError("Alege un plan activ pentru a continua.")
+    scanned = getattr(plan, "allow_scanned_documents", None)
+    if not isinstance(scanned, bool):
+        raise ProjectValidationError(
+            "Limitele planului nu sunt configurate corect. Contacteaza suportul."
+        )
     return ProjectPlanLimits(
-        active_projects=_plan_int_limit(
-            plan,
-            "active_project_limit",
-            fallback.active_projects,
-            0,
-        ),
-        monthly_materials=_plan_int_limit(
-            plan,
-            "monthly_material_limit",
-            fallback.monthly_materials,
-            0,
-        ),
-        files_per_project=_plan_int_limit(
-            plan,
-            "files_per_project_limit",
-            fallback.files_per_project,
-            1,
-        ),
-        file_mb=_plan_int_limit(
-            plan,
-            "file_size_limit_mb",
-            fallback.file_mb,
-            1,
-        ),
-        total_project_mb=_plan_int_limit(
-            plan,
-            "project_size_limit_mb",
-            fallback.total_project_mb,
-            1,
-        ),
-        estimated_pages=_plan_int_limit(
-            plan,
-            "estimated_page_limit",
-            fallback.estimated_pages,
-            1,
-        ),
-        monthly_page_limit=_plan_int_limit(
-            plan,
-            "monthly_page_limit",
-            fallback.monthly_page_limit,
-            0,
-        ),
-        initial_flashcards=_plan_int_limit(
-            plan,
-            "initial_flashcard_limit",
-            fallback.initial_flashcards,
-            1,
-        ),
-        quiz_questions_per_quiz=_plan_int_limit(
-            plan,
-            "quiz_questions_per_quiz",
-            fallback.quiz_questions_per_quiz,
-            3,
-        ),
-        quizzes_per_project=_plan_int_limit(
-            plan,
-            "quizzes_per_project_limit",
-            fallback.quizzes_per_project,
-            1,
-        ),
-        allow_scanned_documents=_plan_bool_limit(
-            plan,
-            "allow_scanned_documents",
-            fallback.allow_scanned_documents,
-        ),
+        active_projects=_plan_int_limit(plan, "active_project_limit", 0),
+        monthly_materials=_plan_int_limit(plan, "monthly_material_limit", 0),
+        files_per_project=_plan_int_limit(plan, "files_per_project_limit", 1),
+        file_mb=_plan_int_limit(plan, "file_size_limit_mb", 1),
+        total_project_mb=_plan_int_limit(plan, "project_size_limit_mb", 1),
+        estimated_pages=_plan_int_limit(plan, "estimated_page_limit", 1),
+        monthly_page_limit=_plan_int_limit(plan, "monthly_page_limit", 0),
+        initial_flashcards=_plan_int_limit(plan, "initial_flashcard_limit", 1),
+        quiz_questions_per_quiz=_plan_int_limit(plan, "quiz_questions_per_quiz", 1),
+        quizzes_per_project=_plan_int_limit(plan, "quizzes_per_project_limit", 1),
+        allow_scanned_documents=scanned,
     )
 
 
@@ -755,6 +655,13 @@ def _validate_generated_quiz_options(
         )
 
     if question_type in ("single_choice", "multiple_choice"):
+        normalized_labels = [
+            _normalize_summary_selection_text(label) for label in labels
+        ]
+        if len(set(normalized_labels)) != len(labels):
+            raise ProjectValidationError(
+                f"Intrebarea {question_index} are optiuni duplicate."
+            )
         correct = [option for option in options if bool(option.get("is_correct"))]
         if question_type == "single_choice" and len(correct) != 1:
             raise ProjectValidationError(
@@ -864,7 +771,14 @@ def _generated_option_sort_order(
     return option_index
 
 
-def _validate_generated_single_quiz(payload: dict[str, Any]) -> None:
+def _validate_generated_single_quiz(
+    payload: dict[str, Any],
+    *,
+    summary: str | None = None,
+    complexity: str | None = None,
+    question_count: int | None = None,
+    question_types: list[str] | None = None,
+) -> None:
     """Check a single-quiz response before it becomes rows.
 
     The batch-era `_validate_generated_payload` looks for a `quizzes` list;
@@ -887,10 +801,36 @@ def _validate_generated_single_quiz(payload: dict[str, Any]) -> None:
     if not questions:
         raise ProjectValidationError("Quizul generat nu contine intrebari.")
 
+    if complexity is not None and quiz.get("complexity") != complexity:
+        raise ProjectValidationError("Dificultatea quizului nu respecta configurarea.")
+    if question_count is not None and len(questions) != question_count:
+        raise ProjectValidationError(
+            f"Quizul trebuie sa contina exact {question_count} intrebari."
+        )
+    if question_types is not None and question_count is not None:
+        expected = _distribute_question_types(question_count, question_types)
+        actual: dict[str, int] = {}
+        for question in questions:
+            kind = str(_dict_value(question).get("type") or "")
+            actual[kind] = actual.get(kind, 0) + 1
+        if actual != expected:
+            raise ProjectValidationError(
+                f"Distributia intrebarilor trebuie sa fie {expected}."
+            )
+    reference_blocks = _summary_reference_blocks(summary) if summary is not None else []
+    seen_prompts: set[str] = set()
+
     for question_index, raw_question in enumerate(questions, start=1):
         question = _dict_value(raw_question)
         if not _clean_text(str(question.get("prompt") or "")):
             raise ProjectValidationError(f"Intrebarea {question_index} nu are text.")
+
+        clean_prompt = _normalize_summary_selection_text(
+            str(question.get("prompt") or "")
+        )
+        if clean_prompt in seen_prompts:
+            raise ProjectValidationError("Quizul contine intrebari duplicate.")
+        seen_prompts.add(clean_prompt)
 
         question_type = str(question.get("type") or "").strip().lower()
         if question_type not in QUIZ_QUESTION_TYPES:
@@ -917,6 +857,98 @@ def _validate_generated_single_quiz(payload: dict[str, Any]) -> None:
             question_type=question_type,
             options=options,
             prompt=str(question.get("prompt") or ""),
+        )
+
+    if summary is not None:
+        for question in questions:
+            item = _dict_value(question)
+            index = item.get("review_paragraph_index")
+            anchor = item.get("review_anchor_text")
+            if (
+                type(index) is not int
+                or index < 0
+                or index >= len(reference_blocks)
+                or reference_blocks[index]["kind"] == "heading"
+                or not isinstance(anchor, str)
+                or not 8 <= len(anchor.strip()) <= 240
+                or anchor
+                not in _strip_summary_inline_markdown(reference_blocks[index]["text"])
+                or item.get("review_section") != reference_blocks[index]["section"]
+            ):
+                raise ProjectValidationError(
+                    "Referinta de revizuire este invalida: copiaza review_section, "
+                    "review_paragraph_index si un review_anchor_text exact din acelasi "
+                    "paragraf numerotat din rezumat; titlurile nu sunt paragrafe."
+                )
+            for field, minimum, maximum in (
+                ("concept", 2, 180),
+                ("review_advice", 12, 700),
+                ("explanation", 2, 1600),
+            ):
+                value = item.get(field)
+                if (
+                    not isinstance(value, str)
+                    or not minimum <= len(value.strip()) <= maximum
+                ):
+                    raise ProjectValidationError(
+                        f"Campul {field} lipseste sau are lungime invalida."
+                    )
+            kind = item.get("type")
+            options = item["options"]
+            if kind == "single_choice" and len(options) != 4:
+                raise ProjectValidationError("single_choice necesita exact 4 optiuni.")
+            if kind == "multiple_choice" and (
+                not 4 <= len(options) <= 6
+                or sum(not option["is_correct"] for option in options) < 2
+            ):
+                raise ProjectValidationError(
+                    "multiple_choice necesita 4-6 optiuni, minimum 2 gresite."
+                )
+
+    _validate_quiz_answer_lengths(questions)
+
+
+def _validate_quiz_answer_lengths(questions: list[Any]) -> None:
+    """Reject a repeated length cue; tied lengths are not treated as evidence.
+
+    This is an observable quality guard, not a semantic correctness verdict.
+    It deliberately excludes matching/ordering/cloze, whose lengths depend on
+    their task and whose correct options are not competing answer statements.
+    """
+    choice_count = 0
+    longest_correct = 0
+    for raw in questions:
+        question = _dict_value(raw)
+        if question.get("type") not in ("single_choice", "multiple_choice"):
+            continue
+        options = question["options"]
+        correct = [
+            option["label"].strip() for option in options if option["is_correct"]
+        ]
+        wrong = [
+            option["label"].strip() for option in options if not option["is_correct"]
+        ]
+        if not correct or not wrong:
+            continue
+        choice_count += 1
+        correct_words = min(
+            len(CONTEXT_WORD_PATTERN.findall(label)) for label in correct
+        )
+        wrong_words = max(len(CONTEXT_WORD_PATTERN.findall(label)) for label in wrong)
+        correct_chars = min(len(label) for label in correct)
+        wrong_chars = max(len(label) for label in wrong)
+        if correct_words > wrong_words or correct_chars > wrong_chars * 1.15:
+            longest_correct += 1
+        if correct_words >= wrong_words + 6 and correct_words > wrong_words * 1.8:
+            raise ProjectValidationError(
+                "Raspunsul corect este disproportionat de lung. Rescrie toate "
+                "optiunile cu lungime si granularitate comparabile, fara umplutura."
+            )
+    if longest_correct >= 3 and longest_correct / choice_count > 0.6:
+        raise ProjectValidationError(
+            "Tipar de lungime: raspunsurile corecte sunt cele mai lungi in peste "
+            "60% din intrebarile cu variante (minimum 3 cazuri). Variaza lungimea "
+            "raspunsurilor corecte si construieste distractori plauzibili comparabili."
         )
 
 
@@ -1148,8 +1180,25 @@ def _split_summary_enumeration(text: str) -> list[str]:
     return [intro, *[item for item in items if item]]
 
 
-def _split_summary_blocks(content: str) -> list[str]:
-    blocks: list[str] = []
+def _summary_reference_blocks(content: str) -> list[dict[str, Any]]:
+    blocks: list[dict[str, Any]] = []
+    headings: list[tuple[int, str]] = []
+    paragraph_number = 0
+
+    def append_block(text: str, kind: str) -> None:
+        nonlocal paragraph_number
+        if kind != "heading":
+            paragraph_number += 1
+        blocks.append(
+            {
+                "index": len(blocks),
+                "kind": kind,
+                "section": " / ".join(title for _, title in headings),
+                "paragraph_number": paragraph_number,
+                "text": text,
+            }
+        )
+
     paragraph_lines: list[str] = []
 
     def flush_paragraph() -> None:
@@ -1158,7 +1207,8 @@ def _split_summary_blocks(content: str) -> list[str]:
             return
         text = _clean_text(" ".join(paragraph_lines))
         if text:
-            blocks.extend(_split_summary_enumeration(text))
+            for item in _split_summary_enumeration(text):
+                append_block(item, "paragraph")
         paragraph_lines = []
 
     for raw_line in content.splitlines():
@@ -1172,7 +1222,11 @@ def _split_summary_blocks(content: str) -> list[str]:
             flush_paragraph()
             heading_text = _clean_text(heading_match.group(2))
             if heading_text:
-                blocks.append(heading_text)
+                level = len(heading_match.group(1))
+                while headings and headings[-1][0] >= level:
+                    headings.pop()
+                headings.append((level, _strip_summary_inline_markdown(heading_text)))
+                append_block(heading_text, "heading")
             continue
 
         list_match = re.match(r"^[-*•]\s+(.*)$", line)
@@ -1180,13 +1234,75 @@ def _split_summary_blocks(content: str) -> list[str]:
             flush_paragraph()
             list_text = _clean_text(list_match.group(1))
             if list_text:
-                blocks.append(list_text)
+                append_block(list_text, "list-item")
             continue
 
         paragraph_lines.append(line)
 
     flush_paragraph()
     return blocks
+
+
+def _split_summary_blocks(content: str) -> list[str]:
+    return [block["text"] for block in _summary_reference_blocks(content)]
+
+
+def _keyword_paragraph_index(summary: str, anchor: str) -> int | None:
+    clean_anchor = " ".join(_strip_summary_inline_markdown(anchor).split()).lower()
+    if not clean_anchor:
+        return None
+    matches = [
+        block["index"]
+        for block in _summary_reference_blocks(summary)
+        if block["kind"] != "heading"
+        and clean_anchor
+        in " ".join(_strip_summary_inline_markdown(block["text"]).split()).lower()
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _validate_study_pack_anchors(payload: dict[str, Any]) -> None:
+    summary = _dict_value(payload.get("summary")).get("content", "")
+    terms: set[str] = set()
+    for keyword in _list_value(payload.get("keywords")):
+        item = _dict_value(keyword)
+        term = _normalize_summary_selection_text(str(item.get("term") or ""))
+        anchor = str(item.get("anchor_text") or "")
+        if not term or term in terms:
+            raise ProjectValidationError("Keywords trebuie sa fie termeni distincti.")
+        terms.add(term)
+        # The keyword is a concept label; the quote can use an inflected form
+        # or its definition. Literal term containment is not a grounding check.
+        # Require the quote itself to identify one real body paragraph.
+        if len(anchor) > 240 or _keyword_paragraph_index(summary, anchor) is None:
+            raise ProjectValidationError(
+                f"Keyword {term}: anchor_text trebuie sa identifice exact un "
+                "paragraf de continut, nu un titlu. Copiaza un fragment unic."
+            )
+
+
+def _quiz_summary_context(summary: str) -> str:
+    # Send complete blocks with the same indices used by highlights and the UI.
+    # Never truncate in the middle of a reference or renumber the remaining ones.
+    lines: list[str] = []
+    length = 0
+    for block in _summary_reference_blocks(summary):
+        if block["kind"] == "heading":
+            continue
+        line = json.dumps(
+            {
+                "index": block["index"],
+                "section": block["section"],
+                "paragraph_number": block["paragraph_number"],
+                "text": _strip_summary_inline_markdown(block["text"]),
+            },
+            ensure_ascii=False,
+        )
+        if length + len(line) > QUIZ_PROMPT_SUMMARY_CHARS:
+            break
+        lines.append(line)
+        length += len(line) + 1
+    return "\n".join(lines)
 
 
 def _strip_summary_inline_markdown(value: str) -> str:
@@ -2589,34 +2705,51 @@ class StudyProjectService:
             )
             job.prompt_path = str(prompt_path)
 
-            result = await OpenAIStudyGenerator(self.settings).generate_json(
-                model=self.settings.openai_study_model,
-                instructions=(
-                    "You are the Reviss educational engine. Return only valid JSON "
-                    "matching the schema. Write all user-facing strings in "
-                    f"{_generation_language_label(target_language)}."
-                ),
-                prompt=prompt,
-                schema_name="reviss_study_pack",
-                schema=STUDY_PACK_SCHEMA,
-                max_output_tokens=_study_pack_output_token_budget(
-                    limits.initial_flashcards
-                ),
-                reasoning_effort="low",
-                user_id=str(user.id),
-                project_id=str(project.id),
-                job_type="study_pack",
-            )
-
-            await self._ensure_generation_can_continue(
-                project,
-                expected_status="generating_study_pack",
-            )
-            _validate_generated_payload(
-                result.payload,
-                include_study_pack=True,
-                include_quizzes=False,
-            )
+            total_input_tokens = 0
+            total_output_tokens = 0
+            study_prompt = prompt
+            for attempt in range(2):
+                result = await OpenAIStudyGenerator(self.settings).generate_json(
+                    model=self.settings.openai_study_model,
+                    instructions=(
+                        "You are the Reviss educational engine. Return only valid JSON "
+                        "matching the schema. Write all user-facing strings in "
+                        f"{_generation_language_label(target_language)}."
+                    ),
+                    prompt=study_prompt,
+                    schema_name="reviss_study_pack",
+                    schema=STUDY_PACK_SCHEMA,
+                    max_output_tokens=_study_pack_output_token_budget(
+                        limits.initial_flashcards
+                    ),
+                    reasoning_effort="low",
+                    user_id=str(user.id),
+                    project_id=str(project.id),
+                    job_type="study_pack" if attempt == 0 else "study_pack_retry",
+                )
+                total_input_tokens += result.input_tokens
+                total_output_tokens += result.output_tokens
+                await self._ensure_generation_can_continue(
+                    project, expected_status="generating_study_pack"
+                )
+                try:
+                    _validate_generated_payload(
+                        result.payload, include_study_pack=True, include_quizzes=False
+                    )
+                    _validate_study_pack_anchors(result.payload)
+                    break
+                except ProjectValidationError as exc:
+                    if attempt:
+                        raise
+                    logger.warning(
+                        "Study pack validation failed for %s: %s", project.id, exc
+                    )
+                    study_prompt = (
+                        prompt
+                        + "\nREGENERARE OBLIGATORIE: "
+                        + str(exc)
+                        + "\nReturneaza intregul pachet corectat, cu ancore unice in paragrafe."
+                    )
             response_path = self._write_generation_response(
                 user_id=user.id,
                 project_id=project.id,
@@ -2641,7 +2774,8 @@ class StudyProjectService:
             project.updated_at = datetime.now(UTC)
             self._mark_generation_job_completed(
                 job,
-                result=result,
+                input_tokens=total_input_tokens,
+                output_tokens=total_output_tokens,
                 response_path=response_path,
             )
             self.session.add(
@@ -2663,8 +2797,8 @@ class StudyProjectService:
                 tier=summary_tier,
                 credits=credits_needed,
                 model=self.settings.openai_study_model,
-                input_tokens=result.input_tokens,
-                output_tokens=result.output_tokens,
+                input_tokens=total_input_tokens,
+                output_tokens=total_output_tokens,
             )
             return await self.get_project(user, project.id)
         except ProjectGenerationCancelledError:
@@ -2776,7 +2910,13 @@ class StudyProjectService:
                 expected_status="generating_quizzes",
             )
             try:
-                _validate_generated_single_quiz(result.payload)
+                _validate_generated_single_quiz(
+                    result.payload,
+                    summary=project.summary.content,
+                    complexity=complexity,
+                    question_count=question_count,
+                    question_types=question_types,
+                )
             except ProjectValidationError as exc:
                 logger.warning(
                     "Quiz generation payload failed validation for project %s; retrying once: %s",
@@ -2807,7 +2947,13 @@ class StudyProjectService:
                     project,
                     expected_status="generating_quizzes",
                 )
-                _validate_generated_single_quiz(result.payload)
+                _validate_generated_single_quiz(
+                    result.payload,
+                    summary=project.summary.content,
+                    complexity=complexity,
+                    question_count=question_count,
+                    question_types=question_types,
+                )
             response_path = self._write_generation_response(
                 user_id=user.id,
                 project_id=project.id,
@@ -2825,7 +2971,8 @@ class StudyProjectService:
             project.updated_at = datetime.now(UTC)
             self._mark_generation_job_completed(
                 job,
-                result=result,
+                input_tokens=total_input_tokens,
+                output_tokens=total_output_tokens,
                 response_path=response_path,
             )
             self.session.add(
@@ -2842,7 +2989,7 @@ class StudyProjectService:
                 "Quiz generation completed for project %s: quizzes=%s, total_tokens=%s.",
                 project.id,
                 len(project.quizzes),
-                result.total_tokens,
+                total_input_tokens + total_output_tokens,
             )
             await self._notify_project_ready(
                 user=user, project=project, job_type="quiz_pack"
@@ -3683,15 +3830,16 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
         self,
         job: StudyProjectGenerationJob,
         *,
-        result: Any,
+        input_tokens: int,
+        output_tokens: int,
         response_path: Path,
     ) -> None:
         job.status = "completed"
         job.response_path = str(response_path)
         job.error_message = None
-        job.input_tokens = int(getattr(result, "input_tokens", 0) or 0)
-        job.output_tokens = int(getattr(result, "output_tokens", 0) or 0)
-        job.total_tokens = int(getattr(result, "total_tokens", 0) or 0)
+        job.input_tokens = input_tokens
+        job.output_tokens = output_tokens
+        job.total_tokens = input_tokens + output_tokens
         job.finished_at = datetime.now(UTC)
 
     async def _fail_generation_job(
@@ -4272,6 +4420,18 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
                 question_type=question_type,
                 explanation=_clean_text(str(question_payload.get("explanation") or ""))
                 or None,
+                concept=_string_or_default(question_payload.get("concept")) or None,
+                review_section=_string_or_default(
+                    question_payload.get("review_section")
+                )
+                or None,
+                review_paragraph_index=question_payload.get("review_paragraph_index"),
+                review_anchor_text=_string_or_default(
+                    question_payload.get("review_anchor_text")
+                )
+                or None,
+                review_advice=_string_or_default(question_payload.get("review_advice"))
+                or None,
                 sort_order=question_index - 1,
             )
             if not question.prompt:
@@ -4353,6 +4513,10 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
                     StudyProjectKeyword(
                         term=term[:180],
                         explanation=explanation,
+                        paragraph_index=_keyword_paragraph_index(
+                            summary_content,
+                            _string_or_default(item_dict.get("anchor_text")),
+                        ),
                         anchor_text=_string_or_default(item_dict.get("anchor_text"))[
                             :240
                         ]
@@ -5034,7 +5198,7 @@ def build_reviss_study_pack_prompt(
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"{field_name} trebuie sa fie un sir nevid.")
 
-    clean_flashcard_count = max(10, min(flashcard_count, 60))
+    clean_flashcard_count = max(1, min(flashcard_count, MAX_GENERATED_FLASHCARDS))
     language_label = _generation_language_label(target_language)
     return f"""Esti motorul educational al platformei Reviss.
 Transforma materialul intr-un pachet initial de studiu, fara quizuri.
@@ -5100,7 +5264,16 @@ REGULI PENTRU REZUMAT:
   intrebari de examen fara sa deschida materialul.
 - Acopera toate temele importante proportional cu ponderea lor in sursa; nu
   sari peste un capitol si nu umfla altul.
-- Sectiuni tematice cu titluri scurte, in ordinea logica a materiei.
+- Foloseste Markdown simplu IN summary.content: ## pentru sectiuni principale,
+  ### pentru subsectiuni. Titluri descriptive, unice, in ordinea logica a materiei.
+- Separa paragrafele printr-o linie goala. Un paragraf dezvolta un singur nucleu
+  conceptual, de regula in 2-4 fraze: definitie/idee, explicatie, conditie sau
+  exemplu doar daca apare in sursa. Nu amesteca teme diferite in acelasi paragraf.
+- In fiecare sectiune, prezinta mai intai conceptele, apoi relatiile/procesele,
+  apoi distinctiile si exceptiile relevante. Omite categoriile fara suport in sursa.
+- Nu folosi tabele, HTML, linkuri, blocuri de cod sau numerotari de paragraf
+  inventate. Pentru etape foloseste liste cu '- ', cate un element pe linie.
+- Nu ascunde enumerari lungi in fraze separate prin punct si virgula.
 - Liste doar pentru clasificari, etape, comparatii sau componente.
 - Reformuleaza fidel, nu copia pasaje lungi.
 - Pastreaza definitiile exacte, conditiile, exceptiile, unitatile, valorile
@@ -5112,7 +5285,16 @@ REGULI PENTRU REZUMAT:
 REGULI PENTRU KEYWORDS:
 - Genereaza 12-25 termeni cheie, daca materialul permite.
 - Termenii trebuie sa fie specifici, nu generici.
-- "anchor_text" trebuie sa apara identic in summary.content.
+- "anchor_text" este un fragment continuu, exact, de maximum 240 caractere din
+  paragraful care explica termenul. Include termenul, o forma flexionata a lui
+  sau definitia directa a conceptului, cu suficient context pentru a identifica
+  UN SINGUR paragraf de continut. Nu ancora in titlu, introducere
+  generica sau intr-o simpla mentionare daca definitia este in alta parte.
+- Verifica ancora dupa ce ai terminat rezumatul. Nu inventa sinonime in ancora,
+  nu traversa paragrafe si nu pune formatare Markdown in interiorul ei.
+- Alege concepte examinabile distincte (definitii, mecanisme, criterii, relatii),
+  distribuite pe sectiuni; fara duplicate flexionare, sinonime redundant separate
+  sau umplerea cotei cu termeni generici. Mai putini termeni sunt acceptabili.
 - Explicatia are 1-3 fraze si ramane in limitele materialului.
 
 REGULI PENTRU FLASHCARDS:
@@ -5134,6 +5316,19 @@ REGULI PENTRU STRATEGII:
   care o face studentul si rezultatul urmarit.
 - Nimic generic ca "citeste atent" sau "fa-ti un plan": daca strategia s-ar
   potrivi oricarei materii, nu o include.
+- Scrie fiecare description ca un mic exercitiu: "Unde: [titlu exact din rezumat].
+  Actiune: [ce reconstruiesti fara suport, in 3-8 minute].
+  Verificare: [criteriu observabil si cum corectezi greseala].
+  Reluare: [cand repeti exercitiul]". Tradu etichetele in limba ceruta.
+- Combina recuperarea activa fara variante, comparatia conceptelor confundabile,
+  reconstructia etapelor/relatiilor cauzale si mini-scenarii de aplicare sustinute
+  de material. Foloseste doar metode potrivite materiei, nu ordonare fortata
+  pentru o lista care nu are ordine.
+- Leaga exercitiul de quiz: studentul formuleaza raspunsul inainte de a vedea
+  optiunile si explica de ce o confuzie plauzibila este gresita.
+- Include o reluare la interval (de exemplu a doua zi si peste 3 zile) adaptata
+  greselilor. Criteriul de progres este raspunsul explicat fara suport, nu recitirea.
+- Nu inventa concepte noi, nu promite note sau procente de progres garantate.
 
 AUDIT FINAL INTERN, inainte de a returna:
 - JSON parsabil, schema_version exact "reviss.study_pack.v1", fara cheia
@@ -5338,7 +5533,12 @@ CONTRACT JSON:
             "position": null
           }}
         ],
-        "explanation": "string"
+        "explanation": "string",
+        "concept": "conceptul specific testat",
+        "review_section": "titlul exact din registrul rezumatului",
+        "review_paragraph_index": 0,
+        "review_anchor_text": "fragment exact din paragraful indicat",
+        "review_advice": "actiune concreta de recuperare activa pentru acest concept"
       }}
     ]
   }}
@@ -5371,9 +5571,41 @@ REGULI GENERALE:
   de flashcarduri.
 - Fara indicii involuntare: lungimea, gradul de detaliu sau formularea nu
   trebuie sa lase raspunsul corect sa se ghiceasca.
+- Pentru single_choice si multiple_choice, variantele raspund la ACEEASI
+  intrebare, pe aceeasi dimensiune (toate cauze, definitii, efecte etc.).
+  Pastreaza forma gramaticala, precizia si numarul de idei comparabile.
+- Nu rezerva calificarile, exceptiile sau explicatiile suplimentare variantei
+  corecte. Muta contextul comun in enunt si explicatiile in explanation.
+- Lungimile trebuie sa se suprapuna: uneori varianta corecta e scurta, alteori
+  medie sau lunga. Nu face sistematic toate variantele corecte mai lungi decat
+  toate cele gresite. Nici regula inversa nu este acceptabila.
+- Compara numarul de cuvinte SI caractere al optiunilor la audit. Serverul respinge
+  diferentele disproportionate si tiparul "corect = cel mai lung" repetat
+  la minimum 3 intrebari si in peste 60% din intrebarile cu variante.
+  Rescrie distractorii cu sens; nu adauga cuvinte de umplutura pentru egalizare.
+- Inainte sa accepti o intrebare, raspunde mental fara optiuni, apoi verifica
+  fiecare distractor raportat la acelasi context. Daca doua variante sunt
+  justificabile, rescrie enuntul sau variantele; nu ascunde ambiguitatea in explicatie.
 - "explanation" spune de ce raspunsul corect este corect SI de ce cade
   varianta greşita cea mai tentanta, in maximum 700 caractere. Se sprijina
   pe rezumat, nu pe cunostinte externe.
+
+RECOMANDARE DE REVIZUIRE PENTRU FIECARE INTREBARE:
+- Registrul de mai jos contine blocuri de rezumat cu index stabil (de la 0),
+  section si paragraph_number (numarul vizibil al paragrafului, de la 1).
+  Copiaza index in review_paragraph_index, NU paragraph_number.
+- concept numeste precis notiunea sau relatia testata, nu titlul general al quizului.
+- Alege paragraful care justifica raspunsul si clarifica principala confuzie.
+  Copiaza exact section in review_section si 8-240 caractere continue din text
+  in review_anchor_text. Nu traduce aceste doua citate si nu inventa locatii.
+- review_advice: 1-2 fraze, maximum 700 caractere, despre ce trebuie studentul
+  sa reconstruiasca sau sa compare din memorie dupa ce reciteste acel paragraf.
+  Include o intrebare scurta de autoverificare, fara raspunsul ei.
+- Recomandarile sunt pregatite acum pentru fiecare intrebare; interfata le
+  agrega doar pentru raspunsurile gresite. Nu crea intrebari suplimentare in
+  lista quizului fata de numarul cerut.
+- Materialul suplimentar poate clarifica rezumatul, dar nu testa o informatie
+  care nu poate fi regasita in paragraful citat. Daca lipseste, alege alt concept.
 
 AUDIT FINAL INTERN, inainte de a returna:
 - Numarul de intrebari si distributia pe tipuri sunt exact cele cerute.
@@ -5385,5 +5617,5 @@ INTREBARI DEJA ACOPERITE DE FLASHCARDURI (nu le repeta):
 {flashcard_context or "Nu exista flashcarduri generate."}
 
 REZUMATUL PROIECTULUI -- sursa principala, acopera-l integral:
-{quote}{_truncate_for_openai(summary, QUIZ_PROMPT_SUMMARY_CHARS)}{quote}
+{quote}{_quiz_summary_context(summary)}{quote}
 {material_section}"""
