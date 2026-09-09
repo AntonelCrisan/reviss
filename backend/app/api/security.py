@@ -4,6 +4,22 @@ from fastapi import HTTPException, Request, status
 
 from app.api.dependencies import AppSettings
 
+# Every deployment hop that adds to X-Forwarded-For (the Railway edge, the
+# Next.js proxy) appends to the right. Anything a client sends itself sits
+# on the left, so only the rightmost entry can be trusted: reading the first
+# one let a request pick its own rate-limit bucket.
+MAX_CLIENT_IP_LENGTH = 64
+
+
+def client_ip(request: Request) -> str | None:
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+    for candidate in reversed(forwarded_for.split(",")):
+        cleaned = candidate.strip()
+        if cleaned:
+            return cleaned[:MAX_CLIENT_IP_LENGTH]
+
+    return request.client.host if request.client is not None else None
+
 
 def request_origin(request: Request) -> str | None:
     origin = request.headers.get("origin")

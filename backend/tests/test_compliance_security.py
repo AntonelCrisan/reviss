@@ -129,7 +129,7 @@ def test_contact_rate_limit_uses_forwarded_client_ip() -> None:
     headers = {
         "origin": "https://www.reviss.app",
         "x-reviss-form-intent": "contact",
-        "x-forwarded-for": "198.51.100.24, 10.0.0.5",
+        "x-forwarded-for": "10.0.0.5, 198.51.100.24",
     }
 
     asyncio.run(
@@ -148,7 +148,7 @@ def test_contact_rate_limit_uses_forwarded_client_ip() -> None:
 
     other_ip_headers = {
         **headers,
-        "x-forwarded-for": "203.0.113.9, 10.0.0.5",
+        "x-forwarded-for": "10.0.0.5, 203.0.113.9",
     }
     asyncio.run(
         compliance.protect_form_request(
@@ -185,7 +185,7 @@ def test_content_report_rate_limit_uses_forwarded_client_ip() -> None:
     headers = {
         "origin": "https://www.reviss.app",
         "x-reviss-form-intent": "content-report",
-        "x-forwarded-for": "198.51.100.24, 10.0.0.5",
+        "x-forwarded-for": "10.0.0.5, 198.51.100.24",
     }
     request = build_request(
         path="/api/compliance/content-report",
@@ -209,7 +209,7 @@ def test_withdrawal_rate_limit_uses_forwarded_client_ip() -> None:
     headers = {
         "origin": "https://www.reviss.app",
         "x-reviss-form-intent": "withdrawal",
-        "x-forwarded-for": "198.51.100.24, 10.0.0.5",
+        "x-forwarded-for": "10.0.0.5, 198.51.100.24",
     }
     request = build_request(
         path="/api/compliance/withdrawal",
@@ -506,7 +506,7 @@ def test_contact_recaptcha_sends_clean_token_and_forwarded_ip(
         fake_post_recaptcha_verification,
     )
     settings = build_settings(recaptcha_secret_key="recaptcha-secret")
-    request = build_request(headers={"x-forwarded-for": "198.51.100.24, 10.0.0.5"})
+    request = build_request(headers={"x-forwarded-for": "10.0.0.5, 198.51.100.24"})
 
     asyncio.run(
         compliance.verify_contact_recaptcha("  valid-token  ", request, settings)

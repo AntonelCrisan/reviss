@@ -102,3 +102,12 @@ export function planDetailPath(slug: string) {
 export function absoluteUrl(path: string) {
   return new URL(path, siteUrl).toString();
 }
+
+/**
+ * JSON-LD is dropped into a <script> tag verbatim, and JSON.stringify leaves
+ * "<" alone -- so a "</script>" inside a plan name or description would end
+ * the tag early. Escaping "<" keeps the payload valid JSON and inert HTML.
+ */
+export function serializeJsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}

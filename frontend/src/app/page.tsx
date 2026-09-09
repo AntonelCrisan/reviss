@@ -13,6 +13,7 @@ import {
   openGraphImagePath,
   planDetailPath,
   seoKeywords,
+  serializeJsonLd,
   siteName,
   siteUrl,
 } from "@/lib/seo";
@@ -424,7 +425,7 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(homepageStructuredData),
+          __html: serializeJsonLd(homepageStructuredData),
         }}
       />
       <MarketingHeader />

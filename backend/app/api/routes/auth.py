@@ -11,6 +11,7 @@ from app.api.dependencies import (
     CurrentUser,
     DbSession,
 )
+from app.api.security import client_ip
 from app.core.rate_limit import _memory_rate_limit_buckets, consume_rate_limit
 from app.models import StudyProject, User
 from app.schemas.auth import (
@@ -99,15 +100,7 @@ async def _user_response(user: User, service: AuthService) -> UserResponse:
 
 
 def _client_ip(request: Request) -> str | None:
-    for header_name in ("x-forwarded-for", "x-real-ip", "cf-connecting-ip"):
-        header_value = request.headers.get(header_name)
-        if not header_value:
-            continue
-        client_ip = header_value.split(",", 1)[0].strip()
-        if client_ip:
-            return client_ip[:64]
-
-    return request.client.host if request.client is not None else None
+    return client_ip(request)
 
 
 def _client_context(request: Request) -> tuple[str | None, str | None]:

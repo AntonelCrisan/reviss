@@ -261,7 +261,7 @@ def test_login_rate_limit_uses_forwarded_client_ip() -> None:
                 "email": "student@example.com",
                 "password": "ParolaSigura123",
             }
-            headers = {"x-forwarded-for": "198.51.100.24, 10.0.0.5"}
+            headers = {"x-forwarded-for": "10.0.0.5, 198.51.100.24"}
             for _ in range(10):
                 response = client.post(
                     "/api/auth/login",
@@ -278,13 +278,43 @@ def test_login_rate_limit_uses_forwarded_client_ip() -> None:
             other_ip_response = client.post(
                 "/api/auth/login",
                 json=payload,
-                headers={"x-forwarded-for": "203.0.113.9, 10.0.0.5"},
+                headers={"x-forwarded-for": "10.0.0.5, 203.0.113.9"},
             )
     finally:
         app.dependency_overrides.clear()
 
     assert response.status_code == 429
     assert other_ip_response.status_code == 200
+
+
+def test_login_rate_limit_ignores_client_supplied_forwarded_entries() -> None:
+    """A spoofed left-hand X-Forwarded-For entry must not open a new bucket."""
+    service = FakeAuthService()
+    app.dependency_overrides[get_auth_service] = lambda: service
+
+    try:
+        with TestClient(app) as client:
+            payload = {
+                "email": "student@example.com",
+                "password": "ParolaSigura123",
+            }
+            for attempt in range(10):
+                response = client.post(
+                    "/api/auth/login",
+                    json=payload,
+                    headers={"x-forwarded-for": f"10.9.{attempt}.1, 198.51.100.24"},
+                )
+                assert response.status_code == 200
+
+            response = client.post(
+                "/api/auth/login",
+                json=payload,
+                headers={"x-forwarded-for": "10.9.99.1, 198.51.100.24"},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 429
 
 
 def test_login_rejects_untrusted_origin() -> None:

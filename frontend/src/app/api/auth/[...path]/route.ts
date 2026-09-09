@@ -70,8 +70,6 @@ async function proxyAuthRequest(
     "origin",
     "referer",
     "x-forwarded-for",
-    "x-real-ip",
-    "cf-connecting-ip",
   ]) {
     const value = request.headers.get(headerName);
     if (value) headers.set(headerName, value);

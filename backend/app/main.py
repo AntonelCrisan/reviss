@@ -79,6 +79,11 @@ app = FastAPI(
     description="API pentru aplicatia Reviss.",
     version="0.1.0",
     lifespan=lifespan,
+    # The interactive docs enumerate every route and schema; that is useful
+    # locally and a free map of the API for anyone else in production.
+    docs_url=None if settings.environment == "production" else "/docs",
+    redoc_url=None if settings.environment == "production" else "/redoc",
+    openapi_url=None if settings.environment == "production" else "/openapi.json",
 )
 
 app.add_middleware(

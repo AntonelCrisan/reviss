@@ -7,9 +7,21 @@ from app.services.visitors import _compute_visitor_hash
 from tests.test_compliance_security import build_request
 
 
-def test_client_ip_prefers_forwarded_header() -> None:
-    request = build_request(headers={"x-forwarded-for": "203.0.113.7, 10.0.0.1"})
+def test_client_ip_uses_the_entry_added_by_the_trusted_proxy() -> None:
+    # The edge appends the real address last; anything before it came from
+    # the client and must not be able to choose its own rate-limit bucket.
+    request = build_request(headers={"x-forwarded-for": "10.0.0.1, 203.0.113.7"})
     assert _client_ip(request) == "203.0.113.7"
+
+    spoofed = build_request(
+        headers={"x-forwarded-for": "198.51.100.99, 203.0.113.7"}
+    )
+    assert _client_ip(spoofed) == "203.0.113.7"
+
+
+def test_client_ip_ignores_client_supplied_alternative_headers() -> None:
+    request = build_request(headers={"x-real-ip": "198.51.100.99"})
+    assert _client_ip(request) == "10.0.0.5"
 
 
 def test_client_ip_falls_back_to_connection_client() -> None:

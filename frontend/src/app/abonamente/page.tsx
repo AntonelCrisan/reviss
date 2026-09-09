@@ -11,6 +11,7 @@ import {
   absoluteUrl,
   planDetailPath,
   plansIndexPath,
+  serializeJsonLd,
   siteName,
   siteUrl,
 } from "@/lib/seo";
@@ -107,7 +108,7 @@ export default async function PlansIndexRoute() {
     <main className="min-h-screen overflow-x-clip bg-app text-content">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
       />
       <MarketingHeader />
 
