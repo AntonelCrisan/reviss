@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -479,6 +480,10 @@ class StudyProjectQuizAttempt(Base):
     score_percent: Mapped[int] = mapped_column(Integer, nullable=False)
     correct_count: Mapped[int] = mapped_column(Integer, nullable=False)
     answered_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    # NULL identifies attempts saved before per-question results were supported.
+    question_results: Mapped[list[dict] | None] = mapped_column(
+        JSON().with_variant(JSONB(), "postgresql"), nullable=True
+    )
     completed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

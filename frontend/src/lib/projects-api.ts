@@ -62,12 +62,25 @@ export type StudyProjectQuizQuestion = {
   options: StudyProjectQuizOption[];
 };
 
+export type StudyProjectQuizQuestionResult = {
+  question_id: string;
+  is_correct: boolean;
+};
+
+export type QuizCompletionResult = {
+  attemptId: string;
+  correctCount: number;
+  answeredCount: number;
+  questionResults: StudyProjectQuizQuestionResult[];
+};
+
 export type StudyProjectQuizAttempt = {
   id: string;
   score_percent: number;
   correct_count: number;
   answered_count: number;
   completed_at: string;
+  question_results?: StudyProjectQuizQuestionResult[] | null;
 };
 
 export type StudyProjectQuiz = {
@@ -825,9 +838,7 @@ export async function deleteSummaryNote(payload: {
 export async function completeQuiz(payload: {
   projectId: string;
   quizId: string;
-  correctCount: number;
-  answeredCount: number;
-}): Promise<StudyProject> {
+} & QuizCompletionResult): Promise<StudyProject> {
   const response = await fetch(
     `/api/projects/${payload.projectId}/quizzes/${payload.quizId}/complete`,
     {
@@ -839,6 +850,8 @@ export async function completeQuiz(payload: {
       body: JSON.stringify({
         correct_count: payload.correctCount,
         answered_count: payload.answeredCount,
+        attempt_id: payload.attemptId,
+        question_results: payload.questionResults,
       }),
       cache: "no-store",
     },

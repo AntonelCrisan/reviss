@@ -269,8 +269,8 @@ def test_prompt_only_asks_for_the_chosen_types() -> None:
     assert "Dificultate: high" in prompt
     # Every option carries all four keys, so the model never has to choose
     # between competing option shapes.
-    assert '"match_label": null' in prompt
-    assert '"position": null' in prompt
+    assert "Fiecare optiune are label, is_correct, match_label si position." in prompt
+    assert "Foloseste null pentru match_label si position" in prompt
 
 
 def test_prompt_rejects_an_unknown_difficulty() -> None:

@@ -138,6 +138,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      // Stable, theme-independent URLs for crawlers and older browsers.
+      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+      { url: "/favicon-48x48.png", type: "image/png", sizes: "48x48" },
       {
         url: "/assets/logos/Reviss_favicon_dark.svg",
         type: "image/svg+xml",
@@ -192,24 +195,6 @@ export default function RootLayout({
           rel="icon"
           href="/assets/logos/Reviss_favicon_dark.svg"
           type="image/svg+xml"
-        />
-        <link
-          rel="icon"
-          href="/assets/logos/Reviss_favicon_dark.svg"
-          type="image/svg+xml"
-          media="(prefers-color-scheme: light)"
-        />
-        <link
-          rel="icon"
-          href="/assets/logos/Reviss_favicon_light.svg"
-          type="image/svg+xml"
-          media="(prefers-color-scheme: dark)"
-        />
-        <link
-          rel="icon"
-          href="/favicon-48x48.png"
-          type="image/png"
-          sizes="48x48"
         />
         <Script
           id="reviss-theme-script"

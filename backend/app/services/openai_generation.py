@@ -21,6 +21,18 @@ class OpenAIGenerationError(Exception):
     pass
 
 
+class OpenAIOutputError(OpenAIGenerationError):
+    """A retryable output failure, with usage retained for the whole job."""
+
+    def __init__(
+        self, message: str, *, reason: str, input_tokens: int, output_tokens: int
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+
+
 def _prompt_cache_key(job_type: str, project_id: str) -> str:
     safe_job_type = re.sub(r"[^a-z0-9_-]+", "_", job_type.lower())[:32]
     digest = hashlib.sha256(f"{job_type}:{project_id}".encode()).hexdigest()
@@ -117,26 +129,56 @@ class OpenAIStudyGenerator:
                 "Pachetul nu a putut fi generat momentan. Incearca din nou."
             ) from exc
 
-        raw_output = getattr(response, "output_text", "") or ""
-        if not raw_output.strip():
-            raise OpenAIGenerationError(
-                "Serviciul de generare nu a returnat continut util."
-            )
-
-        try:
-            payload = json.loads(raw_output)
-        except json.JSONDecodeError as exc:
-            raise OpenAIGenerationError(
-                "Pachetul generat nu a putut fi citit corect."
-            ) from exc
-
-        if not isinstance(payload, dict):
-            raise OpenAIGenerationError("Pachetul generat are o structura invalida.")
-
         usage = getattr(response, "usage", None)
         input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
         output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
         total_tokens = int(getattr(usage, "total_tokens", 0) or 0)
+
+        # A refusal or an incomplete response may still have output_text.
+        # Never mistake that text for a complete, usable study artifact.
+        for item in getattr(response, "output", None) or []:
+            for content in getattr(item, "content", None) or []:
+                if getattr(content, "type", None) == "refusal":
+                    raise OpenAIGenerationError(
+                        "Serviciul AI nu a putut genera continut pentru acest material."
+                    )
+        status = getattr(response, "status", None)
+        if status == "incomplete":
+            details = getattr(response, "incomplete_details", None)
+            reason = getattr(details, "reason", None)
+            if reason == "max_output_tokens":
+                raise OpenAIOutputError(
+                    "Raspunsul AI a fost intrerupt la limita de generare.",
+                    reason=reason,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                )
+            raise OpenAIGenerationError(
+                "Serviciul AI nu a putut finaliza generarea pentru acest material."
+            )
+        if status not in (None, "completed"):
+            raise OpenAIGenerationError(
+                "Serviciul AI nu a finalizat generarea. Incearca din nou."
+            )
+
+        raw_output = getattr(response, "output_text", "") or ""
+        try:
+            payload = json.loads(raw_output)
+        except json.JSONDecodeError as exc:
+            raise OpenAIOutputError(
+                "Pachetul generat nu a putut fi citit corect.",
+                reason="invalid_json",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+            ) from exc
+
+        if not isinstance(payload, dict):
+            raise OpenAIOutputError(
+                "Pachetul generat are o structura invalida.",
+                reason="invalid_json",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+            )
 
         return OpenAIGenerationResult(
             payload=payload,

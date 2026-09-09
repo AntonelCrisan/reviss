@@ -2,11 +2,12 @@
 
 import { useOpenCloseTransition } from "@/components/use-open-close-transition";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   type CSSProperties,
   type DragEvent,
   type ReactNode,
+  Suspense,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -75,6 +76,7 @@ import {
   updateSummaryHighlightColor,
   updateSummaryNote,
   type QuizGenerationConfig,
+  type QuizCompletionResult,
   type StudyProjectQuizOption,
   type StudyProject as ApiStudyProject,
   type StudyProjectPrepareResponse,
@@ -1348,13 +1350,12 @@ export function AccountDashboard({
   async function completeQuizAttempt(
     projectId: string,
     quizId: string,
-    result: { correctCount: number; answeredCount: number },
+    result: QuizCompletionResult,
   ) {
     const apiProject = await completeQuiz({
       projectId,
       quizId,
-      correctCount: result.correctCount,
-      answeredCount: result.answeredCount,
+      ...result,
     });
     const mappedProject = mapApiProject(apiProject);
     setProjects((currentProjects) =>
@@ -3118,7 +3119,7 @@ function ProjectView({
   onQuizComplete: (
     projectId: string,
     quizId: string,
-    result: { correctCount: number; answeredCount: number },
+    result: QuizCompletionResult,
   ) => Promise<void>;
   onGenerateQuiz: (
     projectId: string,
@@ -4312,47 +4313,20 @@ function QuizReviewReference({
   );
 }
 
-function QuizReviewRecommendations({
-  projectId,
-  questions,
-}: {
-  projectId: string;
-  questions: AccountQuizQuestion[];
-}) {
-  return (
-    <div className="space-y-4">
-      {questions.map((question) => (
-        <div key={question.id}>
-          <p className="text-sm font-semibold text-content">{question.concept}</p>
-          <p className="mt-1 text-sm leading-6 text-muted">{question.aiInsight}</p>
-          {question.review ? (
-            <QuizReviewReference projectId={projectId} review={question.review} />
-          ) : (
-            <p className="mt-1 text-xs text-muted">
-              Acest quiz nu are o trimitere verificabilă la rezumat.
-            </p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function getQuizReviewQuestions(
+function getQuizWeakConcepts(
   questions: AccountQuizQuestion[],
   submittedAnswers: Record<string, number[]>,
 ) {
-  const seen = new Set<string>();
-  return questions.filter((question) => {
-    if (submittedAnswers[question.id] === undefined ||
-        isQuizAnswerCorrect(question, submittedAnswers[question.id])) return false;
-    const key = question.review
-      ? `${question.review.paragraphIndex}:${question.concept.toLocaleLowerCase("ro-RO")}`
-      : question.concept.toLocaleLowerCase("ro-RO");
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  const concepts = new Map<string, string>();
+  for (const question of questions) {
+    const answer = submittedAnswers[question.id];
+    if (answer === undefined || isQuizAnswerCorrect(question, answer)) continue;
+
+    const concept = question.concept.trim();
+    const key = concept.toLocaleLowerCase("ro-RO");
+    if (concept && !concepts.has(key)) concepts.set(key, concept);
+  }
+  return [...concepts.values()];
 }
 
 function normalizeSummarySelection(value: string) {
@@ -7844,7 +7818,7 @@ type QuizComplexity = "Ușor" | "Mediu" | "Greu" | "Examen";
 
 type AccountQuizQuestion = {
   id: string;
-  sourceQuestionId?: string;
+  sourceQuestionId: string;
   concept: string;
   /** Inherited from the quiz, so it uses the same four labels. */
   difficulty: QuizComplexity;
@@ -8146,6 +8120,25 @@ function isQuizAnswerCorrect(
   return areAnswerSetsEqual(question.correctIndexes, submittedAnswer);
 }
 
+function buildQuizCompletionResult(
+  questions: AccountQuizQuestion[],
+  submittedAnswers: Record<string, number[]>,
+  attemptId: string,
+): QuizCompletionResult {
+  const questionResults = questions
+    .filter((question) => submittedAnswers[question.id] !== undefined)
+    .map((question) => ({
+      question_id: question.sourceQuestionId,
+      is_correct: isQuizAnswerCorrect(question, submittedAnswers[question.id]),
+    }));
+  return {
+    attemptId,
+    correctCount: questionResults.filter((result) => result.is_correct).length,
+    answeredCount: questionResults.length,
+    questionResults,
+  };
+}
+
 function buildMistakeFlashcardFromQuestion(
   question: AccountQuizQuestion,
 ): StudyFlashcardCard {
@@ -8218,7 +8211,7 @@ function QuizPanel({
   onQuizComplete: (
     projectId: string,
     quizId: string,
-    result: { correctCount: number; answeredCount: number },
+    result: QuizCompletionResult,
   ) => Promise<void>;
   onGenerateQuiz: (
     projectId: string,
@@ -8243,21 +8236,26 @@ function QuizPanel({
     Record<string, "saving" | "saved" | "error">
   >({});
   const [showQuizSummary, setShowQuizSummary] = useState(false);
-  const [attemptId, setAttemptId] = useState(0);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
   const [isGeneratingQuizzes, setIsGeneratingQuizzes] = useState(false);
   const [isCancellingQuizGeneration, setIsCancellingQuizGeneration] =
     useState(false);
-  const isPersistingCompletionRef = useRef(false);
-  const persistedAttemptRef = useRef<number | null>(null);
+  const completionSavesRef = useRef(new Map<string, "saving" | "saved" | "error">());
+  const [completionSave, setCompletionSave] = useState<{
+    attemptId: string;
+    status: "saving" | "saved" | "error";
+  } | null>(null);
+  const [completionRetry, setCompletionRetry] = useState(0);
 
   const quizData = useMemo(() => buildProjectQuizData(project), [project]);
   const hasReachedQuizLimit = quizData.catalog.length >= maxQuizzesPerProject;
   const activeQuiz = activeQuizId
     ? quizData.catalog.find((quiz) => quiz.id === activeQuizId) ?? null
     : null;
-  const quizQuestions = activeQuiz
-    ? getQuizQuestions(activeQuiz, quizData.questionBank)
-    : [];
+  const quizQuestions = useMemo(
+    () => activeQuiz ? getQuizQuestions(activeQuiz, quizData.questionBank) : [],
+    [activeQuiz, quizData.questionBank],
+  );
   const answeredCount = Object.keys(submittedAnswers).length;
   const correctCount = quizQuestions.reduce((count, question) => {
     return isQuizAnswerCorrect(question, submittedAnswers[question.id])
@@ -8279,32 +8277,37 @@ function QuizPanel({
   ).length;
 
   useEffect(() => {
-    if (
-      !activeQuiz ||
-      !isComplete ||
-      persistedAttemptRef.current === attemptId ||
-      isPersistingCompletionRef.current
-    ) {
+    if (!activeQuiz || !isComplete || !attemptId || completionSavesRef.current.has(attemptId)) {
       return;
     }
 
-    isPersistingCompletionRef.current = true;
-    onQuizComplete(project.id, activeQuiz.id, {
-      correctCount,
-      answeredCount,
-    })
+    completionSavesRef.current.set(attemptId, "saving");
+    setCompletionSave({ attemptId, status: "saving" });
+    onQuizComplete(
+      project.id,
+      activeQuiz.id,
+      buildQuizCompletionResult(quizQuestions, submittedAnswers, attemptId),
+    )
       .then(() => {
-        persistedAttemptRef.current = attemptId;
+        completionSavesRef.current.set(attemptId, "saved");
+        setCompletionSave((current) =>
+          current?.attemptId === attemptId ? { attemptId, status: "saved" } : current,
+        );
       })
-      .finally(() => {
-        isPersistingCompletionRef.current = false;
+      .catch(() => {
+        completionSavesRef.current.set(attemptId, "error");
+        setCompletionSave((current) =>
+          current?.attemptId === attemptId ? { attemptId, status: "error" } : current,
+        );
+        toast.error("Rezultatul quizului nu a putut fi salvat.", "Reîncearcă salvarea înainte să ieși din quiz.");
       });
   }, [
     activeQuiz,
     isComplete,
     attemptId,
-    correctCount,
-    answeredCount,
+    quizQuestions,
+    submittedAnswers,
+    completionRetry,
     onQuizComplete,
     project.id,
   ]);
@@ -8320,7 +8323,8 @@ function QuizPanel({
     setSavedMistakeCards({});
     setActiveQuestionIndex(0);
     setShowQuizSummary(false);
-    setAttemptId((currentId) => currentId + 1);
+    setAttemptId(crypto.randomUUID());
+    setCompletionSave(null);
   }
 
   function handleBackToQuizList() {
@@ -8404,11 +8408,7 @@ function QuizPanel({
         }}
         onStartQuiz={(quizId) => {
           setActiveQuizId(quizId);
-          setActiveQuestionIndex(0);
-          setDraftAnswers({});
-          setSubmittedAnswers({});
-          setShowQuizSummary(false);
-          setAttemptId((currentId) => currentId + 1);
+          resetQuiz();
         }}
       />
       </>
@@ -8445,8 +8445,7 @@ function QuizPanel({
             ? draftAnswer.length === activeQuestion.gapCount &&
               draftAnswer.every((value) => value >= 0)
             : false;
-  const reviewQuestions = getQuizReviewQuestions(quizQuestions, submittedAnswers);
-  const weakConcepts = [...new Set(reviewQuestions.map((question) => question.concept))];
+  const weakConcepts = getQuizWeakConcepts(quizQuestions, submittedAnswers);
 
   function toggleAnswer(answerIndex: number) {
     if (submittedAnswers[activeQuestion.id] !== undefined) {
@@ -8550,13 +8549,6 @@ function QuizPanel({
   const canSaveMistakeFlashcard =
     activeQuestionResult === false && activeQuestion.mode === "single";
   const mistakeCardState = savedMistakeCards[activeQuestion.id];
-  const recommendationText = reviewQuestions.length
-    ? "Revizuiește conceptele de mai jos, apoi răspunde din memorie."
-    : isComplete
-      ? "Ai răspuns corect la toate întrebările. Revino mai târziu pentru o nouă verificare."
-      : answeredCount
-        ? "Până acum ai răspuns corect. Continuă quizul."
-        : "Răspunde la întrebări pentru a vedea ce concepte trebuie reluate.";
 
   return (
     <section className="space-y-6">
@@ -8778,6 +8770,36 @@ function QuizPanel({
               </div>
             ) : null}
 
+            {isComplete && completionSave?.attemptId === attemptId ? (
+              <div className="mt-5 text-sm" role="status" aria-live="polite">
+                {completionSave.status === "error" ? (
+                  <div className="rounded-md border border-danger-border bg-danger-soft p-3 text-danger">
+                    <p>Rezultatul nu a fost salvat în istoric. Reîncearcă înainte să ieși din quiz.</p>
+                    <button
+                      type="button"
+                      className="mt-2 cursor-pointer font-bold underline underline-offset-4"
+                      onClick={() => {
+                        if (!attemptId) return;
+                        completionSavesRef.current.delete(attemptId);
+                        setCompletionRetry((value) => value + 1);
+                      }}
+                    >
+                      Reîncearcă salvarea
+                    </button>
+                  </div>
+                ) : completionSave.status === "saving" ? (
+                  <p className="text-muted">Se salvează rezultatul în istoric...</p>
+                ) : (
+                  <Link
+                    href={quizReviewHistoryHref(project.id, attemptId)}
+                    className="font-semibold text-action underline underline-offset-4"
+                  >
+                    Vezi greșelile în Progres →
+                  </Link>
+                )}
+              </div>
+            ) : null}
+
             <div className="mt-7 flex flex-col gap-3 border-t border-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="button"
@@ -8865,18 +8887,20 @@ function QuizPanel({
                 </p>
                 <div className="mt-3 divide-y divide-subtle border-y border-subtle">
                   {activeQuiz.attempts.map((attempt, attemptIndex) => (
-                    <div
+                    <Link
                       key={attempt.id}
-                      className="flex items-center justify-between gap-3 py-2.5 text-xs"
+                      href={quizReviewHistoryHref(project.id, attempt.id)}
+                      className="flex items-center justify-between gap-3 py-2.5 text-xs hover:text-action"
+                      aria-label={`Vezi încercarea din ${formatQuizAttemptTimestamp(attempt.completedAt)} în Progres`}
                     >
                       <span className="font-bold text-muted">
                         #{activeQuiz.attempts.length - attemptIndex} ·{" "}
                         {formatQuizAttemptTimestamp(attempt.completedAt)}
                       </span>
                       <span className="shrink-0 font-bold text-content">
-                        {attempt.scorePercent}%
+                        {attempt.scorePercent}% →
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -8931,11 +8955,6 @@ function QuizPanel({
                 value={String(savedMistakeCount)}
               />
               <QuizResultCard label="Concepte de revizuit" value={String(weakConcepts.length)} />
-            </div>
-
-            <div className="mt-6 max-h-[40vh] overflow-y-auto">
-              <p className="mb-3 text-sm font-semibold text-content">{recommendationText}</p>
-              <QuizReviewRecommendations projectId={project.id} questions={reviewQuestions} />
             </div>
 
             <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -9633,6 +9652,225 @@ function buildProgressCompetencyScores(
   return [...completedScores, ...inferredWeakScores].slice(0, 6);
 }
 
+type QuizReviewHistoryEntry = {
+  quiz: StudyProject["quizzes"][number];
+  attempt: StudyProject["quizzes"][number]["attempts"][number];
+};
+
+type ProgressReviewItem = {
+  question: StudyProject["quizzes"][number]["questions"][number];
+  quizTitle: string;
+  attemptId: string;
+  completedAt: string;
+  review: QuizReviewLocation | null;
+};
+
+type ProgressReviewGroup = {
+  key: string;
+  concept: string;
+  items: ProgressReviewItem[];
+};
+
+function quizReviewHistoryHref(projectId: string, attemptId?: string | null) {
+  const params = new URLSearchParams({ project: projectId });
+  if (attemptId) params.set("attempt", attemptId);
+  return `/myaccount/progres?${params.toString()}#de-revizuit`;
+}
+
+function getQuizReviewHistory(quizzes: StudyProject["quizzes"]): QuizReviewHistoryEntry[] {
+  return quizzes
+    .flatMap((quiz) => quiz.attempts.map((attempt) => ({ quiz, attempt })))
+    .sort((a, b) => new Date(b.attempt.completed_at).getTime() - new Date(a.attempt.completed_at).getTime());
+}
+
+function buildQuizReviewHistoryData(
+  project: StudyProject,
+  selectedAttemptId: string | null = null,
+) {
+  const history = getQuizReviewHistory(project.quizzes);
+  const latestByQuiz = new Map<string, QuizReviewHistoryEntry>();
+  for (const entry of history) {
+    if (!latestByQuiz.has(entry.quiz.id)) latestByQuiz.set(entry.quiz.id, entry);
+  }
+  const selected = selectedAttemptId
+    ? history.filter(({ attempt }) => attempt.id === selectedAttemptId)
+    : [...latestByQuiz.values()];
+  const paragraphs = splitSummaryParagraphs(project.summary?.content ?? "");
+  const groups = new Map<string, ProgressReviewGroup>();
+  let unavailableCount = 0;
+  let detailedCount = 0;
+  for (const { quiz, attempt } of selected) {
+    if (attempt.question_results == null) {
+      unavailableCount += 1;
+      continue;
+    }
+    detailedCount += 1;
+    for (const result of attempt.question_results) {
+      if (result.is_correct) continue;
+      const question = quiz.questions.find((item) => item.id === result.question_id);
+      if (!question) {
+        unavailableCount += 1;
+        continue;
+      }
+      const review = getQuizReviewLocation(question, paragraphs);
+      const concept = question.concept?.trim() || question.review_section?.trim() || quiz.title;
+      const key = `${concept.toLocaleLowerCase("ro-RO")}:${review?.paragraphIndex ?? "none"}`;
+      let group = groups.get(key);
+      if (!group) {
+        group = { key, concept, items: [] };
+        groups.set(key, group);
+      }
+      group.items.push({
+        question, quizTitle: quiz.title, attemptId: attempt.id,
+        completedAt: attempt.completed_at, review,
+      });
+    }
+  }
+  return {
+    history,
+    groups: [...groups.values()],
+    unavailableCount,
+    detailedCount,
+    missingAttempt: Boolean(selectedAttemptId && !selected.length),
+    selectedEntry: selectedAttemptId ? selected[0] ?? null : null,
+  };
+}
+
+function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedAttemptId = searchParams.get("attempt");
+  const sectionRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (window.location.hash !== "#de-revizuit") return;
+    const frame = window.requestAnimationFrame(() => {
+      sectionRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+      sectionRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [project.id]);
+  const data = useMemo(
+    () => buildQuizReviewHistoryData(project, selectedAttemptId),
+    [project, selectedAttemptId],
+  );
+
+  return (
+    <section ref={sectionRef} id="de-revizuit" tabIndex={-1} className="scroll-mt-24 rounded-xl border border-subtle bg-surface p-5 sm:p-7">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="font-serif text-2xl font-semibold text-content">De revizuit</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            {data.selectedEntry
+              ? `Greșelile din „${data.selectedEntry.quiz.title}”, ${formatQuizAttemptTimestamp(data.selectedEntry.attempt.completed_at)}.`
+              : "Greșelile din ultima încercare a fiecărui quiz, grupate pe concepte."}
+          </p>
+        </div>
+        <label className="flex min-w-0 flex-col gap-2 text-sm font-semibold text-content lg:max-w-sm">
+          Afișează
+          <select
+            value={data.missingAttempt ? "missing" : selectedAttemptId ?? ""}
+            onChange={(event) => router.replace(
+              quizReviewHistoryHref(project.id, event.target.value), { scroll: false },
+            )}
+            className="w-full rounded-md border border-subtle bg-app px-3 py-2 text-sm text-content"
+          >
+            <option value="">Ultimele încercări</option>
+            {data.missingAttempt ? <option value="missing" disabled>Încercare indisponibilă</option> : null}
+            {data.history.map(({ quiz, attempt }) => (
+              <option key={attempt.id} value={attempt.id}>
+                {quiz.title} · {formatQuizAttemptTimestamp(attempt.completed_at)} · {attempt.score_percent}%
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {data.selectedEntry ? (
+        <p className="mt-4 text-sm font-semibold text-content">
+          Scor: {data.selectedEntry.attempt.score_percent}% · {data.selectedEntry.attempt.correct_count}/{data.selectedEntry.attempt.answered_count} răspunsuri corecte
+        </p>
+      ) : null}
+      {data.missingAttempt ? (
+        <p className="mt-5 text-sm text-muted">Încercarea nu mai este disponibilă pentru acest proiect. Alege „Ultimele încercări”.</p>
+      ) : data.unavailableCount > 0 ? (
+        <p className="mt-5 rounded-md border border-subtle bg-app p-3 text-sm leading-6 text-muted">
+          Unele încercări au doar scorul salvat, fără detaliile întrebărilor greșite. Reia acele quizuri pentru a le include în „De revizuit”.
+        </p>
+      ) : null}
+      {!data.groups.length && !data.missingAttempt ? (
+        <p className="mt-5 text-sm leading-6 text-muted">
+          {data.detailedCount > 0
+            ? "Nu există răspunsuri greșite în încercările cu detalii afișate."
+            : data.history.length
+              ? "Recomandările vor apărea aici după o nouă încercare."
+              : "Finalizează un quiz pentru a vedea aici conceptele de reluat."}
+        </p>
+      ) : null}
+      <div className="mt-5 space-y-3">
+        {data.groups.map((group) => (
+          <details key={group.key} className="rounded-lg border border-subtle bg-app/40 p-4">
+            <summary className="cursor-pointer font-semibold text-content">
+              {group.concept}
+              <span className="ml-2 text-xs font-normal text-muted">
+                {group.items.length} {group.items.length === 1 ? "întrebare" : "întrebări"}
+              </span>
+            </summary>
+            <div className="mt-4 space-y-5">
+              {group.items.map((item) => (
+                <div key={`${item.attemptId}:${item.question.id}`} className="border-t border-subtle pt-4">
+                  <p className="text-xs text-muted">
+                    {item.quizTitle} · {formatQuizAttemptTimestamp(item.completedAt)}
+                  </p>
+                  <h3 className="mt-2 font-semibold text-content">{item.question.prompt}</h3>
+                  {item.question.explanation ? (
+                    <p className="mt-2 text-sm leading-6 text-muted">{item.question.explanation}</p>
+                  ) : null}
+                  {item.question.review_advice ? (
+                    <p className="mt-3 text-sm leading-6 text-content">{item.question.review_advice}</p>
+                  ) : null}
+                  {item.review ? (
+                    <QuizReviewReference projectId={project.id} review={item.review} />
+                  ) : (
+                    <p className="mt-3 text-xs text-muted">Această întrebare nu are o trimitere verificabilă la rezumat.</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function buildProgressWeakConcepts(project: StudyProject): Array<[string, number]> {
+  const reviewData = buildQuizReviewHistoryData(project);
+  const weakConceptCounts = new Map<string, number>();
+  for (const group of reviewData.groups) {
+    weakConceptCounts.set(
+      group.concept, (weakConceptCounts.get(group.concept) ?? 0) + group.items.length,
+    );
+  }
+  // Keep the old flashcard-based signal only where no detailed attempt exists.
+  const detailedQuestionIds = new Set<string>();
+  const seenQuizIds = new Set<string>();
+  for (const { quiz, attempt } of reviewData.history) {
+    if (seenQuizIds.has(quiz.id)) continue;
+    seenQuizIds.add(quiz.id);
+    if (attempt.question_results != null) {
+      quiz.questions.forEach((question) => detailedQuestionIds.add(question.id));
+    }
+  }
+  for (const mistake of project.quizMistakeFlashcards) {
+    if (mistake.sourceQuestionId && detailedQuestionIds.has(mistake.sourceQuestionId)) continue;
+    const key = mistake.topic || "General";
+    weakConceptCounts.set(key, (weakConceptCounts.get(key) ?? 0) + 1);
+  }
+  return Array.from(weakConceptCounts.entries()).sort(
+    (a, b) => b[1] - a[1],
+  );
+}
+
 function buildProjectProgressData(project: StudyProject) {
   const quizzes = project.quizzes;
   const totalQuizzes = quizzes.length;
@@ -9678,14 +9916,7 @@ function buildProjectProgressData(project: StudyProject) {
         allAttempts[0].scorePercent
       : 0;
 
-  const weakConceptCounts = new Map<string, number>();
-  for (const mistake of project.quizMistakeFlashcards) {
-    const key = mistake.topic || "General";
-    weakConceptCounts.set(key, (weakConceptCounts.get(key) ?? 0) + 1);
-  }
-  const weakConcepts = Array.from(weakConceptCounts.entries()).sort(
-    (a, b) => b[1] - a[1],
-  );
+  const weakConcepts = buildProgressWeakConcepts(project);
 
   const quizScores: ProgressQuizScore[] = quizzes
     .map((quiz) => ({
@@ -9863,6 +10094,10 @@ function ProgressPanel({ project }: { project: StudyProject }) {
           />
         </div>
       </section>
+
+      <Suspense fallback={<p className="text-sm text-muted">Se încarcă recomandările...</p>}>
+        <ProgressQuizReviewPanel project={project} />
+      </Suspense>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
         <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">

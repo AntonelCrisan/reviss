@@ -474,6 +474,7 @@ async def cancel_prepare_project(
         project_id=project_id,
     )
 
+
 @router.post("/{project_id}/quizzes", response_model=StudyProjectResponse)
 async def generate_project_quiz(
     project_id: uuid.UUID,
@@ -966,6 +967,12 @@ async def complete_quiz(
             quiz_id=quiz_id,
             correct_count=payload.correct_count,
             answered_count=payload.answered_count,
+            attempt_id=payload.attempt_id,
+            question_results=(
+                [item.model_dump(mode="json") for item in payload.question_results]
+                if payload.question_results is not None
+                else None
+            ),
         )
     except ProjectNotFoundError as exc:
         await session.rollback()

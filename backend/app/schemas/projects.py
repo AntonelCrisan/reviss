@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 from app.models.study_project import QUIZ_COMPLEXITIES, QUIZ_QUESTION_TYPES
 
@@ -138,6 +138,11 @@ class StudyProjectQuizQuestionResponse(BaseModel):
     options: list[StudyProjectQuizOptionResponse] = Field(default_factory=list)
 
 
+class StudyProjectQuizQuestionResult(BaseModel):
+    question_id: uuid.UUID
+    is_correct: StrictBool
+
+
 class StudyProjectQuizAttemptResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -146,6 +151,7 @@ class StudyProjectQuizAttemptResponse(BaseModel):
     correct_count: int
     answered_count: int
     completed_at: datetime
+    question_results: list[StudyProjectQuizQuestionResult] | None = None
 
 
 class StudyProjectQuizResponse(BaseModel):
@@ -167,6 +173,10 @@ class StudyProjectQuizResponse(BaseModel):
 class StudyProjectQuizCompletionCreate(BaseModel):
     correct_count: int = Field(ge=0)
     answered_count: int = Field(ge=0)
+    attempt_id: uuid.UUID | None = None
+    question_results: list[StudyProjectQuizQuestionResult] | None = Field(
+        default=None, max_length=80
+    )
 
 
 class StudyProjectStrategyResponse(BaseModel):

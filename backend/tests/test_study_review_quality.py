@@ -14,11 +14,14 @@ from app.services.projects import (
     StudyProjectService,
     _keyword_paragraph_index,
     _quiz_summary_context,
+    _repair_quiz_review_references,
+    _single_quiz_schema,
     _split_summary_blocks,
     _summary_reference_blocks,
     _validate_generated_single_quiz,
     _validate_quiz_answer_lengths,
     _validate_study_pack_anchors,
+    build_reviss_single_quiz_prompt,
     build_reviss_study_pack_prompt,
     limits_for_user,
 )
@@ -282,11 +285,8 @@ def test_small_database_flashcard_limit_is_respected_by_prompt():
     assert "exact 5 flashcarduri" in prompt
 
 
-@pytest.mark.parametrize("retry_succeeds", [True, False])
-def test_generation_retries_bad_references_before_any_quiz_is_saved(
-    monkeypatch, retry_succeeds
-):
-    import asyncio
+@pytest.fixture
+def quiz_generation_context(monkeypatch):
     from pathlib import Path
     from unittest.mock import AsyncMock, Mock
 
@@ -337,54 +337,154 @@ def test_generation_retries_bad_references_before_any_quiz_is_saved(
     )
     monkeypatch.setattr(service_module, "AiCreditsService", lambda _: credits)
     monkeypatch.setattr(service_module, "_current_billing_window", AsyncMock())
-    bad = quiz_payload()
-    bad["quiz"]["questions"][0]["review_paragraph_index"] = 999
-    good = quiz_payload()
-    generator = SimpleNamespace(
-        generate_json=AsyncMock(
-            side_effect=[
-                SimpleNamespace(payload=bad, input_tokens=100, output_tokens=200),
-                SimpleNamespace(
-                    payload=good if retry_succeeds else bad,
-                    input_tokens=150,
-                    output_tokens=250,
-                    total_tokens=400,
-                ),
-            ]
+    generator = SimpleNamespace(generate_json=AsyncMock())
+    monkeypatch.setattr(service_module, "OpenAIStudyGenerator", lambda _: generator)
+    return SimpleNamespace(
+        service=service,
+        project=project,
+        user=user,
+        session=session,
+        credits=credits,
+        generator=generator,
+    )
+
+
+def run_quiz_generation(context):
+    import asyncio
+
+    return asyncio.run(
+        context.service.generate_single_quiz(
+            user=context.user,
+            project_id=context.project.id,
+            complexity="medium",
+            question_count=1,
+            question_types=["single_choice"],
         )
     )
-    monkeypatch.setattr(service_module, "OpenAIStudyGenerator", lambda _: generator)
-    run = service.generate_single_quiz(
-        user=user,
-        project_id=project.id,
-        complexity="medium",
-        question_count=1,
-        question_types=["single_choice"],
+
+
+@pytest.mark.parametrize("retry_succeeds", [True, False])
+@pytest.mark.parametrize(
+    "first_failure", ["reference", "max_output_tokens", "invalid_json"]
+)
+def test_generation_retries_once_before_any_quiz_is_saved(
+    quiz_generation_context, retry_succeeds, first_failure
+):
+    from app.services.openai_generation import OpenAIOutputError
+
+    context = quiz_generation_context
+    service, project = context.service, context.project
+    bad = quiz_payload()
+    bad["quiz"]["questions"][0]["review_anchor_text"] = (
+        "Un citat inventat care nu există."
     )
+    good = quiz_payload()
+    first = (
+        SimpleNamespace(payload=bad, input_tokens=100, output_tokens=200)
+        if first_failure == "reference"
+        else OpenAIOutputError(
+            "Raspuns AI incomplet",
+            reason=first_failure,
+            input_tokens=100,
+            output_tokens=200,
+        )
+    )
+    context.generator.generate_json.side_effect = [
+        first,
+        SimpleNamespace(
+            payload=good if retry_succeeds else bad,
+            input_tokens=150,
+            output_tokens=250,
+            total_tokens=400,
+        ),
+    ]
     if retry_succeeds:
-        asyncio.run(run)
+        run_quiz_generation(context)
         service._apply_generated_quiz.assert_called_once_with(project, good)
         assert len(project.quizzes) == 1
         assert project.quizzes[0].questions[0].review_paragraph_index == 1
-        assert credits.charge.call_args.kwargs["input_tokens"] == 250
-        assert credits.charge.call_args.kwargs["output_tokens"] == 450
+        assert context.credits.charge.call_args.kwargs["input_tokens"] == 250
+        assert context.credits.charge.call_args.kwargs["output_tokens"] == 450
         job = service._get_latest_generation_job.return_value
-        assert job.input_tokens == 250
-        assert job.output_tokens == 450
         assert job.total_tokens == 700
-        session.commit.assert_awaited_once()
+        context.session.commit.assert_awaited_once()
     else:
         with pytest.raises(ProjectValidationError):
-            asyncio.run(run)
+            run_quiz_generation(context)
         service._apply_generated_quiz.assert_not_called()
         service._write_generation_response.assert_not_called()
-        session.commit.assert_not_awaited()
-        credits.charge.assert_not_awaited()
+        context.session.commit.assert_not_awaited()
+        context.credits.charge.assert_not_awaited()
         service._fail_generation_job.assert_awaited_once()
-    assert generator.generate_json.await_count == 2
-    retry_prompt = generator.generate_json.call_args_list[1].kwargs["prompt"]
+    calls = context.generator.generate_json.call_args_list
+    assert len(calls) == 2
+    retry_prompt = calls[1].kwargs["prompt"]
     assert "REGENERARE OBLIGATORIE" in retry_prompt
-    assert "Referinta de revizuire este invalida" in retry_prompt
+    if first_failure == "reference":
+        assert "Referinta de revizuire este invalida la intrebarea 1" in retry_prompt
+        assert "CANDIDAT RESPINS" in retry_prompt
+        assert bad["quiz"]["questions"][0]["review_anchor_text"] in retry_prompt
+    expected_budget = 6000 if first_failure == "max_output_tokens" else 4000
+    assert calls[1].kwargs["max_output_tokens"] == expected_budget
+    assert "copy these verbatim" in calls[0].kwargs["instructions"]
+
+
+def test_generation_repairs_unique_quote_location_without_an_extra_request(
+    quiz_generation_context,
+):
+    context = quiz_generation_context
+    payload = quiz_payload()
+    payload["quiz"]["questions"][0].update(
+        review_paragraph_index=999,
+        review_section="Wrong heading",
+    )
+    context.generator.generate_json.return_value = SimpleNamespace(
+        payload=payload,
+        input_tokens=100,
+        output_tokens=200,
+    )
+    run_quiz_generation(context)
+    context.generator.generate_json.assert_awaited_once()
+    assert context.project.quizzes[0].questions[0].review_paragraph_index == 1
+    assert context.project.quizzes[0].questions[0].review_section == "Etica"
+
+
+def test_generation_does_not_retry_general_api_errors(quiz_generation_context):
+    from app.services.openai_generation import OpenAIGenerationError
+
+    context = quiz_generation_context
+    context.generator.generate_json.side_effect = OpenAIGenerationError(
+        "API unavailable"
+    )
+    with pytest.raises(OpenAIGenerationError):
+        run_quiz_generation(context)
+    context.generator.generate_json.assert_awaited_once()
+    context.service._apply_generated_quiz.assert_not_called()
+    context.credits.charge.assert_not_awaited()
+
+
+def test_generation_cancellation_after_response_prevents_retry_and_save(
+    quiz_generation_context,
+):
+    from app.services.projects import ProjectGenerationCancelledError
+
+    context = quiz_generation_context
+    context.generator.generate_json.return_value = SimpleNamespace(
+        payload=quiz_payload(),
+        input_tokens=100,
+        output_tokens=200,
+    )
+    context.service._ensure_generation_can_continue.side_effect = [
+        None,
+        None,
+        ProjectGenerationCancelledError("Cancelled"),
+    ]
+    with pytest.raises(ProjectGenerationCancelledError):
+        run_quiz_generation(context)
+    context.generator.generate_json.assert_awaited_once()
+    context.service._apply_generated_quiz.assert_not_called()
+    context.session.rollback.assert_awaited_once()
+    context.service._fail_generation_job.assert_not_awaited()
 
 
 @pytest.mark.parametrize(
@@ -571,3 +671,72 @@ def test_keyword_anchor_allows_rendered_whitespace_and_case():
     )
     duplicate = summary + "\n\nMORALA se formează prin învățare și experiență."
     assert _keyword_paragraph_index(duplicate, anchor) is None
+
+
+def test_unique_quote_repairs_only_metadata_and_preserves_content():
+    payload = quiz_payload()
+    question = payload["quiz"]["questions"][0]
+    expected = copy.deepcopy(question)
+    question.update(review_paragraph_index=2, review_section="Translated section")
+    _repair_quiz_review_references(payload, SUMMARY)
+    assert question == expected
+    validate(payload)
+
+
+@pytest.mark.parametrize(
+    "anchor",
+    [
+        "Un citat inventat care nu există.",
+        "Morala se formează prin învățare socială.",
+    ],
+)
+def test_invented_or_ambiguous_quotes_never_guess_a_paragraph(anchor):
+    summary = SUMMARY + "\n\nMorala se formează prin învățare socială."
+    payload = quiz_payload()
+    question = payload["quiz"]["questions"][0]
+    question.update(review_paragraph_index=999, review_anchor_text=anchor)
+    before = copy.deepcopy(payload)
+    _repair_quiz_review_references(payload, summary)
+    assert payload == before
+    with pytest.raises(ProjectValidationError):
+        _validate_generated_single_quiz(payload, summary=summary)
+
+
+def test_request_schema_enforces_configuration_without_mutating_shared_schema():
+    from app.services.openai_generation import SINGLE_QUIZ_SCHEMA
+
+    before = copy.deepcopy(SINGLE_QUIZ_SCHEMA)
+    schema = _single_quiz_schema("exam", 12, ["ordering", "matching"])
+    quiz = schema["properties"]["quiz"]["properties"]
+    assert quiz["complexity"]["enum"] == ["exam"]
+    assert quiz["questions"]["minItems"] == quiz["questions"]["maxItems"] == 12
+    assert quiz["questions"]["items"]["properties"]["type"]["enum"] == [
+        "ordering",
+        "matching",
+    ]
+    assert SINGLE_QUIZ_SCHEMA == before
+    other = _single_quiz_schema("easy", 4, ["single_choice"])
+    assert other["properties"]["quiz"]["properties"]["complexity"]["enum"] == ["easy"]
+    assert quiz["complexity"]["enum"] == ["exam"]
+
+
+def test_quiz_prompt_uses_requested_types_without_invalid_example():
+    prompt = build_reviss_single_quiz_prompt(
+        "Etica",
+        "Etica",
+        "Facultate",
+        SUMMARY,
+        "",
+        SUMMARY,
+        "medium",
+        4,
+        ["matching", "ordering"],
+        "en",
+    )
+    assert '"type": "single_choice"' not in prompt
+    assert '"review_paragraph_index": 0' not in prompt
+    assert "1: matching" in prompt and "4: ordering" in prompt
+    assert (
+        "review_section si review_anchor_text, copiate exact in limba rezumatului"
+        in prompt
+    )
