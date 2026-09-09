@@ -153,48 +153,47 @@ export function StrategiesTabSkeleton() {
 export function ProgressTabSkeleton() {
   return (
     <div aria-hidden="true" className="space-y-5">
-      <section className="theme-shadow-card overflow-hidden rounded-xl border border-subtle bg-surface">
-        <div className="grid gap-7 border-b border-subtle p-5 sm:p-7 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start">
-          <div className="min-w-0 space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Block className="h-6 w-32" />
-              <Block className="h-6 w-44" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div
+            key={index}
+            className="rounded-xl border border-subtle bg-surface p-5"
+          >
+            <div className="flex items-center justify-between">
+              <Block className="h-4 w-28" />
+              <Block className="h-8 w-8" />
             </div>
-            <Block className="h-11 w-80 max-w-[80vw]" />
-            <Block className="h-4 w-full max-w-xl" />
+            <Block className="mt-4 h-9 w-20" />
+            <Block className="mt-3 h-3 w-36" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 4 }, (_, index) => (
-              <div
-                key={index}
-                className="rounded-xl border border-subtle bg-app p-4"
-              >
-                <Block className="h-8 w-16" />
-                <Block className="mt-2 h-3 w-24" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="grid gap-5 p-5 sm:p-7 lg:grid-cols-3">
-          {Array.from({ length: 3 }, (_, index) => (
-            <div key={index} className="space-y-3">
-              <Block className="h-3 w-28" />
-              <Block className="h-7 w-40" />
-              <Block className="h-4 w-full" />
-            </div>
-          ))}
-        </div>
-      </section>
+        ))}
+      </div>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        {Array.from({ length: 2 }, (_, index) => (
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.85fr)]">
+        <section className="rounded-xl border border-subtle bg-surface p-5">
+          <Block className="h-4 w-40" />
+          <Block className="mt-2 h-3 w-24" />
+          <Block className="mt-5 h-60 w-full rounded-xl" />
+          <Block className="mt-5 h-24 w-full rounded-xl" />
+        </section>
+        <section className="rounded-xl border border-subtle bg-surface p-5">
+          <Block className="h-4 w-44" />
+          <Block className="mt-2 h-3 w-20" />
+          <Block className="mx-auto mt-6 h-32 w-56 max-w-full rounded-t-full" />
+          <Block className="mt-6 h-4 w-full" />
+          <Block className="mt-5 h-11 w-full" />
+        </section>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.5fr)_minmax(0,0.85fr)]">
+        {Array.from({ length: 3 }, (_, index) => (
           <section
             key={index}
-            className="rounded-xl border border-subtle bg-surface p-5 sm:p-6"
+            className="rounded-xl border border-subtle bg-surface p-5"
           >
-            <Block className="h-3 w-32" />
-            <Block className="mt-3 h-8 w-60 max-w-[70vw]" />
-            <Block className="mt-6 h-56 w-full rounded-xl" />
+            <Block className="h-4 w-32" />
+            <Block className="mt-2 h-3 w-24" />
+            <Block className="mt-5 h-48 w-full rounded-xl" />
           </section>
         ))}
       </div>

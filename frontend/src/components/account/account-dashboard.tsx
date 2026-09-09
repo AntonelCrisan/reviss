@@ -9510,9 +9510,22 @@ type ProgressAttempt = {
 };
 
 type ProgressQuizScore = {
+  id: string;
   title: string;
   scorePercent: number | null;
   completed: boolean;
+  complexity: QuizComplexity;
+  questionCount: number;
+  attemptsCount: number;
+  lastAttemptAt: string | null;
+};
+
+type ProgressWeekdayActivity = {
+  label: string;
+  name: string;
+  count: number;
+  /** The busiest weekday (ties included), drawn in the accent colour. */
+  isTop: boolean;
 };
 
 type CompletedProgressQuizScore = ProgressQuizScore & {
@@ -9919,11 +9932,30 @@ function buildProjectProgressData(project: StudyProject) {
   const weakConcepts = buildProgressWeakConcepts(project);
 
   const quizScores: ProgressQuizScore[] = quizzes
-    .map((quiz) => ({
-      title: quiz.title,
-      scorePercent: quiz.score_percent,
-      completed: Boolean(quiz.completed_at),
-    }))
+    .map((quiz) => {
+      const lastAttempt = quiz.attempts.reduce<
+        StudyProject["quizzes"][number]["attempts"][number] | null
+      >(
+        (latest, attempt) =>
+          !latest ||
+          new Date(attempt.completed_at).getTime() >
+            new Date(latest.completed_at).getTime()
+            ? attempt
+            : latest,
+        null,
+      );
+
+      return {
+        id: quiz.id,
+        title: quiz.title,
+        scorePercent: quiz.score_percent,
+        completed: Boolean(quiz.completed_at),
+        complexity: normalizeGeneratedQuizComplexity(quiz.complexity),
+        questionCount: quiz.questions.length,
+        attemptsCount: quiz.attempts.length,
+        lastAttemptAt: lastAttempt?.completed_at ?? quiz.completed_at,
+      };
+    })
     .sort((a, b) => {
       if (a.completed !== b.completed) {
         return Number(b.completed) - Number(a.completed);
@@ -9934,6 +9966,11 @@ function buildProjectProgressData(project: StudyProject) {
   const generatedFlashcardsCount = getGeneratedFlashcards(
     project.flashcards,
   ).length;
+  const activeDayKeys = new Set(
+    allAttempts.map((attempt) =>
+      toLocalDateKey(startOfLocalDay(new Date(attempt.completedAt))),
+    ),
+  );
 
   return {
     totalQuizzes,
@@ -9944,17 +9981,53 @@ function buildProjectProgressData(project: StudyProject) {
     trendDelta,
     totalAttempts: allAttempts.length,
     recentAttempts: allAttempts.slice(-8),
+    latestAttempt: allAttempts.length ? allAttempts[allAttempts.length - 1] : null,
     weakConcepts,
     quizScores,
     competencyScores: buildProgressCompetencyScores(quizScores, weakConcepts),
     activityDays: buildProgressActivityDays(allAttempts),
+    weekdayActivity: buildProgressWeekdayActivity(allAttempts),
+    activeDaysCount: activeDayKeys.size,
     totalFlashcards: project.flashcards.length,
     generatedFlashcardsCount,
     manualFlashcardsCount: project.manualFlashcards.length,
     quizMistakeFlashcardsCount: project.quizMistakeFlashcards.length,
     keywordsCount: project.keywords.length,
     highlightsCount: project.summaryHighlights.length,
+    notesCount: project.summaryNotes.length,
   };
+}
+
+const PROGRESS_WEEKDAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"] as const;
+const PROGRESS_WEEKDAY_NAMES = [
+  "luni",
+  "marți",
+  "miercuri",
+  "joi",
+  "vineri",
+  "sâmbătă",
+  "duminică",
+] as const;
+/** The readiness score the gauge and the CTA treat as "ready for the exam". */
+const PROGRESS_READINESS_TARGET = 80;
+
+/** Attempts per weekday, Monday first, so the busiest study day stands out. */
+function buildProgressWeekdayActivity(
+  attempts: ProgressAttempt[],
+): ProgressWeekdayActivity[] {
+  const counts = Array.from({ length: 7 }, () => 0);
+  for (const attempt of attempts) {
+    const weekday = (new Date(attempt.completedAt).getDay() + 6) % 7;
+    counts[weekday] += 1;
+  }
+  const maxCount = Math.max(...counts);
+
+  return counts.map((count, index) => ({
+    label: PROGRESS_WEEKDAY_LABELS[index],
+    name: PROGRESS_WEEKDAY_NAMES[index],
+    count,
+    isTop: maxCount > 0 && count === maxCount,
+  }));
 }
 
 function ProgressPanel({ project }: { project: StudyProject }) {
@@ -9966,21 +10039,19 @@ function ProgressPanel({ project }: { project: StudyProject }) {
     data.averageScore !== null
       ? Math.round(data.averageScore * 0.72 + completionPercent * 0.28)
       : completionPercent;
-  const latestAttempt = data.recentAttempts.length
-    ? data.recentAttempts[data.recentAttempts.length - 1]
-    : null;
   const nextQuiz = data.quizScores.find((quiz) => !quiz.completed);
+  const topWeekday = data.weekdayActivity.find((day) => day.isTop);
+  const weakCount = data.weakConcepts.reduce((sum, [, count]) => sum + count, 0);
   const focusText = data.weakConcepts.length
     ? data.weakConcepts
         .slice(0, 2)
         .map(([concept]) => concept)
         .join(" și ")
-    : "nu există încă zone slabe clare";
-  const trendLabel = data.totalAttempts
-    ? data.totalAttempts > 1
-      ? `${formatSignedPercent(data.trendDelta)} de la prima încercare`
-      : "Primul reper salvat"
-    : "Fără încercări încă";
+    : null;
+  const trendBadge =
+    data.totalAttempts > 1 ? (
+      <ProgressTrendBadge delta={data.trendDelta} suffix="de la prima încercare" />
+    ) : null;
   const flashcardSegments: ProgressFlashcardSegment[] = [
     {
       label: "Generate",
@@ -10001,228 +10072,671 @@ function ProgressPanel({ project }: { project: StudyProject }) {
       color: "var(--theme-danger-text)",
     },
   ];
-  const summaryStats = [
-    ["Flashcard-uri generate", String(data.generatedFlashcardsCount)],
-    ["Concepte cheie", String(data.keywordsCount)],
-    ["Flashcard-uri manuale", String(data.manualFlashcardsCount)],
-    ["Highlight-uri în rezumat", String(data.highlightsCount)],
-    ["Flashcard-uri din greșeli", String(data.quizMistakeFlashcardsCount)],
-    ["Încercări la quiz-uri", String(data.totalAttempts)],
-  ] as const;
 
   return (
     <div className="space-y-5">
-      <section className="theme-shadow-card overflow-hidden rounded-xl border border-subtle bg-surface">
-        <div className="grid gap-7 border-b border-subtle p-5 sm:p-7 xl:grid-cols-[minmax(0,1fr)_24rem] xl:items-start">
-          <div className="min-w-0 space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-                Progres general
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <ProgressKpiCard
+          highlighted
+          label="Scor de pregătire"
+          value={data.totalQuizzes ? `${readinessScore}%` : "–"}
+          icon={
+            <Icon className="h-4 w-4">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
+            </Icon>
+          }
+          footer={
+            data.totalQuizzes ? (
+              trendBadge ?? (
+                <span className="text-xs font-semibold opacity-80">
+                  Scoruri și quiz-uri finalizate, combinate
+                </span>
+              )
+            ) : (
+              <span className="text-xs font-semibold opacity-80">
+                Apare după primul quiz rezolvat
               </span>
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${
-                  data.trendDelta >= 0
-                    ? "border-success-border bg-success-soft text-success"
-                    : "border-danger-border bg-danger-soft text-danger"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5">
-                  <path d="M13 7h8v8" />
-                  <path d="m21 7-8 8-4-4-6 6" />
-                </Icon>
-                {trendLabel}
-              </span>
-            </div>
-
-            <div>
-              <h2 className="max-w-3xl font-serif text-4xl font-semibold leading-none text-content sm:text-5xl">
-                {data.totalQuizzes
-                  ? `Scor de pregătire ${readinessScore}%.`
-                  : "Încă nu ai date de progres."}
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-                {data.totalQuizzes
-                  ? `Estimarea combină scorurile, quiz-urile finalizate și ritmul încercărilor. Focus recomandat: ${focusText}.`
-                  : "Generează sau rezolvă cel puțin un quiz ca să apară scorul, zonele slabe și evoluția."}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 border-t border-subtle pt-5 xl:border-l xl:border-t-0 xl:pl-7 xl:pt-0">
-            <ProgressHeroMetric
-              label="Scor mediu quiz-uri"
-              value={formatProgressPercent(data.averageScore)}
-            />
-            <ProgressHeroMetric
-              label="Quiz-uri finalizate"
-              value={`${data.completedCount}/${data.totalQuizzes}`}
-            />
-            <ProgressHeroMetric
-              label="Ultimul scor obținut"
-              value={latestAttempt ? `${latestAttempt.scorePercent}%` : "-"}
-            />
-            <ProgressHeroMetric
-              label="Greșeli salvate"
-              value={String(data.quizMistakeFlashcardsCount)}
-            />
-          </div>
-        </div>
-
-        <div className="grid divide-y divide-subtle md:grid-cols-3 md:divide-x md:divide-y-0">
-          <ProgressHeroStrip
-            label="Material activ"
-            value={project.subjectName || project.name}
-            detail={`${data.totalFlashcards} flashcard-uri și ${data.keywordsCount} concepte cheie`}
-          />
-          <ProgressHeroStrip
-            label="Atenție azi"
-            value={data.weakConcepts.length ? `${data.weakConcepts.length} concepte` : "Stabil"}
-            detail={
-              data.weakConcepts.length
-                ? "Repetă cardurile salvate din răspunsuri greșite."
-                : "Nu există greșeli recurente înregistrate."
-            }
-            href={getTabHref("flashcards", project.id)}
-            actionLabel="Recapitulează"
-          />
-          <ProgressHeroStrip
-            label="Următorul pas"
-            value={nextQuiz?.title ?? (data.totalQuizzes ? "Repetă quiz-uri" : "Generează quiz")}
-            detail="O sesiune scurtă îți actualizează scorul și harta de progres."
-            href={getTabHref("quiz", project.id)}
-            actionLabel="Începe"
-          />
-        </div>
-      </section>
-
-      <Suspense fallback={<p className="text-sm text-muted">Se încarcă recomandările...</p>}>
-        <ProgressQuizReviewPanel project={project} />
-      </Suspense>
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-        <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-          <ProgressSectionHeader
-            eyebrow="Evoluția în timp"
-            title="Performanță și consecvență"
-            meta={`${data.recentAttempts.length} înregistrări`}
-          />
-
-          <div className="mt-4 flex flex-col gap-3 rounded-xl border border-subtle bg-app px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-2 text-xs font-bold text-content">
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-action" />
-              <span>
-                {data.totalAttempts > 1
-                  ? data.trendDelta >= 0
-                    ? "Tendință ascendentă pe ultimele încercări"
-                    : "Tendință de stabilizat pe următoarele quiz-uri"
-                  : "Primul reper va construi graficul de evoluție"}
-              </span>
-            </div>
-            <span
-              className={`w-fit rounded-md border px-2 py-1 text-xs font-black ${
-                data.trendDelta >= 0
-                  ? "border-success-border bg-success-soft text-success"
-                  : "border-danger-border bg-danger-soft text-danger"
-              }`}
-            >
-              {trendLabel}
+            )
+          }
+        />
+        <ProgressKpiCard
+          label="Scor mediu"
+          value={formatProgressPercent(data.averageScore)}
+          icon={
+            <Icon className="h-4 w-4">
+              <path d="M3 17l6-6 4 4 8-8" />
+              <path d="M14 7h7v7" />
+            </Icon>
+          }
+          footer={
+            <span className="text-xs font-semibold text-muted">
+              {data.totalAttempts
+                ? `${data.totalAttempts} ${
+                    data.totalAttempts === 1 ? "încercare" : "încercări"
+                  } · maxim ${formatProgressPercent(data.maxScore)}`
+                : "Nicio încercare încă"}
             </span>
-          </div>
+          }
+        />
+        <ProgressKpiCard
+          label="Quiz-uri finalizate"
+          value={`${data.completedCount}/${data.totalQuizzes}`}
+          icon={
+            <Icon className="h-4 w-4">
+              <path d="M9 11l3 3 8-8" />
+              <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" />
+            </Icon>
+          }
+          progress={completionPercent}
+          footer={
+            <span className="text-xs font-semibold text-muted">
+              {data.totalQuizzes
+                ? `${completionPercent}% din quiz-urile proiectului`
+                : "Generează primul quiz din tab-ul Quiz"}
+            </span>
+          }
+        />
+        <ProgressKpiCard
+          label="De reluat"
+          value={String(weakCount)}
+          icon={
+            <Icon className="h-4 w-4">
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 4v5h5" />
+            </Icon>
+          }
+          footer={
+            weakCount ? (
+              <Link
+                href={getTabHref("flashcards", project.id)}
+                className="inline-flex items-center gap-1 text-xs font-black text-content underline-offset-4 hover:underline"
+              >
+                Repetă greșelile
+                <Icon className="h-3.5 w-3.5">
+                  <path d="M5 12h14M13 5l7 7-7 7" />
+                </Icon>
+              </Link>
+            ) : (
+              <span className="text-xs font-semibold text-muted">
+                Nicio greșeală recurentă
+              </span>
+            )
+          }
+        />
+      </div>
 
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.85fr)]">
+        <ProgressCard
+          title="Evoluția scorurilor"
+          subtitle={
+            data.recentAttempts.length
+              ? `ultimele ${data.recentAttempts.length} ${
+                  data.recentAttempts.length === 1 ? "încercare" : "încercări"
+                }`
+              : "linia apare după primul quiz"
+          }
+          action={trendBadge}
+        >
           {data.recentAttempts.length ? (
             <ProgressScoreTrendChart attempts={data.recentAttempts} />
           ) : (
             <ProgressEmptyState
               title="Graficul apare după primul quiz."
-              description="Primele încercări vor crea linia de evoluție și comparația dintre scoruri."
+              description="Fiecare încercare adaugă un punct pe linie, ca să vezi dacă scorurile cresc."
             />
           )}
-
-          <div className="mt-5 grid divide-y divide-subtle border-t border-subtle pt-3 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            <ProgressChartStat
-              label="Media curentă"
-              value={formatProgressPercent(data.averageAttemptScore)}
-            />
-            <ProgressChartStat
-              label="Punct maxim"
-              value={formatProgressPercent(data.maxScore)}
-            />
-            <ProgressChartStat
-              label="Creștere totală"
-              value={data.totalAttempts > 1 ? formatSignedPercent(data.trendDelta) : "0%"}
-            />
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-          <ProgressSectionHeader
-            eyebrow="Matrice de competențe"
-            title="Stăpânirea pe subiecte"
-            meta="din quiz-uri"
-          />
-          <ProgressRadarChart scores={data.competencyScores} />
-          <div className="mt-4 flex flex-col gap-2 rounded-xl border border-subtle bg-app px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-            <span className="font-bold text-muted">Punct de urmărit:</span>
-            <span className="font-black text-content">
-              {data.weakConcepts[0]
-                ? `${data.weakConcepts[0][0]} (${data.weakConcepts[0][1]} greșeli)`
-                : "niciun concept critic încă"}
-            </span>
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-        <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-          <ProgressSectionHeader
-            eyebrow="Detaliu pe module"
-            title="Scor per quiz parcurs"
-            meta="Top 6"
-          />
-          <ProgressTopicBars quizScores={data.quizScores} />
-        </section>
-
-        <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-          <ProgressSectionHeader
-            eyebrow="Distribuție flashcard-uri"
-            title="Retenție și memorie"
-            meta={`${data.totalFlashcards} total`}
-          />
-          <ProgressFlashcardDoughnut
+          <ProgressFlashcardStrip
             segments={flashcardSegments}
             total={data.totalFlashcards}
           />
-        </section>
+        </ProgressCard>
+
+        <ProgressCard
+          title="Pregătire pentru examen"
+          subtitle={`ținta: ${PROGRESS_READINESS_TARGET}%`}
+        >
+          <ProgressGauge value={data.totalQuizzes ? readinessScore : 0} />
+          <p className="mt-4 text-center text-sm leading-6 text-muted">
+            {!data.totalQuizzes
+              ? "Rezolvă un quiz ca să vedem cât de pregătit ești."
+              : readinessScore >= PROGRESS_READINESS_TARGET
+                ? "Ești peste țintă. Mai repetă o dată conceptele greșite înainte de examen."
+                : focusText
+                  ? `Concentrează-te pe: ${focusText}.`
+                  : "Continuă cu quiz-urile neîncercate ca să urce scorul."}
+          </p>
+          <Link
+            href={getTabHref("quiz", project.id)}
+            className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-action px-4 text-sm font-black text-on-action transition hover:bg-action-hover"
+          >
+            {nextQuiz
+              ? "Începe următorul quiz"
+              : data.totalQuizzes
+                ? "Repetă un quiz"
+                : "Generează un quiz"}
+            <Icon>
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </Icon>
+          </Link>
+          {nextQuiz ? (
+            <p className="mt-2 truncate text-center text-xs font-semibold text-muted">
+              {nextQuiz.title}
+            </p>
+          ) : null}
+        </ProgressCard>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)]">
-        <div className="space-y-5">
-          <ProgressActivityHeatmap activityDays={data.activityDays} />
-          <ProgressWeakConceptsPanel
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.5fr)_minmax(0,0.85fr)]">
+        <ProgressCard
+          title="Zile active"
+          subtitle={
+            data.activeDaysCount
+              ? `${data.activeDaysCount} ${
+                  data.activeDaysCount === 1 ? "zi" : "zile"
+                } cu quiz-uri`
+              : "încercări pe zilele săptămânii"
+          }
+        >
+          <ProgressWeekdayBars days={data.weekdayActivity} />
+          <p className="mt-4 rounded-lg bg-app px-3 py-2 text-center text-xs font-semibold text-muted">
+            {topWeekday
+              ? `Înveți cel mai des ${topWeekday.name}.`
+              : "Aici vei vedea în ce zile înveți cel mai mult."}
+          </p>
+        </ProgressCard>
+
+        <ProgressCard
+          title="Quiz-uri"
+          subtitle={
+            data.totalQuizzes
+              ? `${data.totalQuizzes} ${data.totalQuizzes === 1 ? "modul" : "module"}`
+              : "niciun quiz generat"
+          }
+          action={
+            <Link
+              href={getTabHref("quiz", project.id)}
+              className="inline-flex h-8 items-center gap-1 rounded-md border border-subtle bg-app px-3 text-xs font-black text-content transition hover:bg-surface-hover"
+            >
+              Toate
+              <Icon className="h-3.5 w-3.5">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </Icon>
+            </Link>
+          }
+        >
+          <ProgressQuizTable quizScores={data.quizScores} />
+        </ProgressCard>
+
+        <ProgressCard
+          title="Concepte de reluat"
+          subtitle={
+            data.weakConcepts.length
+              ? `${data.weakConcepts.length} ${
+                  data.weakConcepts.length === 1 ? "concept" : "concepte"
+                }`
+              : "din răspunsurile greșite"
+          }
+        >
+          <ProgressWeakConceptsList
             concepts={data.weakConcepts}
             projectId={project.id}
           />
-        </div>
-
-        <ProgressQuizBreakdown
-          quizScores={data.quizScores}
-          projectId={project.id}
-        />
+        </ProgressCard>
       </div>
 
-      <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-7">
-        <div className="grid gap-6 md:grid-cols-3">
-          {summaryStats.map(([label, value], index) => (
-            <ProgressMiniStat
-              key={label}
-              label={label}
-              value={value}
-              withDivider={index % 3 !== 2}
-            />
-          ))}
-        </div>
-      </section>
+      <Suspense fallback={<p className="text-sm text-muted">Se încarcă recomandările...</p>}>
+        <ProgressQuizReviewPanel project={project} />
+      </Suspense>
+
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <ProgressCard title="Constanță" subtitle="ultimele 4 săptămâni">
+          <ProgressActivityHeatmap activityDays={data.activityDays} />
+        </ProgressCard>
+
+        <ProgressCard title="Stăpânire pe subiecte" subtitle="din quiz-uri">
+          <ProgressRadarChart scores={data.competencyScores} />
+        </ProgressCard>
+
+        <ProgressCard title="Materiale de studiu" subtitle="ce ai în proiect">
+          <ProgressMaterialsList
+            items={[
+              {
+                label: "Flashcard-uri",
+                value: data.totalFlashcards,
+                href: getTabHref("flashcards", project.id),
+              },
+              { label: "Concepte cheie", value: data.keywordsCount },
+              {
+                label: "Highlight-uri în rezumat",
+                value: data.highlightsCount,
+                href: getTabHref("rezumat", project.id),
+              },
+              { label: "Notițe", value: data.notesCount },
+              { label: "Încercări la quiz-uri", value: data.totalAttempts },
+            ]}
+          />
+        </ProgressCard>
+      </div>
     </div>
+  );
+}
+
+function ProgressCard({
+  title,
+  subtitle,
+  action,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="flex min-w-0 flex-col rounded-xl border border-subtle bg-surface p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-sm font-black text-content">{title}</h3>
+          {subtitle ? (
+            <p className="mt-0.5 truncate text-xs font-semibold text-muted">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+    </section>
+  );
+}
+
+function ProgressKpiCard({
+  label,
+  value,
+  icon,
+  footer,
+  progress,
+  highlighted = false,
+}: {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  footer: ReactNode;
+  progress?: number;
+  highlighted?: boolean;
+}) {
+  return (
+    <div
+      className={`flex min-w-0 flex-col rounded-xl p-5 ${
+        highlighted
+          ? "theme-shadow-card bg-action text-on-action"
+          : "border border-subtle bg-surface text-content"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className={`text-sm font-bold ${highlighted ? "" : "text-content"}`}>
+          {label}
+        </p>
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${
+            highlighted
+              ? "border-on-action/25 bg-on-action/10"
+              : "border-subtle bg-app text-muted"
+          }`}
+        >
+          {icon}
+        </span>
+      </div>
+      <p className="mt-4 font-serif text-4xl font-semibold leading-none">{value}</p>
+      {typeof progress === "number" ? (
+        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-app">
+          <div
+            className="h-full rounded-full bg-success"
+            style={{ width: `${clampProgressPercent(progress)}%` }}
+          />
+        </div>
+      ) : null}
+      <div className="mt-3 flex min-w-0 items-center gap-2">{footer}</div>
+    </div>
+  );
+}
+
+function ProgressTrendBadge({
+  delta,
+  suffix,
+}: {
+  delta: number;
+  suffix?: string;
+}) {
+  const isUp = delta >= 0;
+
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold">
+      <span
+        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-black ${
+          isUp
+            ? "border-success-border bg-success-soft text-success"
+            : "border-danger-border bg-danger-soft text-danger"
+        }`}
+      >
+        <Icon className="h-3 w-3">
+          {isUp ? <path d="M12 19V5M5 12l7-7 7 7" /> : <path d="M12 5v14M5 12l7 7 7-7" />}
+        </Icon>
+        {formatSignedPercent(delta)}
+      </span>
+      {suffix ? <span className="truncate opacity-80">{suffix}</span> : null}
+    </span>
+  );
+}
+
+/** A half ring, filled up to the score, with the target marked on it. */
+function ProgressGauge({ value }: { value: number }) {
+  const percent = clampProgressPercent(value);
+  const targetAngle = Math.PI * (1 - PROGRESS_READINESS_TARGET / 100);
+  const targetX = 100 + Math.cos(targetAngle) * 80;
+  const targetY = 100 - Math.sin(targetAngle) * 80;
+  const tone =
+    percent >= PROGRESS_READINESS_TARGET
+      ? "var(--theme-success-text)"
+      : percent >= 50
+        ? "var(--theme-warning-text)"
+        : "var(--theme-danger-text)";
+
+  return (
+    <div
+      className="relative mx-auto mt-4 w-full max-w-[16rem]"
+      role="img"
+      aria-label={`Scor de pregătire ${percent}% din ținta ${PROGRESS_READINESS_TARGET}%`}
+    >
+      <svg viewBox="0 0 200 112" className="w-full">
+        <path
+          d="M 20 100 A 80 80 0 0 1 180 100"
+          fill="none"
+          stroke="var(--theme-border)"
+          strokeWidth={14}
+          strokeLinecap="round"
+        />
+        {percent > 0 ? (
+          <path
+            d="M 20 100 A 80 80 0 0 1 180 100"
+            fill="none"
+            stroke={tone}
+            strokeWidth={14}
+            strokeLinecap="round"
+            pathLength={100}
+            strokeDasharray={`${percent} 100`}
+          />
+        ) : null}
+        <circle
+          cx={targetX}
+          cy={targetY}
+          r={4}
+          fill="var(--theme-surface)"
+          stroke="var(--theme-content)"
+          strokeWidth={2}
+        >
+          <title>Țintă {PROGRESS_READINESS_TARGET}%</title>
+        </circle>
+      </svg>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center">
+        <span className="font-serif text-5xl font-semibold leading-none text-content">
+          {percent}%
+        </span>
+        <span className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted">
+          pregătit
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ProgressWeekdayBars({ days }: { days: ProgressWeekdayActivity[] }) {
+  const maxCount = Math.max(1, ...days.map((day) => day.count));
+
+  return (
+    <div
+      className="mt-4 grid h-40 grid-cols-7 items-end gap-2"
+      role="img"
+      aria-label="Încercări la quiz-uri pe zilele săptămânii"
+    >
+      {days.map((day, index) => {
+        const height = day.count ? Math.max(12, (day.count / maxCount) * 100) : 6;
+
+        return (
+          <div
+            key={`${day.label}-${index}`}
+            className="flex h-full flex-col items-center justify-end gap-2"
+            title={`${day.name}: ${day.count} ${day.count === 1 ? "încercare" : "încercări"}`}
+          >
+            {day.isTop ? (
+              <span className="text-[11px] font-black text-content">{day.count}</span>
+            ) : null}
+            <div
+              className={`w-full max-w-7 rounded-md transition-[height] ${
+                day.isTop
+                  ? "bg-action"
+                  : day.count
+                    ? "bg-success-soft"
+                    : "bg-app"
+              }`}
+              style={{ height: `${height}%` }}
+            />
+            <span
+              className={`text-[11px] font-bold ${
+                day.isTop ? "text-content" : "text-muted"
+              }`}
+            >
+              {day.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProgressQuizTable({ quizScores }: { quizScores: ProgressQuizScore[] }) {
+  if (!quizScores.length) {
+    return (
+      <ProgressEmptyState
+        title="Quiz-urile nu sunt generate încă."
+        description="După ce generezi primul quiz, îl vei vedea aici cu scorul și încercările lui."
+      />
+    );
+  }
+
+  return (
+    <div className="mt-4 flex min-w-0 flex-1 flex-col">
+      <div className="grid grid-cols-[minmax(0,1fr)_4.5rem] gap-3 border-b border-subtle pb-2 text-[10px] font-black uppercase tracking-[0.14em] text-muted sm:grid-cols-[minmax(0,1fr)_4.5rem_5rem_5.5rem]">
+        <span>Quiz</span>
+        <span className="text-right">Scor</span>
+        <span className="hidden text-right sm:block">Încercări</span>
+        <span className="hidden text-right sm:block">Ultima</span>
+      </div>
+      <div className="max-h-[22rem] divide-y divide-subtle overflow-y-auto [scrollbar-width:thin]">
+        {quizScores.map((quiz, index) => (
+          <div
+            key={quiz.id}
+            className="grid grid-cols-[minmax(0,1fr)_4.5rem] items-center gap-3 py-3 sm:grid-cols-[minmax(0,1fr)_4.5rem_5rem_5.5rem]"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-app font-serif text-base font-semibold text-content">
+                {index + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-content">{quiz.title}</p>
+                <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
+                  <span
+                    className={`rounded border px-1.5 py-px text-[10px] font-black ${getQuizComplexityClass(
+                      quiz.complexity,
+                    )}`}
+                  >
+                    {quiz.complexity}
+                  </span>
+                  <span className="truncate">
+                    {quiz.questionCount}{" "}
+                    {quiz.questionCount === 1 ? "întrebare" : "întrebări"}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              {typeof quiz.scorePercent === "number" && quiz.completed ? (
+                <span
+                  className={`inline-flex rounded-md px-2 py-1 text-xs font-black ${getProgressScoreBadgeClass(
+                    quiz.scorePercent,
+                  )}`}
+                >
+                  {quiz.scorePercent}%
+                </span>
+              ) : (
+                <span className="inline-flex rounded-md bg-app px-2 py-1 text-[11px] font-bold text-muted">
+                  Nou
+                </span>
+              )}
+            </div>
+            <span className="hidden text-right text-sm font-bold text-content sm:block">
+              {quiz.attemptsCount || "–"}
+            </span>
+            <span className="hidden truncate text-right text-xs font-semibold text-muted sm:block">
+              {quiz.lastAttemptAt ? formatProgressDayLabel(new Date(quiz.lastAttemptAt)) : "–"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProgressWeakConceptsList({
+  concepts,
+  projectId,
+}: {
+  concepts: Array<[string, number]>;
+  projectId: string;
+}) {
+  if (!concepts.length) {
+    return (
+      <ProgressEmptyState
+        title="Nimic de reluat încă."
+        description="Greșelile din quiz-uri se grupează aici pe concepte, ca să le repeți rapid."
+      />
+    );
+  }
+
+  const maxCount = Math.max(1, ...concepts.map(([, count]) => count));
+
+  return (
+    <div className="mt-4 flex flex-1 flex-col">
+      <div className="flex-1 space-y-4">
+        {concepts.slice(0, 5).map(([concept, count], index) => (
+          <div key={concept} className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger-soft font-serif text-base font-semibold text-danger">
+              {index + 1}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <p className="truncate text-sm font-bold text-content">{concept}</p>
+                <span className="shrink-0 text-xs font-black text-content">
+                  {count} {count === 1 ? "greșeală" : "greșeli"}
+                </span>
+              </div>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-app">
+                <div
+                  className="h-full rounded-full bg-danger"
+                  style={{ width: `${Math.max(8, (count / maxCount) * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Link
+        href={getTabHref("flashcards", projectId)}
+        className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-subtle bg-app text-sm font-black text-content transition hover:bg-surface-hover"
+      >
+        Repetă cardurile din greșeli
+        <Icon>
+          <path d="M5 12h14M13 5l7 7-7 7" />
+        </Icon>
+      </Link>
+    </div>
+  );
+}
+
+/** Three counters with a coloured underline each, like a legend you can read at a glance. */
+function ProgressFlashcardStrip({
+  segments,
+  total,
+}: {
+  segments: ProgressFlashcardSegment[];
+  total: number;
+}) {
+  return (
+    <div className="mt-5 rounded-xl border border-subtle bg-app/60 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-black text-content">Flashcard-uri</p>
+        <span className="text-xs font-semibold text-muted">{total} în total</span>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-3">
+        {segments.map((segment) => {
+          const percent = total ? Math.round((segment.value / total) * 100) : 0;
+
+          return (
+            <div key={segment.label} className="min-w-0">
+              <p className="font-serif text-2xl font-semibold leading-none text-content">
+                {segment.value}
+              </p>
+              <p className="mt-1 truncate text-xs font-bold text-content">
+                {segment.label}
+              </p>
+              <p className="truncate text-[11px] text-muted">{segment.detail}</p>
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${percent}%`, background: segment.color }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ProgressMaterialsList({
+  items,
+}: {
+  items: Array<{ label: string; value: number; href?: string }>;
+}) {
+  return (
+    <ul className="mt-2 divide-y divide-subtle">
+      {items.map((item) => (
+        <li
+          key={item.label}
+          className="flex items-center justify-between gap-3 py-2.5 text-sm"
+        >
+          {item.href ? (
+            <Link
+              href={item.href}
+              className="min-w-0 truncate font-semibold text-content underline-offset-4 hover:underline"
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <span className="min-w-0 truncate font-semibold text-content">
+              {item.label}
+            </span>
+          )}
+          <span className="shrink-0 font-serif text-xl font-semibold text-content">
+            {item.value}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -10249,11 +10763,11 @@ function ProgressScoreTrendChart({
   attempts: ProgressAttempt[];
 }) {
   const width = 760;
-  const height = 280;
-  const paddingLeft = 52;
-  const paddingRight = 28;
-  const paddingTop = 28;
-  const paddingBottom = 42;
+  const height = 240;
+  const paddingLeft = 44;
+  const paddingRight = 24;
+  const paddingTop = 26;
+  const paddingBottom = 34;
   const latestIndex = attempts.length - 1;
   const plotWidth = width - paddingLeft - paddingRight;
   const plotHeight = height - paddingTop - paddingBottom;
@@ -10272,169 +10786,101 @@ function ProgressScoreTrendChart({
     points.length > 1
       ? `${linePath} L ${points[points.length - 1].x} ${baselineY} L ${points[0].x} ${baselineY} Z`
       : "";
-  const latestAttempt = attempts[latestIndex];
 
   return (
-    <div className="mt-5">
-      <div
-        className="overflow-x-auto border-y border-subtle py-5 [scrollbar-width:thin]"
-        role="img"
-        aria-label="Evoluția scorurilor la quiz-uri în timp"
+    <div
+      className="mt-4 overflow-x-auto [scrollbar-width:thin]"
+      role="img"
+      aria-label="Evoluția scorurilor la quiz-uri în timp"
+    >
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="h-60 min-w-[36rem] w-full"
+        preserveAspectRatio="none"
       >
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          className="h-72 min-w-[44rem] w-full"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="progress-line-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--theme-action)" stopOpacity="0.24" />
-              <stop offset="74%" stopColor="var(--theme-action)" stopOpacity="0.05" />
-              <stop offset="100%" stopColor="var(--theme-action)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
+        <defs>
+          <linearGradient id="progress-line-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--theme-success-text)" stopOpacity="0.28" />
+            <stop offset="74%" stopColor="var(--theme-success-text)" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="var(--theme-success-text)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
 
-          {[0, 25, 50, 75, 100].map((line) => {
-            const y = paddingTop + plotHeight * (1 - line / 100);
-            return (
-              <g key={line}>
-                <line
-                  x1={paddingLeft}
-                  x2={width - paddingRight}
-                  y1={y}
-                  y2={y}
-                  stroke="var(--theme-border)"
-                  strokeDasharray={line === 0 ? "0" : "6 7"}
-                  strokeWidth={1}
-                />
-                <text
-                  x={paddingLeft - 14}
-                  y={y + 4}
-                  textAnchor="end"
-                  className="fill-muted text-[10px] font-bold"
-                >
-                  {line}%
-                </text>
-              </g>
-            );
-          })}
+        {[0, 25, 50, 75, 100].map((line) => {
+          const y = paddingTop + plotHeight * (1 - line / 100);
+          return (
+            <g key={line}>
+              <line
+                x1={paddingLeft}
+                x2={width - paddingRight}
+                y1={y}
+                y2={y}
+                stroke="var(--theme-border)"
+                strokeDasharray={line === 0 ? "0" : "4 6"}
+                strokeWidth={1}
+              />
+              <text
+                x={paddingLeft - 12}
+                y={y + 4}
+                textAnchor="end"
+                className="fill-muted text-[10px] font-bold"
+              >
+                {line}%
+              </text>
+            </g>
+          );
+        })}
 
-          {points.length > 1 ? (
-            <path d={areaPath} fill="url(#progress-line-fill)" />
-          ) : null}
-          <path
-            d={linePath}
-            fill="none"
-            stroke="var(--theme-action)"
-            strokeWidth={4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        {points.length > 1 ? (
+          <path d={areaPath} fill="url(#progress-line-fill)" />
+        ) : null}
+        <path
+          d={linePath}
+          fill="none"
+          stroke="var(--theme-success-text)"
+          strokeWidth={3.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
 
-          {points.map(({ x, y, attempt, index }) => {
-            const isLatest = index === latestIndex;
+        {points.map(({ x, y, attempt, index }) => {
+          const isLatest = index === latestIndex;
 
-            return (
-              <g key={`${attempt.completedAt}-${index}`}>
-                <line
-                  x1={x}
-                  x2={x}
-                  y1={paddingTop}
-                  y2={baselineY}
-                  stroke="var(--theme-border)"
-                  strokeOpacity={isLatest ? 0.9 : 0.45}
-                  strokeDasharray="3 7"
-                />
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={isLatest ? 8 : 6}
-                  fill="var(--theme-surface)"
-                  stroke="var(--theme-action)"
-                  strokeWidth={isLatest ? 4 : 3}
-                >
-                  <title>
-                    {attempt.quizTitle} · {attempt.scorePercent}% ·{" "}
-                    {formatQuizAttemptTimestamp(attempt.completedAt)}
-                  </title>
-                </circle>
-                <text
-                  x={x}
-                  y={y - 14}
-                  textAnchor="middle"
-                  className="fill-content text-[11px] font-black"
-                >
-                  {attempt.scorePercent}%
-                </text>
-                <text
-                  x={x}
-                  y={height - 12}
-                  textAnchor="middle"
-                  className="fill-muted text-[10px] font-bold"
-                >
-                  #{index + 1}
-                </text>
-              </g>
-            );
-          })}
-
-          <line
-            x1={paddingLeft}
-            x2={width - paddingRight}
-            y1={baselineY}
-            y2={baselineY}
-            stroke="var(--theme-border)"
-            strokeWidth={1.5}
-          />
-        </svg>
-      </div>
-
-      <div className="mt-4 flex flex-col gap-2 rounded-xl border border-subtle bg-app p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-            Ultima încercare
-          </p>
-          <p className="mt-1 truncate text-sm font-semibold text-content">
-            {latestAttempt.quizTitle}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="rounded-md border border-action bg-action px-3 py-1.5 text-xs font-black text-on-action">
-            {latestAttempt.scorePercent}%
-          </span>
-          <span className="text-xs font-bold text-muted">
-            {formatQuizAttemptTimestamp(latestAttempt.completedAt)}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProgressSectionHeader({
-  eyebrow,
-  title,
-  meta,
-}: {
-  eyebrow: string;
-  title: string;
-  meta?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-3 border-b border-subtle pb-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-          {eyebrow}
-        </p>
-        <h3 className="mt-1 font-serif text-2xl font-semibold leading-tight text-content">
-          {title}
-        </h3>
-      </div>
-      {meta ? (
-        <span className="w-fit rounded-md border border-subtle bg-app px-3 py-1.5 text-xs font-bold text-muted">
-          {meta}
-        </span>
-      ) : null}
+          return (
+            <g key={`${attempt.completedAt}-${index}`}>
+              <circle
+                cx={x}
+                cy={y}
+                r={isLatest ? 7 : 5}
+                fill="var(--theme-surface)"
+                stroke="var(--theme-success-text)"
+                strokeWidth={isLatest ? 4 : 3}
+              >
+                <title>
+                  {attempt.quizTitle} · {attempt.scorePercent}% ·{" "}
+                  {formatQuizAttemptTimestamp(attempt.completedAt)}
+                </title>
+              </circle>
+              <text
+                x={x}
+                y={y - 13}
+                textAnchor="middle"
+                className="fill-content text-[11px] font-black"
+              >
+                {attempt.scorePercent}%
+              </text>
+              <text
+                x={x}
+                y={height - 10}
+                textAnchor="middle"
+                className="fill-muted text-[10px] font-bold"
+              >
+                {formatProgressDayLabel(new Date(attempt.completedAt))}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }
@@ -10447,7 +10893,7 @@ function ProgressEmptyState({
   description: string;
 }) {
   return (
-    <div className="mt-5 rounded-xl border border-dashed border-subtle bg-app px-4 py-5">
+    <div className="mt-4 flex flex-1 flex-col justify-center rounded-xl border border-dashed border-subtle bg-app px-4 py-5">
       <p className="text-sm font-black text-content">{title}</p>
       <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
     </div>
@@ -10499,7 +10945,7 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
     return (
       <ProgressEmptyState
         title="Radarul se activează după mai multe rezultate."
-        description="Ai nevoie de cel puțin trei subiecte evaluate pentru o matrice de competențe lizibilă."
+        description="Ai nevoie de cel puțin trei subiecte evaluate pentru o hartă lizibilă."
       />
     );
   }
@@ -10521,13 +10967,13 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
 
   return (
     <div
-      className="mt-5 flex justify-center overflow-hidden border-b border-subtle pb-4"
+      className="mt-2 flex flex-1 items-center justify-center overflow-hidden"
       role="img"
       aria-label="Radarul competențelor pe subiecte"
     >
       <svg
         viewBox={`${-padX} ${-padY} ${size + padX * 2} ${size + padY * 2}`}
-        className="h-72 w-full max-w-lg"
+        className="h-64 w-full max-w-lg"
       >
         {[0.34, 0.67, 1].map((scale) => {
           const ringPoints = angles
@@ -10592,9 +11038,9 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
 
         <polygon
           points={polygonPoints}
-          fill="var(--theme-action)"
-          fillOpacity={0.15}
-          stroke="var(--theme-action)"
+          fill="var(--theme-success-text)"
+          fillOpacity={0.18}
+          stroke="var(--theme-success-text)"
           strokeWidth={2.5}
           strokeLinejoin="round"
         />
@@ -10604,7 +11050,7 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
             cx={point.x}
             cy={point.y}
             r={4}
-            fill="var(--theme-action)"
+            fill="var(--theme-success-text)"
           >
             <title>
               {scores[index].label}: {scores[index].value}%
@@ -10616,134 +11062,21 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
   );
 }
 
-function ProgressTopicBars({ quizScores }: { quizScores: ProgressQuizScore[] }) {
-  const completedScores = quizScores
-    .filter(isCompletedProgressQuizScore)
-    .slice(0, 6);
-
-  if (!completedScores.length) {
-    return (
-      <ProgressEmptyState
-        title="Nu există quiz-uri parcurse încă."
-        description="Scorurile pe module vor apărea aici după primele rezultate salvate."
-      />
-    );
-  }
-
-  return (
-    <div className="mt-5 space-y-4">
-      {completedScores.map((quiz) => (
-        <ProgressBarRow
-          key={quiz.title}
-          label={quiz.title}
-          value={quiz.scorePercent}
-        />
-      ))}
-    </div>
-  );
-}
-
-function buildProgressDoughnutBackground(
-  segments: ProgressFlashcardSegment[],
-  total: number,
-) {
-  const visibleSegments = segments.filter((segment) => segment.value > 0);
-
-  if (!visibleSegments.length) {
-    return "var(--theme-border)";
-  }
-
-  const safeTotal = Math.max(1, total);
-  let offset = 0;
-  const gradientStops = visibleSegments.map((segment) => {
-    const start = offset;
-    const end = start + (segment.value / safeTotal) * 100;
-    offset = end;
-    return `${segment.color} ${start}% ${end}%`;
-  });
-
-  return `conic-gradient(${gradientStops.join(", ")})`;
-}
-
-function ProgressFlashcardDoughnut({
-  segments,
-  total,
-}: {
-  segments: ProgressFlashcardSegment[];
-  total: number;
-}) {
-  const ringBackground = buildProgressDoughnutBackground(segments, total);
-
-  return (
-    <div className="mt-5">
-      <div className="flex justify-center border-b border-subtle pb-5">
-        <div
-          className="relative flex h-48 w-48 items-center justify-center rounded-full"
-          style={{ background: ringBackground }}
-          role="img"
-          aria-label="Distribuția flashcard-urilor pe surse"
-        >
-          <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full border border-subtle bg-surface text-center">
-            <span className="font-serif text-4xl font-semibold leading-none text-content">
-              {total}
-            </span>
-            <span className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted">
-              total
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 space-y-3">
-        {segments.map((segment) => {
-          const percent = total
-            ? Math.round((segment.value / total) * 100)
-            : 0;
-
-          return (
-            <div key={segment.label} className="flex items-center justify-between gap-4 text-xs">
-              <span className="flex min-w-0 items-center gap-2 font-bold text-content">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: segment.color }}
-                />
-                <span className="truncate">{segment.label}</span>
-                <span className="hidden text-muted sm:inline">{segment.detail}</span>
-              </span>
-              <span className="shrink-0 font-black text-content">
-                {segment.value} ({percent}%)
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function ProgressActivityHeatmap({
   activityDays,
 }: {
   activityDays: ProgressActivityDay[];
 }) {
-  const days = activityDays;
-  const dayLabels = ["L", "M", "M", "J", "V", "S", "D"];
-
   return (
-    <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-      <ProgressSectionHeader
-        eyebrow="Activitate zilnică"
-        title="Constanță în recapitulare"
-        meta="4 săptămâni"
-      />
-      <div className="mt-5 space-y-2">
+    <div className="mt-4 flex flex-1 flex-col">
+      <div className="space-y-2">
         <div className="grid grid-cols-7 gap-2 text-center text-[10px] font-bold text-muted">
-          {dayLabels.map((label, index) => (
+          {PROGRESS_WEEKDAY_LABELS.map((label, index) => (
             <span key={`${label}-${index}`}>{label}</span>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-2">
-          {days.map((day) => (
+          {activityDays.map((day) => (
             <span
               key={day.key}
               title={
@@ -10760,8 +11093,8 @@ function ProgressActivityHeatmap({
           ))}
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3 text-[11px] font-bold text-muted">
-        <span>Mai puțin activ</span>
+      <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-[11px] font-bold text-muted">
+        <span>Mai puțin</span>
         <div className="flex items-center gap-1.5">
           {[0, 1, 2, 3].map((level) => (
             <span
@@ -10770,268 +11103,23 @@ function ProgressActivityHeatmap({
             />
           ))}
         </div>
-        <span>Foarte activ</span>
+        <span>Mai mult</span>
       </div>
-    </section>
+    </div>
   );
 }
 
 function getProgressHeatmapLevelClass(level: number) {
-  if (level >= 3) return "border-action bg-action";
-  if (level === 2) return "border-warning-border bg-warning";
-  if (level === 1) return "border-warning-border bg-warning-soft";
+  if (level >= 3) return "border-success bg-success";
+  if (level === 2) return "border-success-border bg-success/55";
+  if (level === 1) return "border-success-border bg-success-soft";
   return "border-subtle bg-app";
-}
-
-function ProgressWeakConceptsPanel({
-  concepts,
-  projectId,
-}: {
-  concepts: Array<[string, number]>;
-  projectId: string;
-}) {
-  return (
-    <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-      <ProgressSectionHeader
-        eyebrow="Zone critice recomandate"
-        title="Top concepte greșite"
-      />
-      {concepts.length ? (
-        <div className="mt-5 space-y-3">
-          {concepts.slice(0, 3).map(([concept, count], index) => (
-            <div
-              key={concept}
-              className="grid gap-3 rounded-xl border border-subtle bg-app px-4 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface font-serif text-lg font-semibold text-content">
-                {index + 1}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-black text-content">
-                  {concept}
-                </p>
-                <p className="mt-1 text-xs font-bold text-muted">
-                  {count} {count === 1 ? "greșeală salvată" : "greșeli salvate"}
-                </p>
-              </div>
-              <Link
-                href={getTabHref("flashcards", projectId)}
-                className="inline-flex h-9 items-center justify-center rounded-md border border-subtle bg-surface px-3 text-xs font-black text-content transition hover:bg-surface-hover"
-              >
-                Repetă
-              </Link>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <ProgressEmptyState
-          title="Nu există concepte problematice."
-          description="Când salvezi greșeli din quiz-uri, Reviss le grupează aici pentru recapitulare rapidă."
-        />
-      )}
-    </section>
-  );
-}
-
-function ProgressQuizBreakdown({
-  quizScores,
-  projectId,
-}: {
-  quizScores: ProgressQuizScore[];
-  projectId: string;
-}) {
-  return (
-    <section className="flex rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-      <div className="flex min-w-0 flex-1 flex-col">
-        <ProgressSectionHeader
-          eyebrow="Scor pe fiecare quiz"
-          title="Rezultate salvate"
-          meta={`${quizScores.length} module`}
-        />
-        {quizScores.length ? (
-          <div className="mt-5 max-h-[28rem] space-y-3 overflow-y-auto pr-2 [scrollbar-width:thin]">
-            {quizScores.map((quiz) =>
-              quiz.completed && typeof quiz.scorePercent === "number" ? (
-                <ProgressQuizListRow
-                  key={quiz.title}
-                  title={quiz.title}
-                  scorePercent={quiz.scorePercent}
-                />
-              ) : (
-                <div
-                  key={quiz.title}
-                  className="flex items-center justify-between gap-3 border-b border-subtle pb-3 text-xs"
-                >
-                  <span className="min-w-0 truncate font-bold text-content">
-                    {quiz.title}
-                  </span>
-                  <span className="shrink-0 rounded-md bg-app px-2.5 py-1 font-bold text-muted">
-                    Neîncercat
-                  </span>
-                </div>
-              ),
-            )}
-          </div>
-        ) : (
-          <ProgressEmptyState
-            title="Quiz-urile nu sunt generate încă."
-            description="După generarea quiz-urilor, lista completă de module apare aici."
-          />
-        )}
-
-        <div className="mt-5 border-t border-subtle pt-4">
-          <Link
-            href={getTabHref("quiz", projectId)}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-action px-4 text-sm font-black text-on-action transition hover:bg-action-hover"
-          >
-            Începe un quiz nou
-            <Icon>
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </Icon>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ProgressQuizListRow({
-  title,
-  scorePercent,
-}: {
-  title: string;
-  scorePercent: number;
-}) {
-  return (
-    <div className="border-b border-subtle pb-3">
-      <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-        <span className="min-w-0 truncate font-black text-content">{title}</span>
-        <span className="font-black text-content">{scorePercent}%</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-app">
-        <div
-          className={`h-full rounded-full ${getProgressScoreBarClass(scorePercent)}`}
-          style={{ width: `${scorePercent}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function ProgressHeroMetric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="min-w-0 rounded-lg border border-subtle bg-app/55 px-3 py-3">
-      <p className="font-serif text-3xl font-semibold leading-none text-content">
-        {value}
-      </p>
-      <p className="mt-1 text-xs font-semibold leading-5 text-muted">{label}</p>
-    </div>
-  );
-}
-
-function ProgressHeroStrip({
-  label,
-  value,
-  detail,
-  href,
-  actionLabel,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  href?: string;
-  actionLabel?: string;
-}) {
-  return (
-    <div className="grid gap-3 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-      <div className="min-w-0">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-          {label}
-        </p>
-        <p className="mt-2 min-w-0 break-words font-serif text-2xl font-semibold leading-tight text-content">
-          {value}
-        </p>
-        <p className="mt-1 text-sm leading-6 text-muted">{detail}</p>
-      </div>
-      {href && actionLabel ? (
-        <Link
-          href={href}
-          className="inline-flex h-9 w-fit items-center justify-center rounded-md border border-subtle bg-app px-3 text-xs font-black text-content transition hover:bg-surface-hover"
-        >
-          {actionLabel}
-        </Link>
-      ) : null}
-    </div>
-  );
-}
-
-function ProgressChartStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="px-0 py-3 text-left sm:px-4 sm:text-center">
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-muted">
-        {label}
-      </p>
-      <p className="mt-1 font-serif text-2xl font-semibold text-content">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ProgressMiniStat({
-  label,
-  value,
-  withDivider,
-}: {
-  label: string;
-  value: string;
-  withDivider: boolean;
-}) {
-  return (
-    <div className={withDivider ? "md:border-r md:border-subtle md:pr-6" : ""}>
-      <p className="font-serif text-4xl font-semibold leading-none text-content">
-        {value}
-      </p>
-      <p className="mt-2 text-xs font-semibold leading-5 text-muted">{label}</p>
-    </div>
-  );
-}
-
-function getProgressScoreBarClass(value: number) {
-  if (value >= 80) return "bg-success";
-  if (value >= 60) return "bg-warning";
-  return "bg-danger";
 }
 
 function getProgressScoreBadgeClass(value: number) {
   if (value >= 80) return "bg-success-soft text-success";
   if (value >= 60) return "bg-warning-soft text-warning";
   return "bg-danger-soft text-danger";
-}
-
-function ProgressBarRow({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="min-w-0 truncate text-sm font-bold text-content">{label}</p>
-        <span className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold ${getProgressScoreBadgeClass(value)}`}>
-          {value}%
-        </span>
-      </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-app">
-        <div
-          className={`h-full rounded-full ${getProgressScoreBarClass(value)}`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
-    </div>
-  );
 }
 
 function NewProjectView({

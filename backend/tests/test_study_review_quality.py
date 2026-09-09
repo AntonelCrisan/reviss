@@ -12,9 +12,11 @@ from app.schemas.projects import StudyProjectQuizQuestionResponse
 from app.services.projects import (
     ProjectValidationError,
     StudyProjectService,
+    _estimated_reading_minutes,
     _keyword_paragraph_index,
     _quiz_summary_context,
     _repair_quiz_review_references,
+    _repair_study_pack_anchors,
     _single_quiz_schema,
     _split_summary_blocks,
     _summary_reference_blocks,
@@ -740,3 +742,38 @@ def test_quiz_prompt_uses_requested_types_without_invalid_example():
         "review_section si review_anchor_text, copiate exact in limba rezumatului"
         in prompt
     )
+
+
+def _keyword(term, anchor):
+    return {"term": term, "explanation": "x", "anchor_text": anchor}
+
+
+def test_bad_anchors_are_dropped_only_when_enough_keywords_survive():
+    good = [_keyword(f"termen {i}", "Morala se formează") for i in range(8)]
+    bad = [
+        _keyword("inventat", "Fragment absent din rezumat."),
+        _keyword("termen 0", "Morala se formează"),  # duplicate term
+    ]
+    payload = {"summary": {"content": SUMMARY}, "keywords": good + bad}
+
+    assert _repair_study_pack_anchors(payload) == ["inventat", "termen 0"]
+    assert [item["term"] for item in payload["keywords"]] == [k["term"] for k in good]
+    _validate_study_pack_anchors(payload)
+
+    # Too few would remain: leave the payload alone so the pack is regenerated.
+    thin = {"summary": {"content": SUMMARY}, "keywords": good[:3] + bad[:1]}
+    before = copy.deepcopy(thin)
+    assert _repair_study_pack_anchors(thin) == []
+    assert thin == before
+    with pytest.raises(ProjectValidationError):
+        _validate_study_pack_anchors(thin)
+
+    # Nothing to repair: the payload is untouched.
+    clean = {"summary": {"content": SUMMARY}, "keywords": good}
+    assert _repair_study_pack_anchors(clean) == []
+
+
+def test_reading_minutes_come_from_word_count():
+    assert _estimated_reading_minutes("") == 1
+    assert _estimated_reading_minutes("cuvant " * 199) == 1
+    assert _estimated_reading_minutes("cuvant " * 3772) == 19
