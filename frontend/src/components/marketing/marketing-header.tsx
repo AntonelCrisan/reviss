@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { NotificationBell } from "@/components/account/notification-bell";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -13,12 +14,15 @@ import {
   updateLanguagePreference,
 } from "@/lib/auth-api";
 
+// Every section these point at lives on the homepage, so a bare "#..." only
+// works while we are on "/". Elsewhere it has to be resolved against the
+// homepage or the browser just appends the hash to the current path.
 const menuItems = [
-  { href: "#cum-functioneaza", labelKey: "marketing.nav.how" },
-  { href: "#flashcards", labelKey: "marketing.nav.flashcards" },
-  { href: "#beneficii", labelKey: "marketing.nav.benefits" },
-  { href: "#abonamente", labelKey: "marketing.nav.pricing" },
-  { href: "#intrebari", labelKey: "marketing.nav.questions" },
+  { hash: "#cum-functioneaza", labelKey: "marketing.nav.how" },
+  { hash: "#flashcards", labelKey: "marketing.nav.flashcards" },
+  { hash: "#beneficii", labelKey: "marketing.nav.benefits" },
+  { hash: "#abonamente", labelKey: "marketing.nav.pricing" },
+  { hash: "#intrebari", labelKey: "marketing.nav.questions" },
 ] as const;
 
 function MenuIcon({ open }: { open: boolean }) {
@@ -45,6 +49,9 @@ export function MarketingHeader() {
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const { user, isLoading, setUser } = useAuth();
   const { setLanguage, t } = useLanguage();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+  const sectionHref = (hash: string) => (isHomePage ? hash : `/${hash}`);
 
   async function persistLanguagePreference(nextLanguage: LanguagePreference) {
     if (!user || user.language_preference === nextLanguage || isSavingLanguage) {
@@ -82,8 +89,8 @@ export function MarketingHeader() {
         >
           {menuItems.map((item) => (
             <a
-              key={item.href}
-              href={item.href}
+              key={item.hash}
+              href={sectionHref(item.hash)}
               className="whitespace-nowrap rounded-md px-3 py-2 text-xs font-bold text-muted transition hover:bg-surface hover:text-content 2xl:px-4"
             >
               {t(item.labelKey)}
@@ -164,8 +171,8 @@ export function MarketingHeader() {
           />
           {menuItems.map((item) => (
             <a
-              key={item.href}
-              href={item.href}
+              key={item.hash}
+              href={sectionHref(item.hash)}
               onClick={() => setIsOpen(false)}
               className="rounded-md px-4 py-3 text-sm font-bold text-muted transition hover:bg-surface-hover hover:text-content"
             >

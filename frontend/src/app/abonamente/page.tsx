@@ -19,6 +19,11 @@ import {
   getServerPublicPlans,
 } from "@/lib/server-plans";
 
+// Prices come from the database on every request, so this page must never be
+// prerendered with the build-time fallback.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const pageTitle = "Abonamente și prețuri";
 const pageDescription =
   "Compară planurile Reviss: preț, materiale procesate lunar, limite și beneficii. Începi gratuit și treci la un plan plătit când ai nevoie de mai mult.";

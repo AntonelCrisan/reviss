@@ -249,6 +249,12 @@ async function serverPlansRequest<T>(
   path: string,
   options: { includeAuth?: boolean } = {},
 ): Promise<T | null> {
+  // Read the request headers first: they are a dynamic API, so touching them
+  // unconditionally keeps every caller out of static prerendering. Returning
+  // early on a missing base URL used to skip this, which let pages that render
+  // plans be baked at build time with the fallback prices below.
+  const forwardedHeaders = await requestHeaders(Boolean(options.includeAuth));
+
   const baseUrl = (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL)
     ?.trim()
     .replace(/\/+$/, "");
@@ -260,7 +266,7 @@ async function serverPlansRequest<T>(
   try {
     const response = await fetch(`${baseUrl}/api/plans${routePath}`, {
       method: "GET",
-      headers: await requestHeaders(Boolean(options.includeAuth)),
+      headers: forwardedHeaders,
       cache: "no-store",
     });
 

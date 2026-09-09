@@ -20,6 +20,11 @@ import {
   getServerPublicPlans,
 } from "@/lib/server-plans";
 
+// Prices come from the database on every request, so this page must never be
+// prerendered with the build-time fallback.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type PlanRouteProps = {
   params: Promise<{ slug: string }>;
 };
