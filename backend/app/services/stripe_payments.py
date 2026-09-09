@@ -860,6 +860,20 @@ class StripePaymentService:
         plan = await self._session.scalar(
             select(SubscriptionPlan).where(SubscriptionPlan.stripe_price_id == price_id)
         )
+        if plan is None:
+            # Updating a plan's price in Stripe issues a new Price ID, while
+            # existing subscriptions keep the old one. Without this every later
+            # event for those subscribers (renewal, cancellation, deletion)
+            # would be ignored and they would keep the plan forever.
+            existing_subscription = await self._session.scalar(
+                select(UserSubscription).where(
+                    UserSubscription.stripe_subscription_id == stripe_subscription_id
+                )
+            )
+            if existing_subscription is not None:
+                plan = await self._session.get(
+                    SubscriptionPlan, existing_subscription.plan_id
+                )
         user = await self._session.scalar(
             select(User).where(User.stripe_customer_id == stripe_customer_id)
         )
