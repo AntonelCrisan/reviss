@@ -1,0 +1,2056 @@
+{
+  "language": {
+    "label": "Langue",
+    "ro": "Roumain",
+    "en": "Anglais",
+    "fr": "Français"
+  },
+  "marketing": {
+    "hero": {
+      "badge": "Ton cours, transformé en plan d’apprentissage",
+      "title": {
+        "main": "Arrête de relire.",
+        "accent": "Apprends activement."
+      },
+      "description": "Reviss transforme tes supports de cours en résumés clairs, flashcards et quiz pour t’aider à comprendre, t’entraîner et retenir.",
+      "cta": {
+        "primary": "Commencer à apprendre",
+        "secondary": "Voir le fonctionnement"
+      },
+      "feature": {
+        "files": "PDF et notes",
+        "quiz": "Quiz personnalisés",
+        "progress": "Progrès mesurable"
+      }
+    },
+    "nav": {
+      "how": "Fonctionnement",
+      "flashcards": "Flashcards",
+      "benefits": "Avantages",
+      "pricing": "Tarifs",
+      "questions": "Questions"
+    },
+    "account": "Mon compte",
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "goToAccount": "Aller à mon compte",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "header": {
+      "mainNav": "Navigation principale",
+      "mobileNav": "Navigation mobile"
+    },
+    "meta": {
+      "title": "Reviss | Résumés IA, flashcards et quiz pour étudiants",
+      "description": "Importe des PDF, des cours ou des présentations : Reviss les transforme en résumés IA, flashcards, quiz et plans clairs pour l’examen.",
+      "ogDescription": "Transforme tes cours en packs d’étude : résumés clairs, flashcards, quiz et progrès mesurable.",
+      "ogAlt": "Reviss - résumés IA, flashcards et quiz pour étudiants",
+      "appDescription": "Plateforme IA pour étudiants qui transforme cours, PDF, documents et présentations en résumés, flashcards, quiz et stratégies d’apprentissage.",
+      "keywords": "résumés de cours par IA, flashcards à partir des cours, quiz d'examen personnalisés, résumés pour la fac, IA pour l'apprentissage actif, révision intelligente"
+    },
+    "preview": {
+      "course": "Biologie cellulaire",
+      "processed": "Cours traité par Reviss",
+      "ready": "Prêt à étudier",
+      "uploaded": "Cours importé",
+      "pages": "28 pages",
+      "generated": "Pack généré",
+      "summary": "Résumé",
+      "summaryValue": "6 min",
+      "flashcards": "Flashcards",
+      "quizzes": "Quiz",
+      "concepts": "Concepts",
+      "nextSession": "Prochaine session",
+      "nextSessionDetail": "12 flashcards + un quiz de 8 questions",
+      "nextSessionTime": "25 min"
+    },
+    "stats": {
+      "1": {
+        "title": "Un seul cours",
+        "text": "résumé, cartes et test"
+      },
+      "2": {
+        "title": "Apprentissage actif",
+        "text": "pas de lecture passive"
+      },
+      "3": {
+        "title": "Répétition guidée",
+        "text": "exactement quand il le faut"
+      },
+      "4": {
+        "title": "Thème adaptatif",
+        "text": "confort jour et nuit"
+      }
+    },
+    "useCases": {
+      "eyebrow": "Pour la fac, les partiels et les examens",
+      "title": "Quand les cours s’accumulent, Reviss les transforme en étapes claires.",
+      "description": "Utilise Reviss quand tu as besoin de résumés IA à partir de PDF, de flashcards pour réviser, de quiz personnalisés et d’une façon plus simple de préparer tes examens.",
+      "items": {
+        "1": {
+          "title": "Résumés IA à partir de PDF et de cours",
+          "description": "Importe des supports de cours, des documents Word, des présentations ou des notes : Reviss les transforme en un résumé structuré pour une révision rapide."
+        },
+        "2": {
+          "title": "Flashcards pour un apprentissage actif",
+          "description": "Les concepts importants deviennent des cartes à réviser, pour vérifier ce que tu sais déjà et ce qu’il faut revoir avant l’examen."
+        },
+        "3": {
+          "title": "Quiz personnalisés pour la fac",
+          "description": "Génère des questions à partir de tes propres supports, avec explications et retours, pour t’entraîner à appliquer les idées plutôt qu’à les relire."
+        },
+        "4": {
+          "title": "Plan de révision pour les partiels",
+          "description": "Reviss rassemble résumés, mots-clés, flashcards et progression dans un flux clair pour les contrôles, les examens et le mémoire."
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "Du support brut à une progression claire",
+      "title": "Trois étapes entre le cours et la compréhension.",
+      "description": "Sans dizaines d’onglets ni heures perdues à préparer des supports. Reviss construit l’espace d’étude, et toi tu te concentres sur l’apprentissage.",
+      "steps": {
+        "1": {
+          "title": "Tu importes le support",
+          "description": "Ajoute le PDF, tes notes ou le polycopié. Sans réécrire des chapitres entiers à la main."
+        },
+        "2": {
+          "title": "L’IA le structure",
+          "description": "Reviss repère les idées importantes et prépare le résumé, les flashcards et les tests."
+        },
+        "3": {
+          "title": "Tu apprends activement",
+          "description": "Tu t’entraînes, tu reçois des explications et tu vois exactement quels concepts revoir."
+        }
+      }
+    },
+    "session": {
+      "eyebrow": "Une session qui sait ce qui suit",
+      "title": "De « j’ai lu » à « je peux expliquer ».",
+      "description": "La plateforme combine le résumé, le test actif et une progression visible. Chaque session a un objectif clair, pas seulement une page de plus à parcourir.",
+      "cta": "Créer ton premier pack",
+      "cards": {
+        "1": "Résumé essentiel",
+        "2": "Questions expliquées",
+        "3": "Répétition intelligente",
+        "4": "Progression visible"
+      }
+    },
+    "flashcards": {
+      "eyebrow": "Des flashcards qui suivent ton rythme",
+      "title": "Tu ne fais pas que lire. Tu testes ta mémoire.",
+      "description": "Importe le cours : Reviss extrait les idées-clés et les transforme en flashcards. Fais défiler pour feuilleter le paquet dans les deux sens.",
+      "hint": "Appuie sur la première carte pour la retourner, puis clique à nouveau pour revenir à la question.",
+      "staticEyebrow": "Flashcards actives",
+      "staticTitle": "Du cours directement en mémoire.",
+      "seeQuestion": "Voir la question",
+      "seeAnswer": "Voir la réponse",
+      "cards": {
+        "1": {
+          "topic": "Biologie cellulaire",
+          "question": "Quel est le rôle principal des ribosomes ?",
+          "answer": "Les ribosomes synthétisent les protéines en traduisant l’information de l’ARNm."
+        },
+        "2": {
+          "topic": "Chimie organique",
+          "question": "Qu’est-ce qui définit une liaison covalente ?",
+          "answer": "La mise en commun d’une ou de plusieurs paires d’électrons."
+        },
+        "3": {
+          "topic": "Histoire moderne",
+          "question": "En quelle année a commencé la Révolution française ?",
+          "answer": "La Révolution française a commencé en 1789."
+        },
+        "4": {
+          "topic": "Programmation",
+          "answer": "Tri à bulles"
+        }
+      }
+    },
+    "benefits": {
+      "eyebrow": "Tout ce dont tu as besoin, au même endroit",
+      "title": "Conçu pour les partiels, les contrôles et les examens.",
+      "description": "Chaque outil est lié au même cours, pour ne jamais perdre le contexte en passant de la compréhension à l’entraînement.",
+      "quiz": {
+        "eyebrow": "Quiz avec retour",
+        "title": "Tu comprends la réponse, pas seulement le score.",
+        "question": "Quel organite produit la plus grande partie de l’ATP ?",
+        "answers": {
+          "1": "Le ribosome",
+          "2": "La mitochondrie",
+          "3": "L’appareil de Golgi"
+        },
+        "explanation": "La mitochondrie transforme l’énergie des nutriments en ATP, la forme d’énergie utilisée par la cellule."
+      },
+      "progress": {
+        "title": "Une progression sans suppositions",
+        "description": "Vois les concepts maîtrisés, les réponses difficiles et ce qu’il faut revoir à la prochaine session."
+      },
+      "source": {
+        "title": "Tes supports restent la source",
+        "description": "Les questions et les explications partent du cours importé, pour que l’étude reste pertinente pour ta matière."
+      }
+    },
+    "pricing": {
+      "eyebrow": "Des forfaits simples, sans surprise",
+      "title": "Choisis l’intensité de ton apprentissage.",
+      "description": "Commence gratuitement, puis quand les cours s’accumulent, passe à un forfait avec plus d’espace, une répétition intelligente et une analyse de progression.",
+      "cancelAnytime": "Tu peux annuler ou changer de forfait à tout moment",
+      "bestChoice": "Meilleur choix",
+      "viewPlan": "Voir les détails du forfait",
+      "monthlyNote": "Paiement mensuel, sans engagement.",
+      "free": "gratuit",
+      "perMonth": "/ mois",
+      "perYear": "/ an",
+      "currency": "RON",
+      "fallback": {
+        "start": {
+          "name": "Beginner",
+          "description": "Pour ton premier cours et tes premières sessions d’étude active.",
+          "features": {
+            "1": "3 supports traités par mois",
+            "2": "Résumé, flashcards et quiz",
+            "3": "Jusqu’à 25 pages par support",
+            "4": "Historique des 7 derniers jours"
+          }
+        },
+        "focus": {
+          "name": "Focus",
+          "description": "Tout ce qu’il te faut pour la fac, du TD à l’examen.",
+          "discount": "25 % de réduction de lancement",
+          "features": {
+            "1": "30 supports traités par mois",
+            "2": "Jusqu’à 200 pages par support",
+            "3": "Flashcards et quiz illimités",
+            "4": "Répétition intelligente et explications IA",
+            "5": "Progression complète pour chaque cours"
+          }
+        },
+        "pro": {
+          "name": "Exam Pro",
+          "description": "Pour les périodes intenses, le mémoire et de gros volumes de cours.",
+          "discount": "20 RON d’économie",
+          "features": {
+            "1": "100 supports traités par mois",
+            "2": "Jusqu’à 500 pages par support",
+            "3": "Génération prioritaire en période chargée",
+            "4": "Simulations d’examen et analyse avancée",
+            "5": "Export des résumés et des flashcards"
+          }
+        }
+      }
+    },
+    "cta": {
+      "eyebrow": "Commence avec ton prochain cours",
+      "title": "Commence simplement. Apprends sereinement.",
+      "description": "Crée ton compte et transforme ton premier support en une session d’étude claire et active.",
+      "primary": "Créer un compte gratuit",
+      "secondary": "J’ai déjà un compte"
+    },
+    "faq": {
+      "eyebrow": "Questions fréquentes",
+      "title": "Avant de commencer.",
+      "items": {
+        "1": {
+          "question": "Quels supports puis-je importer dans Reviss ?",
+          "answer": "Tu peux importer des PDF, des documents Word, des présentations et des notes texte. Les documents scannés ou les photos de texte sont réservés au forfait Pro, où nous activons le traitement OCR."
+        },
+        "2": {
+          "question": "Que génère Reviss à partir d’un cours ?",
+          "answer": "Tu reçois d’abord le résumé, les mots-clés, les stratégies d’apprentissage et les flashcards. Les quiz sont générés séparément, quand tu es prêt à passer au test actif."
+        },
+        "3": {
+          "question": "Les quiz sont-ils utiles pour l’examen ?",
+          "answer": "Oui, les questions sont pensées par niveau : révision, compréhension et application, puis simulation d’examen. Ils ne remplacent pas les sujets officiels, mais ils te montrent où revenir."
+        },
+        "4": {
+          "question": "Puis-je demander des explications IA sur des passages du résumé ou des flashcards ?",
+          "answer": "Oui, avec le forfait Pro tu peux sélectionner un passage peu clair et demander une explication contextuelle, liée à la matière, au projet et au contenu importé."
+        },
+        "5": {
+          "question": "Mes supports sont-ils publics ?",
+          "answer": "Non. Les supports sont associés à ton compte et à tes projets. Tu dois avoir le droit d’utiliser les fichiers importés, et le contenu généré doit être vérifié avant utilisation."
+        },
+        "6": {
+          "question": "Existe-t-il un forfait gratuit ?",
+          "answer": "Oui. Le forfait Beginner permet de tester le flux avec des limites plus basses. Les forfaits payants ajoutent plus de supports, des documents plus volumineux, des explications IA et des options d’étude avancées."
+        }
+      }
+    },
+    "plans": {
+      "pageTitle": "Forfaits et tarifs",
+      "pageDescription": "Compare les forfaits Reviss : prix, supports traités par mois, limites et avantages. Commence gratuitement et passe à un forfait payant quand tu as besoin de plus.",
+      "breadcrumbHome": "Accueil",
+      "breadcrumbPlans": "Forfaits",
+      "breadcrumbLabel": "Fil d’Ariane",
+      "recommended": "Recommandé",
+      "freeSuffix": "RON gratuit",
+      "perMonth": "RON / mois",
+      "perYear": "RON / an",
+      "perInterval": "RON / {interval}",
+      "permanent": "RON / permanent",
+      "viewPlan": "Voir les détails du forfait",
+      "monthlyNote": "Paiement mensuel, sans engagement.",
+      "planTitle": "Le forfait {name}",
+      "metaTitle": "Le forfait {name} — prix, limites et avantages",
+      "metaDescription": "Le forfait {name} de {site} : {price}. {description} Découvre les limites, ce qui est inclus et les conditions d’utilisation.",
+      "priceFree": "gratuit",
+      "pricePerMonth": "{price} RON par mois",
+      "notFound": "Forfait introuvable",
+      "materials": "Supports",
+      "aiLevel": "Niveau IA",
+      "history": "Historique",
+      "includes": "Ce qui est inclus",
+      "includesLabel": "Inclut",
+      "limits": "Limites du forfait",
+      "limitRows": {
+        "activeSlots": "Projets actifs simultanément",
+        "newPerMonth": "Nouveaux projets par mois",
+        "materialsPerMonth": "Supports par mois",
+        "filesPerProject": "Fichiers par projet",
+        "maxFileSize": "Taille maximale de fichier",
+        "pagesPerMaterial": "Pages par support",
+        "initialFlashcards": "Flashcards générées au départ",
+        "questionsPerQuiz": "Questions par quiz",
+        "quizzesPerProject": "Quiz par projet",
+        "ocr": "Documents scannés (OCR)",
+        "aiChat": "Chat IA par projet"
+      },
+      "included": "Inclus",
+      "notIncluded": "Non inclus",
+      "includedOne": "Inclus",
+      "notIncludedOne": "Non inclus",
+      "conditions": "Conditions d’utilisation",
+      "billing": "Facturation",
+      "noPayment": "Sans paiement",
+      "autoRenew": "Renouvellement automatique",
+      "currencyLabel": "Devise",
+      "cancellation": "Annulation",
+      "cancelAnytime": "À tout moment, depuis le compte",
+      "ctaFree": "Commencer gratuitement",
+      "ctaTry": "Essayer le forfait {name}",
+      "stripeNote": "Le paiement est traité de manière sécurisée par Stripe. Voir les <terms>Conditions générales</terms>.",
+      "try": {
+        "createHint": "Crée ton compte en quelques étapes, sans carte bancaire.",
+        "loginHint": "Nous te demandons d’abord de te connecter, puis tu continues directement vers le paiement.",
+        "currentPlan": "C’est ton forfait actuel",
+        "currentHint": "Va dans ton compte pour continuer à étudier.",
+        "switchFree": "Passer au forfait gratuit",
+        "switchFreeHint": "Ton forfait actuel reste actif jusqu’à la fin de la période payée."
+      }
+    },
+    "footer": {
+      "tagline": "Transforme tes supports d’étude en flashcards générées automatiquement.",
+      "disclaimer": "Reviss est un outil éducatif. Le contenu généré automatiquement peut contenir des erreurs et doit être vérifié.",
+      "legalHeading": "Liens juridiques",
+      "supportHeading": "Assistance",
+      "companyHeading": "Informations sur la société",
+      "links": {
+        "terms": "Conditions générales",
+        "privacy": "Politique de confidentialité",
+        "cookies": "Politique relative aux cookies",
+        "contact": "Contact et support",
+        "withdrawal": "Rétractation du contrat",
+        "report": "Signaler un contenu"
+      },
+      "companyName": "Raison sociale",
+      "registeredOffice": "Siège social",
+      "cui": "Identifiant fiscal (CUI)",
+      "registerNumber": "N° au registre du commerce",
+      "shareCapital": "Capital social",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "rights": "Tous droits réservés.",
+      "anpcSalAlt": "ANPC Règlement alternatif des litiges",
+      "anpcSolAlt": "Règlement en ligne des litiges"
+    }
+  },
+  "auth": {
+    "googleFailed": "La connexion via Google a échoué. Veuillez réessayer.",
+    "shell": {
+      "asideEyebrow": "Ton espace d'étude"
+    },
+    "form": {
+      "continueWithGoogle": "Continuer avec Google",
+      "consent": "En continuant, tu acceptes les <terms>Conditions</terms> et la <privacy>Politique de confidentialité</privacy>.",
+      "or": "ou",
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Camille Dupont",
+      "email": "Adresse email",
+      "emailPlaceholder": "etudiant@universite.fr",
+      "password": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "passwordPlaceholderRegister": "Au moins 10 caractères",
+      "passwordPlaceholderLogin": "Ton mot de passe",
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe",
+      "resetHint": "Nous t'enverrons un lien sécurisé. Il ne pourra être utilisé qu'une seule fois et expirera automatiquement.",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Répéter le mot de passe",
+      "remember": "Rester connecté sur cet appareil.",
+      "acceptTerms": "J'ai lu et j'accepte les <terms>Conditions générales</terms>.",
+      "privacyInfo": "Les informations sur le traitement des données sont disponibles dans la <privacy>Politique de confidentialité</privacy>.",
+      "newsletter": "Je souhaite recevoir des nouveautés et des offres par email.",
+      "submit": {
+        "processing": "Traitement en cours...",
+        "forgot": "Envoyer le lien de réinitialisation",
+        "forgotSent": "Lien envoyé",
+        "register": "Créer le compte",
+        "login": "Se connecter"
+      },
+      "errors": {
+        "passwordsMismatch": "Les mots de passe ne correspondent pas.",
+        "unavailable": "Le service de connexion est indisponible pour le moment."
+      },
+      "dialog": {
+        "dismiss": "Compris",
+        "reset": {
+          "eyebrow": "Réinitialisation du mot de passe",
+          "title": "Consulte ton email pour le lien de réinitialisation.",
+          "helper": "Le lien ne peut être utilisé qu'une seule fois. Si tu ne le vois pas, vérifie aussi les dossiers Spam ou Promotions.",
+          "alreadyTitle": "Un lien de réinitialisation a déjà été demandé.",
+          "alreadyMessage": "Si l'adresse existe sur la plateforme, l'email est déjà en route.",
+          "alreadyHelper": "Par sécurité, tu pourras demander un nouveau lien après l'expiration du lien actuel."
+        },
+        "register": {
+          "eyebrow": "Consulte ton email",
+          "title": "Le lien de confirmation a été envoyé.",
+          "helper": "Le lien est valable 30 minutes. Si tu ne le vois pas, vérifie aussi les dossiers Spam ou Promotions."
+        }
+      }
+    },
+    "reset": {
+      "newPassword": "Nouveau mot de passe",
+      "confirmNewPassword": "Confirmer le nouveau mot de passe",
+      "submit": "Définir le nouveau mot de passe",
+      "submitting": "Mise à jour...",
+      "missingToken": "Le lien de réinitialisation est manquant ou incomplet.",
+      "updateFailed": "Le mot de passe n'a pas pu être mis à jour pour le moment."
+    },
+    "verify": {
+      "checking": "Vérification de l'adresse email...",
+      "missingToken": "Le lien de confirmation est manquant ou incomplet.",
+      "confirmed": "Email confirmé. Ton compte a été créé.",
+      "failed": "Nous n'avons pas pu confirmer l'email pour le moment.",
+      "goToAccount": "Aller à mon compte",
+      "registerAgain": "Recréer le compte",
+      "backToLogin": "Retour à la connexion"
+    },
+    "confirmChange": {
+      "checking": "Confirmation de la nouvelle adresse email...",
+      "missingToken": "Le lien de confirmation est manquant ou incomplet.",
+      "failed": "Nous n'avons pas pu confirmer l'adresse pour le moment.",
+      "login": "Connexion",
+      "goToAccount": "Aller à mon compte"
+    },
+    "pages": {
+      "login": {
+        "metaTitle": "Connexion",
+        "metaDescription": "Connecte-toi à ton compte Reviss.",
+        "eyebrow": "Bon retour",
+        "title": "Continue à construire sur ce que tu as appris.",
+        "description": "Connecte-toi pour reprendre tes sessions, tes quiz et ta progression exactement là où tu t'étais arrêté.",
+        "alternateText": "Pas encore de compte ?",
+        "alternateLabel": "Inscris-toi",
+        "asideTitle": "Ton rythme. Ta progression.",
+        "asideDescription": "Reviss organise tes supports de cours dans un espace calme, clair et facile à reprendre chaque jour.",
+        "feature1": "Quiz adaptés à ton niveau",
+        "feature2": "Progression conservée entre les sessions",
+        "feature3": "Révisions planifiées intelligemment"
+      },
+      "register": {
+        "metaTitle": "Inscription",
+        "metaDescription": "Crée un compte Reviss.",
+        "eyebrow": "Commence gratuitement",
+        "title": "Crée un espace d'étude qui travaille avec toi.",
+        "description": "Un seul compte pour les cours, les flashcards, les quiz et une vue claire sur ta progression.",
+        "alternateText": "Tu as déjà un compte ?",
+        "alternateLabel": "Connecte-toi",
+        "asideTitle": "Moins de chaos. Plus de clarté.",
+        "asideDescription": "Transforme tes notes en petites étapes mesurables, dans une interface conçue pour la concentration.",
+        "feature1": "Plan d'apprentissage personnel",
+        "feature2": "Flashcards générées à partir des cours",
+        "feature3": "Thème clair et Warm Night"
+      },
+      "forgotPassword": {
+        "metaTitle": "Réinitialisation du mot de passe",
+        "metaDescription": "Demande un lien pour réinitialiser ton mot de passe Reviss.",
+        "eyebrow": "Récupère ton accès",
+        "title": "Reviens à tes cours en quelques instants.",
+        "description": "Saisis l'adresse associée à ton compte et nous t'enverrons les instructions pour choisir un nouveau mot de passe.",
+        "alternateText": "Tu t'es souvenu de ton mot de passe ?",
+        "alternateLabel": "Retour à la connexion",
+        "asideTitle": "Ta progression reste ici.",
+        "asideDescription": "La réinitialisation du mot de passe n'affecte ni tes cours, ni tes flashcards, ni l'historique de tes sessions.",
+        "feature1": "Lien de réinitialisation sécurisé",
+        "feature2": "Les supports et la progression restent enregistrés",
+        "feature3": "Retour rapide à l'étude"
+      },
+      "resetPassword": {
+        "metaTitle": "Nouveau mot de passe",
+        "metaDescription": "Définis un nouveau mot de passe pour ton compte Reviss.",
+        "eyebrow": "Nouveau mot de passe",
+        "title": "Choisis un nouveau mot de passe et reviens dans ton compte.",
+        "description": "Le lien de réinitialisation ne peut être utilisé qu'une fois, puis les anciennes sessions sont fermées automatiquement.",
+        "alternateText": "Tu t'es souvenu de ton mot de passe ?",
+        "alternateLabel": "Retour à la connexion",
+        "asideTitle": "Une réinitialisation sûre, sans perdre ta progression.",
+        "asideDescription": "Tes supports, quiz et flashcards restent enregistrés dans ton compte.",
+        "feature1": "Jeton à expiration automatique",
+        "feature2": "Les anciennes sessions se ferment après la réinitialisation",
+        "feature3": "La progression reste inchangée"
+      },
+      "verifyEmail": {
+        "metaTitle": "Confirmation de l'email",
+        "metaDescription": "Confirme l'adresse email de ton compte Reviss.",
+        "eyebrow": "Confirmation de l'email",
+        "title": "Nous vérifions l'adresse avant de créer le compte.",
+        "description": "Cette étape garde la plateforme saine et confirme que l'adresse t'appartient.",
+        "alternateText": "Ton compte est déjà confirmé ?",
+        "alternateLabel": "Se connecter",
+        "asideTitle": "Un compte sûr commence par une adresse vérifiée.",
+        "asideDescription": "Après confirmation, tu seras connecté automatiquement et dirigé vers ton espace d'étude.",
+        "feature1": "Vérification avant la création du compte",
+        "feature2": "Session créée automatiquement après confirmation",
+        "feature3": "Lien à usage unique avec expiration"
+      },
+      "confirmEmailChange": {
+        "metaTitle": "Confirmation du nouvel email",
+        "metaDescription": "Confirme la nouvelle adresse email de ton compte Reviss.",
+        "eyebrow": "Confirmation de l'email",
+        "title": "Nous confirmons ta nouvelle adresse email.",
+        "description": "Cette étape garantit que la nouvelle adresse t'appartient avant de la lier au compte.",
+        "alternateText": "Tu t'es souvenu de ton ancienne adresse ?",
+        "alternateLabel": "Se connecter",
+        "asideTitle": "Le reste de ton compte ne change pas.",
+        "asideDescription": "Tes supports, quiz et flashcards restent enregistrés. Seule l'adresse email est mise à jour.",
+        "feature1": "Confirmation depuis l'email envoyé à la nouvelle adresse",
+        "feature2": "Lien à usage unique avec expiration",
+        "feature3": "Le reste du compte reste inchangé"
+      }
+    }
+  },
+  "settings": {
+    "tabs": {
+      "account": {
+        "label": "Compte",
+        "eyebrow": "Profil",
+        "title": "Les informations de ton compte.",
+        "description": "Les informations de base, le forfait actuel et le résumé du compte."
+      },
+      "study": {
+        "label": "Étude",
+        "eyebrow": "Apprentissage",
+        "title": "Comment tu veux que Reviss travaille.",
+        "description": "Préférences pour ton rythme d'étude et les retours de l'IA."
+      },
+      "appearance": {
+        "label": "Apparence",
+        "eyebrow": "Interface",
+        "title": "Choisis le mode d'affichage.",
+        "description": "Clair, sombre ou système, indépendamment de la palette de couleurs."
+      },
+      "colors": {
+        "label": "Couleurs",
+        "eyebrow": "Éditeur de thème",
+        "title": "Les couleurs de l'application.",
+        "description": "Des préréglages comme dans un éditeur de code et des ajustements fins."
+      },
+      "notifications": {
+        "label": "Notifications",
+        "eyebrow": "Rappels",
+        "title": "Alertes et emails.",
+        "description": "Choisis les notifications que tu reçois pendant l'étude."
+      },
+      "security": {
+        "label": "Sécurité",
+        "eyebrow": "Accès",
+        "title": "Sessions et protection.",
+        "description": "Paramètres du compte, des sessions et des actions critiques."
+      },
+      "privacy": {
+        "label": "Données",
+        "eyebrow": "Confidentialité",
+        "title": "Confidentialité et données.",
+        "description": "Exporte, supprime ou modifie les consentements liés aux données du compte."
+      }
+    },
+    "header": {
+      "section": "Section :"
+    },
+    "dates": {
+      "unknown": "inconnu",
+      "unknownArchive": "date inconnue"
+    },
+    "state": {
+      "on": "activé",
+      "off": "désactivé",
+      "active": "actif"
+    },
+    "theme": {
+      "system": "Système",
+      "dark": "Sombre",
+      "light": "Clair"
+    },
+    "languages": {
+      "ro": {
+        "title": "Română",
+        "description": "L'interface principale pour les étudiants de Roumanie."
+      },
+      "en": {
+        "title": "English",
+        "description": "Pour les étudiants internationaux qui préfèrent l'anglais."
+      },
+      "fr": {
+        "title": "Français",
+        "description": "Pour les étudiants francophones."
+      }
+    },
+    "themeOptions": {
+      "light": {
+        "title": "Clair",
+        "description": "Une interface claire pour étudier en journée."
+      },
+      "dark": {
+        "title": "Sombre",
+        "description": "Un contraste apaisant pour les sessions du soir."
+      },
+      "system": {
+        "title": "Système",
+        "description": "Suit la préférence de ton appareil."
+      }
+    },
+    "studyPace": {
+      "light": {
+        "title": "Flexible",
+        "description": "Pour les journées chargées, avec une révision minimale."
+      },
+      "balanced": {
+        "title": "Structuré",
+        "description": "Des sessions courtes mais régulières, pour progresser chaque jour."
+      },
+      "exam": {
+        "title": "Intensif",
+        "description": "Un rythme soutenu, avec des quiz plus fréquents et une révision active."
+      }
+    },
+    "aiFeedback": {
+      "short": {
+        "title": "Concis",
+        "description": "Des réponses courtes, idéales pour réviser vite."
+      },
+      "guided": {
+        "title": "Guidé",
+        "description": "Des explications pas à pas, avec des exemples simples."
+      },
+      "exam": {
+        "title": "Style examen",
+        "description": "Des retours axés sur les formulations et les pièges d'examen."
+      }
+    },
+    "automation": {
+      "dailyReview": {
+        "title": "Révision quotidienne",
+        "description": "Tu reçois la recommandation de 5 à 20 minutes du jour."
+      },
+      "weakConceptAlerts": {
+        "title": "Alertes concepts fragiles",
+        "description": "Apparaissent quand un concept risque d'être oublié."
+      },
+      "weeklyProgress": {
+        "title": "Progression hebdomadaire",
+        "description": "Tu reçois un bilan avec des statistiques chaque lundi."
+      },
+      "inactivityReminder": {
+        "title": "Rappel d'inactivité",
+        "description": "Un message pour revenir si tu n'as pas étudié depuis quelques jours."
+      }
+    },
+    "channels": {
+      "email": {
+        "title": "Email",
+        "description": "Rappels et alertes par email. Les confirmations de sécurité et les factures arrivent toujours, quel que soit ce réglage."
+      },
+      "study": {
+        "title": "Rappel d'étude",
+        "description": "Des alertes discrètes pour la révision quotidienne. Le même réglage que « Révision quotidienne » dans l'onglet Étude."
+      },
+      "product": {
+        "title": "Nouveautés produit",
+        "description": "Nouvelles fonctionnalités et changements importants dans l'application."
+      }
+    },
+    "alerts": {
+      "projectReady": {
+        "title": "Projet généré",
+        "description": "Quand le résumé, les flashcards ou le quiz sont prêts."
+      },
+      "weakConcepts": {
+        "title": "Concepts à revoir",
+        "description": "Quand Reviss repère des zones où la mémorisation baisse. Le même réglage que « Alertes concepts fragiles » dans l'onglet Étude."
+      },
+      "billing": {
+        "title": "Factures et abonnement",
+        "description": "La confirmation de paiement est toujours envoyée ; ce réglage ne concerne que de futures alertes supplémentaires."
+      },
+      "weeklyProgress": {
+        "title": "Progression hebdomadaire",
+        "description": "Des statistiques sur ton étude de la semaine passée. Le même réglage que « Progression hebdomadaire » dans l'onglet Étude."
+      },
+      "inactivityReminder": {
+        "title": "Rappel d'inactivité",
+        "description": "Quand tu n'as pas étudié depuis quelques jours. Le même réglage que « Rappel d'inactivité » dans l'onglet Étude."
+      },
+      "streakMilestone": {
+        "title": "Séries et réussites",
+        "description": "Quand tu atteins un certain nombre de jours d'étude consécutifs."
+      }
+    },
+    "delivery": {
+      "instant": {
+        "title": "Instantané",
+        "description": "Tu reçois les alertes dès qu'elles apparaissent."
+      },
+      "daily": {
+        "title": "Récapitulatif quotidien",
+        "description": "Un seul email avec ce qui compte aujourd'hui."
+      }
+    },
+    "toasts": {
+      "preferencesLoadFailed": "Les préférences n'ont pas pu être chargées.",
+      "preferenceSaveFailed": "La préférence n'a pas pu être enregistrée.",
+      "archiveLoadFailed": "L'archive des projets n'a pas pu être chargée.",
+      "projectRestored": "Le projet a été rétabli dans la liste des projets actifs.",
+      "projectRestoreFailed": "Le projet n'a pas pu être rétabli.",
+      "archivedDeleted": "Le projet archivé a été supprimé définitivement.",
+      "projectDeleteFailed": "Le projet n'a pas pu être supprimé.",
+      "actionFailed": "L'action n'a pas pu être finalisée pour le moment.",
+      "newsletterWithdrawFailed": "Le consentement n'a pas pu être retiré pour le moment.",
+      "deletionAlreadyPending": "Tu as déjà une demande de suppression enregistrée. Un administrateur la traitera.",
+      "deletionRequestFailed": "La demande de suppression n'a pas pu être envoyée."
+    },
+    "account": {
+      "section": "Profil",
+      "defaultName": "Étudiant Reviss",
+      "active": "Compte actif",
+      "unverified": "Non vérifié",
+      "memberSince": "Membre depuis",
+      "interface": "Interface",
+      "language": "Langue",
+      "role": "Rôle",
+      "admin": "Admin",
+      "userRole": "Utilisateur",
+      "languageTitle": "Langue de l'application",
+      "languageDetail": "La préférence est enregistrée sur le compte et appliquée après la connexion.",
+      "planSection": "Forfait et limites",
+      "currentPlan": "Forfait actuel",
+      "materialLimit": "Limite de supports",
+      "materialLimitDetail": "Définie par l'abonnement actif",
+      "dataProtection": "Protection des données",
+      "secured": "Sécurisé",
+      "securedDetail": "Session authentifiée et données protégées"
+    },
+    "study": {
+      "paceSection": "Rythme actuel",
+      "choosePace": "Choisis ton rythme",
+      "aiFeedback": "Retours de l'IA",
+      "automations": "Automatisations"
+    },
+    "appearance": {
+      "stateSection": "État du thème",
+      "activeMode": "Mode actif",
+      "displayedAs": "Affiché actuellement en {mode}",
+      "palette": "Palette",
+      "paletteDetail": "Configurée séparément dans Couleurs",
+      "sync": "Synchronisation",
+      "saving": "Enregistrement",
+      "accountPreference": "Préférence du compte",
+      "syncDetail": "Appliquée automatiquement après la connexion",
+      "displayMode": "Mode d'affichage"
+    },
+    "colors": {
+      "currentSection": "Thème actuel",
+      "customCount": "{count} couleurs modifiées manuellement",
+      "reset": "Réinitialiser les modifications",
+      "presets": "Préréglages",
+      "editor": "Éditeur de couleurs",
+      "editorDetail": "Les modifications remplacent la palette sélectionnée.",
+      "customMeta": "{count} personnalisées",
+      "preview": "Aperçu de la palette",
+      "previewCourse": "Cours actif",
+      "previewCourseName": "Biologie cellulaire",
+      "previewContinue": "Continuer",
+      "previewStatus": "Statut",
+      "previewStatusValue": "Prêt à étudier",
+      "previewChat": "Chat IA",
+      "previewChatValue": "Revois d'abord la membrane cellulaire.",
+      "previewWarn": "Attention",
+      "previewWarnValue": "5 concepts entrent dans la zone d'oubli dans 48 h.",
+      "changeColor": "Changer la couleur de {label}",
+      "custom": "perso",
+      "modify": "Modifier"
+    },
+    "themePresets": {
+      "classic": {
+        "name": "Reviss Classic",
+        "description": "La palette chaude actuelle, adaptée aux longues sessions d'étude."
+      },
+      "forest": {
+        "name": "Forest Notes",
+        "description": "Un vert académique et calme, avec des accents de laboratoire."
+      },
+      "ocean": {
+        "name": "Ocean Focus",
+        "description": "Un bleu net pour les tableaux de bord et les sessions techniques."
+      },
+      "rose": {
+        "name": "Rose Paper",
+        "description": "Un crème rosé, agréable pour les notes et la révision."
+      },
+      "graphite": {
+        "name": "Graphite IDE",
+        "description": "Neutre, comme un éditeur de code, avec un contraste plus net."
+      }
+    },
+    "colorVariables": {
+      "app": {
+        "label": "Fond de l'application",
+        "description": "La grande zone derrière les pages."
+      },
+      "sidebar": {
+        "label": "Menu latéral",
+        "description": "Le fond du menu de l'espace compte."
+      },
+      "surface": {
+        "label": "Cartes",
+        "description": "Le fond des panneaux et des formulaires."
+      },
+      "border": {
+        "label": "Contours",
+        "description": "Lignes, séparateurs et bordures."
+      },
+      "content": {
+        "label": "Texte principal",
+        "description": "Titres, icônes et contenu important."
+      },
+      "muted": {
+        "label": "Texte secondaire",
+        "description": "Descriptions, métadonnées et messages auxiliaires."
+      },
+      "action": {
+        "label": "Accent / boutons",
+        "description": "Actions principales, CTA et éléments actifs."
+      },
+      "actionSoft": {
+        "label": "Accent discret",
+        "description": "Badges et fonds légers pour l'accent."
+      },
+      "successText": {
+        "label": "Succès",
+        "description": "Messages positifs et indicateurs de progression."
+      },
+      "warningText": {
+        "label": "Avertissement",
+        "description": "Signaux de révision ou de risque."
+      },
+      "infoText": {
+        "label": "Info / IA",
+        "description": "Chat IA, explications et éléments informatifs."
+      }
+    },
+    "notifications": {
+      "summarySection": "Résumé des notifications",
+      "frequency": "Fréquence",
+      "daily": "Quotidien",
+      "frequencyDetail": "Comment tu reçois les notifications importantes",
+      "activeChannels": "Canaux actifs",
+      "channelsDetail": "Email, étude et nouveautés produit",
+      "events": "Événements",
+      "eventsDetail": "Types d'alertes autorisés",
+      "delivery": "Envoi",
+      "channels": "Canaux"
+    },
+    "security": {
+      "tabLabel": "Sécurité",
+      "backToSecurity": "Retour à la sécurité",
+      "cancel": "Annuler",
+      "actions": "Actions de sécurité",
+      "changeName": "Changer le nom",
+      "changeNameDesc": "Mets à jour le nom affiché sur ton compte.",
+      "changeEmail": "Changer l'email",
+      "changeEmailDesc": "La nouvelle adresse doit être confirmée via un email qui lui est envoyé.",
+      "changePassword": "Changer le mot de passe",
+      "changePasswordDesc": "Mets à jour le mot de passe du compte et déconnecte les autres sessions actives.",
+      "change": "Changer",
+      "deleteAccount": "Supprimer le compte",
+      "deleteAccountDesc": "Envoie une demande aux administrateurs. Le compte n'est pas supprimé automatiquement.",
+      "sending": "Envoi",
+      "requested": "Demandé",
+      "request": "Demander"
+    },
+    "privacy": {
+      "section": "Données et confidentialité",
+      "download": "Télécharger les données du compte",
+      "downloadDesc": "Inclut le profil, les préférences, les projets, les supports et les flashcards de ton compte, dans un document PDF.",
+      "downloadAction": "Télécharger les données",
+      "deleteMaterials": "Supprimer les supports importés",
+      "deleteMaterialsDesc": "Supprime les fichiers sources associés à tous tes projets. Les quiz, résumés et flashcards restent intacts.",
+      "deleteFlashcards": "Supprimer les flashcards",
+      "deleteFlashcardsDesc": "Supprime les cartes générées automatiquement dans tous tes projets.",
+      "deleting": "Suppression",
+      "delete": "Supprimer",
+      "withdrawNewsletter": "Retirer le consentement à la newsletter",
+      "withdrawNewsletterDesc": "Arrête les communications commerciales par email.",
+      "withdrawing": "Retrait",
+      "withdraw": "Retirer",
+      "cookies": "Paramètres des cookies",
+      "cookiesDesc": "Tu peux modifier ou retirer ton accord pour les cookies optionnels à tout moment.",
+      "archive": "Archive des projets",
+      "archiveDesc": "Les projets archivés sont masqués du tableau de bord et peuvent être rétablis depuis une fenêtre séparée.",
+      "viewArchive": "Voir l'archive"
+    },
+    "modals": {
+      "cancel": "Annuler",
+      "deleting": "Suppression...",
+      "permanentDeletion": "Suppression définitive"
+    },
+    "deletionModal": {
+      "eyebrow": "Demande de suppression",
+      "title": "Envoyer la demande de suppression du compte ?",
+      "description": "Le compte ne sera pas supprimé automatiquement. Un administrateur verra la demande dans l'espace d'administration et la traitera manuellement.",
+      "warning": "Une fois envoyée, tu ne pourras pas créer une autre demande tant que celle-ci est en attente.",
+      "submitting": "Envoi...",
+      "submit": "Envoyer la demande"
+    },
+    "archiveModal": {
+      "eyebrow": "Archive",
+      "title": "Projets archivés",
+      "description": "Rétablis les projets que tu veux retrouver sur le tableau de bord, ou supprime-les définitivement.",
+      "close": "Fermer l'archive",
+      "loading": "Chargement de l'archive...",
+      "empty": "Tu n'as aucun projet archivé.",
+      "restore": "Rétablir",
+      "meta": "{subject} · {count} supports · archivé le {date}"
+    },
+    "archiveDelete": {
+      "title": "Supprimer le projet archivé « {name} » ?",
+      "description": "Cette action supprime le projet et ses fichiers. Si tu veux le réutiliser, choisis Rétablir.",
+      "confirm": "Supprimer définitivement"
+    },
+    "wipe": {
+      "warning": "Cette action est définitive et ne peut pas être annulée.",
+      "materials": {
+        "title": "Supprimer tous les supports importés ?",
+        "description": "Les fichiers sources de tous tes projets seront supprimés définitivement. Les quiz, résumés et flashcards déjà générés restent intacts.",
+        "confirm": "Supprimer les supports"
+      },
+      "flashcards": {
+        "title": "Supprimer toutes les flashcards ?",
+        "description": "Les cartes générées dans tous tes projets seront supprimées définitivement.",
+        "confirm": "Supprimer les flashcards"
+      }
+    },
+    "password": {
+      "current": "Mot de passe actuel",
+      "currentHint": "Nous vérifions que c'est bien toi.",
+      "newPlaceholder": "Au moins 10 caractères",
+      "show": "Afficher le mot de passe",
+      "hide": "Masquer le mot de passe",
+      "enterCurrent": "Saisis ton mot de passe actuel."
+    },
+    "changeName": {
+      "eyebrow": "Nom",
+      "title": "Changer le nom.",
+      "description": "Mets à jour le nom affiché sur ton compte Reviss.",
+      "fieldLabel": "Nom complet",
+      "fieldHint": "Visible sur ton compte et ton profil.",
+      "placeholder": "Prénom et nom",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer le nom",
+      "tooShort": "Le nom complet doit contenir au moins 2 caractères.",
+      "sameAsCurrent": "Le nom saisi est identique au nom actuel.",
+      "updated": "Le nom a été mis à jour.",
+      "updateFailed": "Le nom n'a pas pu être mis à jour pour le moment."
+    },
+    "changeEmail": {
+      "eyebrow": "Email",
+      "title": "Changer l'email.",
+      "description": "L'adresse actuelle est {email}. La nouvelle adresse ne devient active qu'après confirmation depuis l'email reçu.",
+      "unknownEmail": "inconnue",
+      "newAddress": "Nouvelle adresse",
+      "newAddressHint": "Nous envoyons un lien de confirmation ici.",
+      "newAddressLabel": "Nouvelle adresse email",
+      "placeholder": "nom@exemple.fr",
+      "sendAgain": "Renvoyer",
+      "sending": "Envoi...",
+      "send": "Envoyer la confirmation",
+      "sameAsCurrent": "L'adresse saisie est identique à l'adresse actuelle.",
+      "requestFailed": "La demande n'a pas pu être envoyée pour le moment."
+    },
+    "changePassword": {
+      "eyebrow": "Mot de passe",
+      "title": "Changer le mot de passe.",
+      "description": "Mets à jour le mot de passe du compte. Après l'enregistrement, les autres sessions actives sont déconnectées automatiquement.",
+      "newPassword": "Nouveau mot de passe",
+      "newPasswordHint": "Au moins 10 caractères, avec une lettre et un chiffre.",
+      "changeAgain": "Changer à nouveau",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer le mot de passe",
+      "mustDiffer": "Le nouveau mot de passe doit être différent du mot de passe actuel.",
+      "updateFailed": "Le mot de passe n'a pas pu être mis à jour pour le moment.",
+      "rules": {
+        "tooShort": "Le nouveau mot de passe doit contenir au moins 10 caractères.",
+        "noSpaces": "Le nouveau mot de passe ne peut pas commencer ou finir par des espaces.",
+        "needsLetter": "Le nouveau mot de passe doit contenir au moins une lettre.",
+        "needsDigit": "Le nouveau mot de passe doit contenir au moins un chiffre."
+      }
+    }
+  },
+  "cookies": {
+    "bannerLabel": "Consentement aux cookies",
+    "bannerTitle": "Paramètres des cookies Reviss",
+    "bannerDescription": "Nous utilisons des cookies nécessaires au fonctionnement du site. Les cookies fonctionnels, d'analyse et de marketing sont optionnels et ne sont pas activés sans ton accord.",
+    "acceptAll": "Tout accepter",
+    "rejectOptionalLong": "Refuser les cookies optionnels",
+    "rejectOptional": "Refuser les optionnels",
+    "customize": "Personnaliser",
+    "settingsEyebrow": "Préférences de cookies",
+    "settingsTitle": "Choisis les cookies que tu acceptes.",
+    "settingsDescription": "Tu peux modifier ces paramètres à tout moment depuis le pied de page. Les cookies nécessaires restent actifs pour la connexion et la sécurité.",
+    "closeSettings": "Fermer les paramètres des cookies",
+    "alwaysActive": "toujours actifs",
+    "savePreferences": "Enregistrer les préférences",
+    "settingsButton": "Paramètres des cookies",
+    "categories": {
+      "necessary": {
+        "label": "Nécessaires",
+        "description": "Assurent la connexion, la sécurité et les fonctions de base de la plateforme."
+      },
+      "functional": {
+        "label": "Fonctionnels",
+        "description": "Mémorisent des préférences comme le thème, les réglages d'interface et les options d'étude."
+      },
+      "analytics": {
+        "label": "Analyse",
+        "description": "Nous aideraient à comprendre comment le produit est utilisé. Nous ne chargeons pas d'analytics sans accord."
+      },
+      "marketing": {
+        "label": "Marketing",
+        "description": "Permettraient des campagnes et des mesures marketing. Nous ne chargeons pas de scripts marketing sans accord."
+      }
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact et support",
+    "metaDescription": "Envoie une demande à Reviss pour le support, la facturation, la confidentialité ou le signalement de contenu.",
+    "eyebrow": "Support",
+    "title": "Contact et support.",
+    "description": "Utilise le formulaire pour tes questions sur le compte, la facturation, les données personnelles ou le signalement de contenu."
+  },
+  "dashboard": {
+    "functionalitateaAiNuEsteDisponibila": "La fonctionnalité IA n'est pas disponible sur ton forfait actuel.",
+    "alegeUnPlanCareInclude": "Choisis un forfait qui inclut le chat IA, les explications IA et les questions sur le texte sélectionné.",
+    "rezumat": "Résumé",
+    "flashcardUri": "Flashcards",
+    "strategii": "Stratégies",
+    "quizUri": "Quiz",
+    "progres": "Progression",
+    "chatAi": "Chat IA",
+    "cont": "Compte",
+    "studiu": "Étude",
+    "aspect": "Apparence",
+    "culori": "Couleurs",
+    "notificari": "Notifications",
+    "securitate": "Sécurité",
+    "date": "Date",
+    "planuri": "Forfaits",
+    "facturi": "Factures",
+    "incarcareMateriale": "Import des supports",
+    "sumarizareContinut": "Résumé du contenu",
+    "creareFlashcarduri": "Création des flashcards",
+    "pregatireStrategieInvatare": "Préparation de la stratégie d'apprentissage",
+    "genereazaUnQuiz": "Générer un quiz",
+    "seGenereaza": "Génération...",
+    "construiescQuizurile": "Création des quiz...",
+    "analizezMaterialulCompletEchilibrezDific": "J'analyse tout le contenu, j'équilibre la difficulté et je vérifie les bonnes réponses. Cela peut prendre quelques minutes.",
+    "citescMaterialul": "Lecture du contenu",
+    "compunIntrebarile": "Rédaction des questions",
+    "verificRaspunsurile": "Vérification des réponses",
+    "generareaNuEsteDisponibilaMomentan": "La génération n'est pas disponible pour le moment. Réessaie dans quelques minutes.",
+    "pachetulNuAPututFi": "Le pack n'a pas pu être généré pour le moment. Réessaie.",
+    "creeazaPachet": "création du pack",
+    "creeazaQuizuri": "création des quiz",
+    "inAsteptare": "en attente",
+    "inProcesare": "en traitement",
+    "creatDeTine": "Créé par toi",
+    "continuaCuRezumatulGenerat": "Continuer avec le résumé généré",
+    "asteaptaGenerareaPachetului": "Attendre la génération du pack",
+    "pachetulProiectuluiEsteGeneratSi": "Le pack du projet est généré et peut être utilisé pour étudier.",
+    "revissConvertesteMaterialeleSiSalveaza": "Reviss convertit les supports et enregistre automatiquement le contenu généré.",
+    "aiAtinsLimitaPlanuluiPlanname": "Tu as atteint la limite du forfait {planName} : {value} par mois.",
+    "planulPlannameNuIncludeIncarcari": "Le forfait {planName} n'inclut pas l'import de supports.",
+    "selectiaDepasesteCotaLunaraDe": "La sélection dépasse le quota mensuel de supports. Il t'en reste {value}.",
+    "planulPlannameNuIncludePagini": "Le forfait {planName} n'inclut pas de pages traitées.",
+    "aiAtinsLimitaLunaraDe": "Tu as atteint la limite mensuelle de pages traitées : {pages_processed}/{pages_limit}.",
+    "generareaNuAPututFi": "La génération n'a pas pu être terminée.",
+    "selectiaDepasesteLimitelePlanuluiPlannam": "La sélection dépasse les limites du forfait {planName}.",
+    "proiectulNuAPututFi": "Le projet n'a pas pu être préparé pour le moment.",
+    "inchideMeniul": "Fermer le menu",
+    "meniuPrincipal": "Menu principal",
+    "extindeMeniul": "Déplier le menu",
+    "restrangeMeniul": "Replier le menu",
+    "proiectNou": "Nouveau projet",
+    "acasa": "Accueil",
+    "setari": "Paramètres",
+    "setariAdmin": "Paramètres admin",
+    "abonament": "Abonnement",
+    "proiecteleTale": "Tes projets",
+    "proiectDezactivatPePlanulCurent": "Projet désactivé avec ton forfait actuel",
+    "dezactivat": "Désactivé",
+    "nuAiProiecteInca": "Tu n'as pas encore de projets.",
+    "iesiDinCont": "Se déconnecter",
+    "proiecteLunare": "Projets mensuels",
+    "materiale": "Supports",
+    "paginiProcesate": "Pages traitées",
+    "aiCredits": "AI Credits",
+    "paginiOcr": "Pages OCR",
+    "aiAtinsLimitaPlanuluiCurent": "Tu as atteint la limite de ton forfait actuel pour « {label} ». Tu peux passer à un forfait supérieur.",
+    "teApropiiDeLimitaLunara": "Tu approches de la limite mensuelle pour « {label} ». Il t'en reste {value}.",
+    "aiUtilizatPercentDinResursele": "Tu as utilisé {percent} % des ressources incluses ce mois-ci pour « {label} ».",
+    "utilizareLunaAceasta": "Utilisation ce mois-ci",
+    "nuAiIncaProiecteIncarca": "Tu n'as pas encore de projets. Importe ton premier cours et on commence.",
+    "ai1ProiectPregatitPentru": "Tu as 1 projet prêt à étudier.",
+    "aiLengthProiectePregatitePentru": "Tu as {length} projets prêts à étudier.",
+    "buna": "Bonjour,",
+    "proiecteActive": "Projets actifs",
+    "inSpatiulTauDeStudiu": "dans ton espace d'étude",
+    "t1DezactivatPePlanulCurent": "1 désactivé sur le forfait actuel",
+    "deactivatedprojectcountDezactivatePePlan": "{deactivatedProjectCount} désactivés sur le forfait actuel",
+    "pacheteDeStudiu": "Packs d'étude",
+    "cuPachetGenerat": "avec un pack généré",
+    "inPacheteleGenerate": "dans les packs générés",
+    "deschideMeniulPentruName": "Ouvrir le menu pour {name}",
+    "redenumire": "Renommer",
+    "activare": "Activer",
+    "dezactivare": "Désactiver",
+    "arhivare": "Archiver",
+    "stergere": "Supprimer",
+    "indisponibilPePlanulCurent": "Indisponible avec ton forfait actuel",
+    "deschideProiectul": "Ouvrir le projet",
+    "numeProiect": "Nom du projet",
+    "renunta": "Annuler",
+    "salveaza": "Enregistrer",
+    "niciunProiectInca": "Aucun projet pour l'instant.",
+    "creeazaPrimulProiectIncarcaMaterialele": "Crée ton premier projet, importe les supports et Reviss prépare le résumé, les flashcards et les quiz.",
+    "stergereDefinitiva": "Suppression définitive",
+    "confirmaStergereaProiectului": "Confirme la suppression du projet.",
+    "aceastaActiuneEliminaProiectulMaterialel": "Cette action supprime le projet, les supports convertis et le contenu généré. Pour le masquer sans le supprimer, utilise l'archive.",
+    "proiect": "Projet",
+    "continut": "Contenu",
+    "materialeRezumatFlashcardUriQuiz": "Supports, résumé, flashcards, quiz et progression.",
+    "alternativa": "Alternative",
+    "arhiveazaProiectulDacaVreiDoar": "Archive le projet si tu veux seulement le masquer temporairement.",
+    "seSterge": "Suppression...",
+    "stergeDefinitiv": "Supprimer définitivement",
+    "inapoiLa": "Retour à",
+    "proiectActiv": "Projet actif",
+    "chatAiNuEsteDisponibil": "Le chat IA n'est pas disponible sur ton forfait actuel.",
+    "veziPlanurile": "Voir les forfaits",
+    "salutSuntAiUlPentru": "Salut ! Je suis l'IA du projet « {name} ». Pose-moi n'importe quelle question sur ce support.",
+    "nuAmPututGeneraUn": "Je n'ai pas pu générer de réponse utile pour le moment. Réessaie dans quelques instants.",
+    "raspunsulNuAPututFi": "La réponse n'a pas pu être générée pour le moment. Réessaie.",
+    "chatNou": "Nouveau chat",
+    "revissPregatesteRaspunsul": "Reviss prépare la réponse",
+    "mesajPentruChatAi": "Message pour le chat IA",
+    "scrieUnMesaj": "Écris un message...",
+    "trimite": "Envoyer",
+    "galben": "Jaune",
+    "verde": "Vert",
+    "albastru": "Bleu",
+    "roz": "Rose",
+    "mov": "Violet",
+    "paragraful": "→ paragraphe",
+    "deschideParagrafulInRezumat": "Ouvrir le paragraphe dans le résumé ↗",
+    "apasaPentruAStergeHighlight": "Appuie pour supprimer le surlignage",
+    "veziNotita": "Voir la note",
+    "culoareHighlight": "Couleur du surlignage",
+    "reseteazaHighlight": "Réinitialiser le surlignage",
+    "instrumente": "Outils",
+    "evidentiaza": "Surligner",
+    "aplica": "Appliquer",
+    "sterge": "Supprimer",
+    "notita": "Note",
+    "stergeInstrument": "Retirer l'outil",
+    "explicatiaNuEsteDisponibilaMomentan": "L'explication n'est pas disponible pour le moment",
+    "nuAmPututGeneraExplicatia": "Je n'ai pas pu générer l'explication. Réessaie dans quelques instants.",
+    "verificaDacaAiSelectatUn": "Vérifie que tu as sélectionné un fragment clair du résumé.",
+    "potiContinuaStudiulSiPoti": "Tu peux continuer à étudier et revenir à l'explication plus tard.",
+    "rezumatulNuEsteGeneratInca": "Le résumé n'a pas encore été généré.",
+    "revissGenereazaAutomatRezumatulDupa": "Reviss génère automatiquement le résumé après l'import des supports. Si la génération a échoué, réessaie depuis la page du projet.",
+    "selecteazaUnFragmentApoiApasa": "Sélectionne un fragment, puis appuie sur Appliquer à la sélection.",
+    "apasaPeUnTextEvidentiat": "Clique sur un texte surligné pour le supprimer.",
+    "selecteazaUnFragmentApoiConfirma": "Sélectionne un fragment, puis confirme avec Demander.",
+    "selecteazaUnFragmentCaSa": "Sélectionne un fragment pour ajouter une note.",
+    "evidentiere": "Surlignage",
+    "textSelectatPentruAi": "Texte sélectionné pour l'IA",
+    "intrebareaTa": "Ta question",
+    "exExplicaPeScurtPentru": "Ex. : explique brièvement pour l'examen ou compare avec la théorie de Kant.",
+    "optional": "Facultatif",
+    "intreaba": "Demander",
+    "anuleaza": "Annuler",
+    "stergeNotita": "Supprimer la note",
+    "inchide": "Fermer",
+    "scrieONotitaAici": "Écris une note ici...",
+    "cuvinteCheieDinRezumat": "Mots-clés du résumé",
+    "alegeModulDeLucru": "Choisis le mode de travail.",
+    "inchideInstrumentele": "Fermer les outils",
+    "revissAi": "Reviss IA",
+    "generezExplicatia": "Génération de l'explication",
+    "aiIntrebatDespre": "Tu as demandé au sujet de",
+    "analizezFragmentul": "Analyse du fragment...",
+    "cautLegaturaCuRezumatulExtrag": "Je relie cela au résumé, j'extrais l'idée utile pour l'examen et je la formule brièvement.",
+    "cumSaRetii": "Comment retenir",
+    "sigurVreiSaReseteziToate": "Veux-tu vraiment réinitialiser tous les surlignages du résumé ?",
+    "toateHighlightUrileAplicateIn": "Tous les surlignages appliqués dans ce résumé seront supprimés définitivement. Les notes ne sont pas affectées.",
+    "seReseteaza": "Réinitialisation...",
+    "reseteazaHighlightUrile": "Réinitialiser les surlignages",
+    "generateInitial": "Générées initialement",
+    "flashcardurileNuSuntGenerateInca": "Les flashcards ne sont pas encore générées",
+    "pachetulGeneratAutomatDinMaterialele": "Le pack généré automatiquement depuis les supports importés, prêt pour une révision active.",
+    "flashcardurileAparAiciDupaCe": "Les flashcards apparaissent ici quand Reviss termine la génération du pack d'étude.",
+    "dinQuizUrileTale": "Depuis tes quiz",
+    "intrebarileGresiteTransformateInFlashcar": "Questions ratées transformées en flashcards",
+    "aiciAparIntrebarileGresiteSalvate": "Tes mauvaises réponses enregistrées apparaissent ici",
+    "greselilePeCareLeAi": "Les erreurs que tu as enregistrées depuis les quiz, avec la bonne réponse.",
+    "faUnQuizCandGresesti": "Fais un quiz. Quand tu te trompes, appuie sur « Enregistrer comme flashcard » et la question arrive ici.",
+    "createDeTine": "Créées par toi",
+    "flashcardurileTale": "Tes flashcards",
+    "creeazaPrimulFlashcard": "Créer la première flashcard",
+    "flashcardurileCreateManualRamanSeparate": "Les flashcards créées manuellement restent séparées de celles générées automatiquement.",
+    "durataEst": "durée estimée",
+    "continua": "Continuer",
+    "veziIntrebarea": "Voir la question",
+    "veziRaspunsul": "Voir la réponse",
+    "scoateFlashcardulDinRecapitulare": "Retirer la flashcard de la révision",
+    "marcheazaFlashcardulPentruRecapitulare": "Marquer la flashcard pour révision",
+    "verificaDacaAiSelectatUn2": "Vérifie que tu as sélectionné un fragment clair de la flashcard.",
+    "potiContinuaRecapitulareaSiPoti": "Tu peux continuer la révision et revenir à l'explication plus tard.",
+    "inapoiLaPachete": "Retour aux packs",
+    "marcate": "Marquées",
+    "interactiune": "Interaction",
+    "selecteazaTextPentruAi": "Sélectionne du texte pour l'IA",
+    "aiIndisponibil": "IA indisponible",
+    "textSelectatDin": "Texte sélectionné dans",
+    "intrebare": "question",
+    "raspuns": "réponse",
+    "exExplicaDeCeRaspunsul": "Ex. : explique pourquoi la réponse est correcte ou donne-moi un exemple simple.",
+    "nuAiFlashcarduriMarcatePentru": "Tu n'as aucune flashcard marquée pour révision.",
+    "apasaPeIconitaCuCreierul": "Appuie sur l'icône cerveau d'une flashcard pour l'ajouter ici.",
+    "incaNuAiFlashcarduriDin": "Tu n'as pas encore de flashcards issues des quiz.",
+    "intraIntrUnQuizSi": "Ouvre un quiz et réponds. Quand tu te trompes, appuie sur « Enregistrer comme flashcard » et la question arrive ici.",
+    "flashcardAnterior": "Flashcard précédente",
+    "flashcardUrmator": "Flashcard suivante",
+    "amesteca": "Mélanger",
+    "flashcardAi": "Flashcard IA",
+    "analizezFlashcardul": "Analyse de la flashcard...",
+    "cautConceptulLegaturaCuRaspunsul": "Je cherche le concept, son lien avec la réponse et l'explication la plus utile pour réviser.",
+    "cumSaLInveti": "Comment l'apprendre",
+    "usor": "Facile",
+    "mediu": "Moyen",
+    "greu": "Difficile",
+    "flashcardManual": "Flashcard manuelle",
+    "creeazaFlashcard": "Créer une flashcard.",
+    "categorie": "Catégorie",
+    "dificultate": "Difficulté",
+    "intrebare2": "Question",
+    "fata": "Recto",
+    "scrieIntrebareaAici": "Écris la question ici...",
+    "raspuns2": "Réponse",
+    "spate": "Verso",
+    "scrieRaspunsul": "Écris la réponse...",
+    "anulare": "Annulation",
+    "seSalveaza": "Enregistrement...",
+    "salvare": "Enregistrer",
+    "adaugaImagine": "Ajouter une image",
+    "pachetulGeneratDinMaterialeleIncarcate": "Le pack généré depuis les supports importés, utile pour la première révision structurée.",
+    "t8Min": "8 min",
+    "dinRezumatulInitial": "depuis le résumé initial",
+    "recapitulareAdaptiva": "Révision adaptative",
+    "t1FlashcardDinGreseli": "1 flashcard issue d'erreurs",
+    "quizmistakecountFlashcardUriDinGreseli": "{quizMistakeCount} flashcards issues d'erreurs",
+    "intrebarilePeCareAiAles": "Les questions que tu as choisi d'enregistrer, avec la bonne réponse.",
+    "candGresestiOIntrebareDe": "Quand tu te trompes à une question de quiz, tu peux enregistrer ici la question et la bonne réponse.",
+    "t0Min": "0 min",
+    "dinGreseliReale": "depuis les vraies erreurs",
+    "creeazaFlashcard2": "Créer une flashcard",
+    "explicatiaNuAFostInclusa": "L'explication n'a pas été incluse dans le JSON, mais la bonne réponse est indiquée.",
+    "explicaRaspunsulDinMemorieSi": "Explique la réponse de mémoire et compare-la avec les options proches.",
+    "quizGeneratName": "Quiz généré · {name}",
+    "quizGeneratDinMaterialeleAcestui": "Quiz généré à partir des supports de ce projet.",
+    "veziExplicatia": "voir l'explication",
+    "generareaQuizuluiAFostAnulata": "La génération du quiz a été annulée.",
+    "aiAtinsLimitaDeMaxquizzesperproject": "Tu as atteint la limite de {maxQuizzesPerProject} {value} pour ce projet.",
+    "treciLaUnPlanSuperior": "Passe à un forfait supérieur pour en générer davantage.",
+    "alegeToateRaspunsurileCorecte": "Choisis toutes les bonnes réponses",
+    "asociazaFiecareElementCuPerechea": "Associe chaque élément à sa paire",
+    "asazaCuvinteleInOrdineaCorecta": "Place les mots dans le bon ordre",
+    "completeazaGolurileDinPropozitie": "Complète les trous de la phrase",
+    "alegeUnSingurRaspuns": "Choisis une seule réponse",
+    "inapoiLaQuizUri": "Retour aux quiz",
+    "quizActiv": "Quiz actif",
+    "raspunse": "répondues",
+    "intrebareaValueDinLength": "Question {value} sur {length}",
+    "verificaRaspunsul": "Vérifier la réponse",
+    "deRevizuit": "À revoir",
+    "acestQuizNuAreO": "Ce quiz n'a pas de référence vérifiable au résumé.",
+    "sursa": "Source :",
+    "salvatInFlashcardUriPachetul": "Enregistré dans Flashcards, paquet Depuis tes quiz.",
+    "nuAmPututSalvaFlashcard": "La flashcard n'a pas pu être enregistrée. Réessaie.",
+    "vreiSaRetiiIntrebareaAsta": "Veux-tu garder cette question comme flashcard ?",
+    "reincearca": "Réessayer",
+    "salveazaCaFlashcard": "Enregistrer comme flashcard",
+    "rezultatulNuAFostSalvat": "Le résultat n'a pas été enregistré dans l'historique. Réessaie avant de quitter le quiz.",
+    "reincearcaSalvarea": "Réessayer l'enregistrement",
+    "seSalveazaRezultatulInIstoric": "Enregistrement du résultat dans l'historique...",
+    "veziGreselileInProgres": "Voir tes erreurs dans Progression →",
+    "inapoi": "Retour",
+    "veziSumarul": "Voir le résumé",
+    "urmatoareaIntrebare": "Question suivante",
+    "hartaQuiz": "Carte du quiz",
+    "corecte": "Correctes",
+    "acuratete": "Précision",
+    "concepteSlabe": "Concepts faibles",
+    "istoric": "Historique",
+    "veziIncercareaDinValueIn": "Voir la tentative du {value} dans Progression",
+    "sumarFinal": "Résumé final",
+    "aiObtinut": "Tu as obtenu",
+    "raspunsuriCorecte": "bonnes réponses.",
+    "inchideSumarul": "Fermer le résumé",
+    "greselileSalvateTeAsteaptaIn": "Les erreurs que tu as enregistrées t'attendent dans tes flashcards.",
+    "potiSalvaCaFlashcardIntrebarile": "Tu peux enregistrer comme flashcards les questions à réponse unique ratées.",
+    "scorQuiz": "Score du quiz",
+    "flashcardUriSalvate": "Flashcards enregistrées",
+    "concepteDeRevizuit": "Concepts à revoir",
+    "reiaQuizUl": "Refaire le quiz",
+    "quizNou": "Nouveau quiz",
+    "genereazaTesteleCandVrei": "Génère les tests quand tu veux.",
+    "alegiDificultateaCateIntrebariVrei": "Choisis la difficulté, le nombre de questions et les types de réponses, et nous générons un quiz sur mesure. Ton forfait autorise",
+    "inAcestProiect": "dans ce projet.",
+    "seAnuleaza": "Annulation...",
+    "anulareGenerareQuiz": "Annuler la génération du quiz",
+    "alegeTestulPotrivit": "Choisis le bon test.",
+    "recapitulareAplicareSiSimulareDe": "Révision, application et simulation d'examen, séparées pour savoir exactement quoi travailler.",
+    "neincercat": "Non essayé",
+    "intrebari": "Questions",
+    "durata": "Durée",
+    "rezultat": "Résultat",
+    "reintra": "Reprendre",
+    "incepe": "Commencer",
+    "inchideCursulSiIncearcaSa": "Ferme le cours et essaie de répondre",
+    "dupaFiecareSectiuneSpunePe": "Après chaque section, reformule brièvement l'idée principale sans regarder le support.",
+    "revinoMainePesteIdeileImportante": "Reviens demain sur les idées importantes",
+    "oRecapitulareScurtaDupaO": "Une courte révision après une journée t'aide à fixer les concepts qui s'oublient vite.",
+    "explicaSimpluCuExemple": "Explique simplement, avec des exemples",
+    "dacaPotiLegaTeoriaDe": "Si tu peux relier la théorie à un exemple concret, tu as beaucoup plus de chances de la retenir à l'examen.",
+    "strategiiAi": "Stratégies IA",
+    "planDeStudiuPentru": "Plan d'étude pour",
+    "pasiiSuntGeneratiDinMaterialul": "Les étapes sont générées depuis le support du projet et pensées pour une révision active, pas une lecture passive.",
+    "context": "Contexte",
+    "ritmRecomandat": "Rythme recommandé",
+    "t2030MinPeSesiune": "20-30 min par session, puis vérification rapide en quiz.",
+    "baza": "Base",
+    "buneDeFolositLaOrice": "Utiles pour n'importe quel cours.",
+    "greselileDinTitleValue": "Erreurs de « {title} », {value}.",
+    "greselileDinUltimaIncercareA": "Erreurs de la dernière tentative de chaque quiz, regroupées par concept.",
+    "afiseaza": "Afficher",
+    "ultimeleIncercari": "Derniers essais",
+    "incercareIndisponibila": "Tentative indisponible",
+    "raspunsuriCorecte2": "bonnes réponses",
+    "incercareaNuMaiEsteDisponibila": "Cette tentative n'est plus disponible pour ce projet. Choisis « Dernières tentatives ».",
+    "uneleIncercariAuDoarScorul": "Certaines tentatives n'ont que le score enregistré, sans le détail des questions ratées. Refais ces quiz pour les inclure dans « À revoir ».",
+    "nuExistaRaspunsuriGresiteIn": "Il n'y a aucune mauvaise réponse dans les tentatives détaillées affichées.",
+    "recomandarileVorApareaAiciDupa": "Les recommandations apparaîtront ici après une nouvelle tentative.",
+    "finalizeazaUnQuizPentruA": "Termine un quiz pour voir ici les concepts à revoir.",
+    "intrebari2": "questions",
+    "aceastaIntrebareNuAreO": "Cette question n'a pas de référence vérifiable au résumé.",
+    "marti": "mardi",
+    "sambata": "samedi",
+    "duminica": "dimanche",
+    "deLaPrimaIncercare": "depuis la première tentative",
+    "dinMaterial": "issues du support",
+    "adaugateDeTine": "ajoutées par toi",
+    "dinGreseli": "Issues d'erreurs",
+    "salvateLaQuiz": "enregistrées depuis les quiz",
+    "scorDePregatire": "Score de préparation",
+    "scoruriSiQuizUriFinalizate": "Scores et quiz terminés, combinés",
+    "apareDupaPrimulQuizRezolvat": "Apparaît après ton premier quiz terminé",
+    "scorMediu": "Score moyen",
+    "incercare": "tentative",
+    "incercari": "tentatives",
+    "nicioIncercareInca": "Aucune tentative pour l'instant",
+    "genereazaPrimulQuizDinTab": "Génère ton premier quiz depuis l'onglet Quiz",
+    "deReluat": "À revoir",
+    "repetaGreselile": "Revoir les erreurs",
+    "nicioGresealaRecurenta": "Aucune erreur récurrente",
+    "evolutiaScorurilor": "Évolution des scores",
+    "liniaApareDupaPrimulQuiz": "la courbe apparaît après ton premier quiz",
+    "graficulApareDupaPrimulQuiz": "Le graphique apparaît après ton premier quiz.",
+    "fiecareIncercareAdaugaUnPunct": "Chaque tentative ajoute un point sur la courbe, pour voir si tes scores progressent.",
+    "pregatirePentruExamen": "Préparation à l'examen",
+    "tintaProgressReadinessTarget": "objectif : {PROGRESS_READINESS_TARGET} %",
+    "rezolvaUnQuizCaSa": "Fais un quiz pour que l'on voie où tu en es.",
+    "estiPesteTintaMaiRepeta": "Tu es au-dessus de l'objectif. Revois encore une fois les concepts ratés avant l'examen.",
+    "concentreazaTePeFocustext": "Concentre-toi sur : {focusText}.",
+    "continuaCuQuizUrileNeincercate": "Continue avec les quiz pas encore essayés pour faire monter ton score.",
+    "incepeUrmatorulQuiz": "Commencer le quiz suivant",
+    "repetaUnQuiz": "Refaire un quiz",
+    "zileActive": "Jours actifs",
+    "incercariPeZileleSaptamanii": "tentatives par jour de la semaine",
+    "invetiCelMaiDesName": "Tu étudies le plus souvent le {name}.",
+    "aiciVeiVedeaInCe": "Ici tu verras quels jours tu étudies le plus.",
+    "niciunQuizGenerat": "aucun quiz généré",
+    "toate": "Tous",
+    "concepteDeReluat": "Concepts à revoir",
+    "dinRaspunsurileGresite": "d'après les mauvaises réponses",
+    "seIncarcaRecomandarile": "Chargement des recommandations...",
+    "constanta": "Régularité",
+    "ultimele4Saptamani": "4 dernières semaines",
+    "stapanirePeSubiecte": "Maîtrise par sujet",
+    "materialeDeStudiu": "Supports d'étude",
+    "ceAiInProiect": "ce que contient le projet",
+    "concepteCheie": "Concepts clés",
+    "highlightUriInRezumat": "Surlignages du résumé",
+    "notite": "Notes",
+    "incercariLaQuizUri": "Essais aux quiz",
+    "scorDePregatirePercentDin": "Score de préparation {percent} % sur un objectif de {PROGRESS_READINESS_TARGET} %",
+    "tinta": "Objectif",
+    "pregatit": "prêt",
+    "incercariLaQuizUriPe": "Tentatives de quiz par jour de la semaine",
+    "quizUrileNuSuntGenerate": "Aucun quiz généré pour l'instant.",
+    "dupaCeGenereziPrimulQuiz": "Une fois ton premier quiz généré, tu le verras ici avec son score et ses tentatives.",
+    "incercari2": "Tentatives",
+    "nimicDeReluatInca": "Rien à revoir pour l'instant.",
+    "greselileDinQuizUriSe": "Les erreurs des quiz sont regroupées ici par concept, pour les revoir rapidement.",
+    "greseala": "erreur",
+    "greseli": "erreurs",
+    "repetaCardurileDinGreseli": "Revoir les cartes issues d'erreurs",
+    "inTotal": "au total",
+    "evolutiaScorurilorLaQuizUri": "Évolution des scores de quiz dans le temps",
+    "radarulSeActiveazaDupaMai": "Le radar s'active après davantage de résultats.",
+    "aiNevoieDeCelPutin": "Il faut au moins trois sujets évalués pour une carte lisible.",
+    "radarulCompetentelorPeSubiecte": "Radar des compétences par sujet",
+    "labelCountIncercari": "{label} : {count} tentatives",
+    "maiPutin": "Moins",
+    "maiMult": "Plus",
+    "incarcaUnCurs": "Importer un cours.",
+    "cumIlVeiGasiIn": "Comment tu le retrouveras dans ton compte.",
+    "exFarmaSem2": "Ex : Pharma sem. 2",
+    "materie": "Matière",
+    "contextPentruAi": "Contexte pour l'IA.",
+    "exImunologie": "Ex : Immunologie",
+    "scoala": "École",
+    "facultateScoalaSauNivel": "Faculté, école ou niveau.",
+    "exUmfUtcn": "Ex : UMF / UTCN",
+    "lengthMaterialeSelectate": "{length} supports sélectionnés",
+    "adaugaMaterialele": "Ajouter les supports",
+    "valueInTotal": "{value} au total",
+    "trageFisiereAiciSauApasa": "Glisse des fichiers ici ou clique pour sélectionner.",
+    "alegeFisiere": "Choisir des fichiers",
+    "limitePlan": "Limites du forfait",
+    "luna": "/mois,",
+    "fisiereProiect": "fichiers/projet,",
+    "mbFisier": "Mo/fichier,",
+    "mbProiectCotaLunara": "Mo/projet. Quota mensuel :",
+    "materialeSi": "supports et",
+    "veziPlanuri": "Voir les plans",
+    "elimina": "Retirer",
+    "pregatire": "Préparation",
+    "progresPregatire": "Progression de la préparation",
+    "amDreptulSaFolosescAceste": "J'ai le droit d'utiliser ces supports.",
+    "genereazaPachetul": "Générer le pack",
+    "seGenereazaRezumatulCuvinteleCheie": "Le résumé, les mots-clés, les stratégies et les flashcards sont en cours de génération. Les quiz se lancent séparément depuis leur onglet dédié.",
+    "nuIncarcaDateSensibileSau": "N'importe pas de données sensibles ni de supports que tu n'as pas le droit d'utiliser.",
+    "pachetulEstePregatit": "Le pack est préparé",
+    "generamPachetul": "Génération du pack",
+    "rezumatulCuvinteleCheieStrategiileSi": "Le résumé, les mots-clés, les stratégies et les flashcards ont été enregistrés dans le projet.",
+    "pregatimMaterialeleSiCreamPrimul": "Nous préparons les supports et créons ton premier pack d'étude.",
+    "proiectulEstePregatitPentruStudiu": "Le projet est prêt pour l'étude. Les quiz sont générés séparément depuis l'onglet Quiz quand tu veux passer au test.",
+    "countMateriale": "{count} supports",
+    "eroare": "erreur",
+    "flashcardUriPentruName": "Flashcards pour {name}",
+    "luni": "lundi",
+    "miercuri": "mercredi",
+    "joi": "jeudi",
+    "vineri": "vendredi",
+    "portocaliu": "Orange",
+    "serviciulDeGenerare": "le service de génération",
+    "continutGeneric": "contenu",
+    "pachetulGenerat": "le pack généré",
+    "pachetGenerat": "pack généré",
+    "quizulNuAPututFiGenerat": "Le quiz n'a pas pu être généré.",
+    "quizulNuAPututFiGeneratIncearca": "Le quiz n'a pas pu être généré. Réessaie.",
+    "generareaQuizurilorDureazaPreaMult": "La génération des quiz prend trop de temps. Recharge la page.",
+    "planulPermiteMaximumFisiere": "Le forfait {planName} autorise au maximum {count} fichiers par projet.",
+    "auFostPastrateDoarPrimele": "Seuls les {count} premiers fichiers autorisés par le forfait ont été conservés.",
+    "unFisierPoateAveaCelMult": "Un fichier peut faire au maximum {size} Mo sur le forfait {planName}.",
+    "materialeleProiectuluiPotAvea": "Les supports du projet peuvent faire au maximum {size} Mo au total.",
+    "generareaDureazaPreaMult": "La génération prend trop de temps. Recharge la page dans quelques minutes.",
+    "numeleProiectuluiMinim": "Le nom du projet doit contenir au moins 2 caractères.",
+    "proiectulNuAPututFiRedenumit": "Le projet n'a pas pu être renommé.",
+    "proiectulNuAPututFiArhivat": "Le projet n'a pas pu être archivé.",
+    "stareaProiectuluiNuAPututFi": "L'état du projet n'a pas pu être modifié.",
+    "proiectulNuAPututFiSters": "Le projet n'a pas pu être supprimé.",
+    "createManual": "Créées manuellement",
+    "flashcardUriCreateDeTine": "{count} flashcards créées par toi",
+    "cardurileAdaugateManual": "Les cartes ajoutées manuellement, séparées des paquets générés automatiquement.",
+    "createManualMetric": "créées manuellement",
+    "nMin": "{count} min",
+    "rezultatulQuizuluiNuAPututFiSalvat": "Le résultat du quiz n'a pas pu être enregistré.",
+    "reincearcaSalvareaInainte": "Réessaie l'enregistrement avant de quitter le quiz.",
+    "conjunctieSi": "et",
+    "complexityUsor": "Facile",
+    "complexityMediu": "Moyen",
+    "complexityGreu": "Difficile",
+    "complexityExamen": "Examen"
+  },
+  "accountShell": {
+    "acasa": "Accueil",
+    "setariAdmin": "Paramètres admin",
+    "cont": "Compte",
+    "studiu": "Étude",
+    "aspect": "Apparence",
+    "culori": "Couleurs",
+    "notificari": "Notifications",
+    "securitate": "Sécurité",
+    "date": "Date",
+    "planuri": "Forfaits",
+    "facturi": "Factures",
+    "inchideMeniul": "Fermer le menu",
+    "meniuPrincipal": "Menu principal",
+    "extindeMeniul": "Déplier le menu",
+    "restrangeMeniul": "Replier le menu",
+    "proiectNou": "Nouveau projet",
+    "setari": "Paramètres",
+    "abonament": "Abonnement",
+    "iesiDinCont": "Se déconnecter"
+  },
+  "compliance": {
+    "categorie": "Catégorie",
+    "continut": "Contenu",
+    "declaratie": "Déclaration",
+    "descriere": "Description",
+    "numeComplet": "Nom complet",
+    "mesaj": "Message",
+    "nume": "Nom",
+    "numarulComenzii": "Numéro de commande",
+    "tip": "Type",
+    "subiect": "Sujet",
+    "abonamentSauComanda": "Abonnement ou commande",
+    "verificaFormularulSiIncearcaDin": "Vérifie le formulaire et réessaie.",
+    "solicitareaAFostBlocataDin": "La demande a été bloquée pour des raisons de sécurité. Recharge la page et réessaie.",
+    "verificaDateleDinFormularUnele": "Vérifie les données du formulaire. Certains champs ne sont pas remplis correctement.",
+    "aiTrimisPreaMulteSolicitari": "Tu as envoyé trop de demandes en peu de temps. Réessaie plus tard.",
+    "serverulNuPoateProcesaSolicitarea": "Le serveur ne peut pas traiter la demande pour le moment. Réessaie dans quelques minutes.",
+    "solicitareaNuAPututFi": "La demande n'a pas pu être envoyée.",
+    "valoareInvalida": "Valeur invalide.",
+    "prefixCampObligatoriuLipsa": "{prefix}champ obligatoire manquant.",
+    "prefixTrebuieSaAibaCel": "{prefix}doit contenir au moins {minLength} caractères.",
+    "prefixTextulEstePreaScurt": "{prefix}le texte est trop court.",
+    "prefixTrebuieSaAibaCel2": "{prefix}doit contenir au plus {maxLength} caractères.",
+    "prefixTextulEstePreaLung": "{prefix}le texte est trop long.",
+    "valueAdresaDeEMail": "{value}l'adresse e-mail n'est pas valide.",
+    "prefixAlegeOOptiuneValida": "{prefix}choisis une option valide.",
+    "declaratieConfirmareaEsteObligatorie": "Déclaration : la confirmation est obligatoire.",
+    "introduCelPutinMinlengthCaractere": "Saisis au moins {minLength} caractères.",
+    "introduCelMultMaxlengthCaractere": "Saisis au plus {maxLength} caractères.",
+    "introduOAdresaDeE": "Saisis une adresse e-mail valide.",
+    "introduNumeleTau": "Saisis ton nom.",
+    "numeleTrebuieSaAibaCel": "Le nom doit contenir au moins 2 caractères.",
+    "numelePoateAveaCelMult": "Le nom peut contenir au plus 120 caractères.",
+    "alegeCategoriaMesajului": "Choisis la catégorie du message.",
+    "introduSubiectulMesajului": "Saisis l'objet du message.",
+    "subiectulTrebuieSaAibaCel": "L'objet doit contenir au moins 3 caractères.",
+    "subiectulPoateAveaCelMult": "L'objet peut contenir au plus 160 caractères.",
+    "scrieMesajul": "Écris le message.",
+    "mesajulTrebuieSaAibaCel": "Le message doit contenir au moins 10 caractères.",
+    "mesajulPoateAveaCelMult": "Le message peut contenir au plus 5000 caractères.",
+    "introduNumeleComplet": "Saisis ton nom complet.",
+    "numeleCompletTrebuieSaAiba": "Le nom complet doit contenir au moins 2 caractères.",
+    "numeleCompletPoateAveaCel": "Le nom complet peut contenir au plus 120 caractères.",
+    "introduAbonamentulSauComandaVizata": "Saisis l'abonnement ou la commande concernée.",
+    "abonamentulSauComandaTrebuieSa": "L'abonnement ou la commande doit contenir au moins 2 caractères.",
+    "abonamentulSauComandaPoateAvea": "L'abonnement ou la commande peut contenir au plus 160 caractères.",
+    "numarulComenziiPoateAveaCel": "Le numéro de commande peut contenir au plus 80 caractères.",
+    "motivulPoateAveaCelMult": "Le motif peut contenir au plus 5000 caractères.",
+    "confirmaSolicitareaDeRetragereInainte": "Confirme la demande de rétractation avant l'envoi.",
+    "alegeTipulSesizarii": "Choisis le type de signalement.",
+    "adaugaLinkulSauIdentificatorulContinutul": "Ajoute le lien ou l'identifiant du contenu.",
+    "continutulTrebuieSaAibaCel": "Le contenu doit contenir au moins 3 caractères.",
+    "continutulPoateAveaCelMult": "Le contenu peut contenir au plus 400 caractères.",
+    "descrieProblemaRaportata": "Décris le problème signalé.",
+    "descriereaTrebuieSaAibaCel": "La description doit contenir au moins 10 caractères.",
+    "descriereaPoateAveaCelMult": "La description peut contenir au plus 5000 caractères.",
+    "dovezilePotAveaCelMult": "Les preuves peuvent contenir au plus 5000 caractères.",
+    "confirmaDeclaratiaPrivindCorectitudineaI": "Confirme la déclaration concernant l'exactitude des informations.",
+    "numarDeInregistrareRegistrationnumber": "Numéro d'enregistrement : {registrationNumber}",
+    "seVerificaSetarileRecaptcha": "Vérification des paramètres reCAPTCHA...",
+    "recaptchaNuEsteConfiguratPe": "reCAPTCHA n'est pas configuré sur le frontend.",
+    "protectieAntiSpam": "Protection anti-spam.",
+    "seIncarcaVerificareaAntiSpam": "Chargement de la vérification anti-spam...",
+    "potiAtasaCelMultContentreportmaxattachme": "Tu peux joindre au plus {contentReportMaxAttachmentFiles} documents.",
+    "ataseazaDoarPdfDocDocx": "Joins uniquement des fichiers PDF, DOC, DOCX, TXT, RTF, JPG, PNG ou WEBP.",
+    "documentulNameDepasesteLimitaDe": "Le document {name} dépasse la limite de 10 Mo.",
+    "recaptchaNuSAPutut": "reCAPTCHA n'a pas pu se charger. Vérifie le domaine et la clé du site.",
+    "scriptulRecaptchaNuSA": "Le script reCAPTCHA n'a pas pu se charger. Réessaie.",
+    "corecteazaCampurileMarcateInainteDe": "Corrige les champs signalés avant l'envoi.",
+    "recaptchaNuEsteConfiguratPe2": "reCAPTCHA n'est pas configuré sur le frontend. Ajoute la clé publique et redémarre l'application.",
+    "protectiaAntiSpamIncaSe": "La protection anti-spam se charge encore. Réessaie.",
+    "confirmaVerificareaAntiSpamInainte": "Valide la vérification anti-spam avant l'envoi.",
+    "mesajulAFostTrimisIti": "Le message a été envoyé. Nous répondrons par e-mail.",
+    "mesajulNuAPututFi": "Le message n'a pas pu être envoyé.",
+    "cumTePutemIdentifica": "Comment nous pouvons t'identifier.",
+    "numeleTau": "Ton nom",
+    "aiciItiTrimitemRaspunsul": "Nous t'envoyons la réponse ici.",
+    "directionamMesajulCorect": "Nous orientons le message correctement.",
+    "alegeCategoria": "Choisir la catégorie",
+    "suport": "Support",
+    "facturare": "Facturation",
+    "confidentialitate": "Confidentialité",
+    "raportareContinut": "Signalement de contenu",
+    "peScurtDespreCeEste": "En bref, de quoi il s'agit.",
+    "includeDetaliileUtile": "Inclus les détails utiles.",
+    "scrieMesajulAici": "Écris le message ici...",
+    "trimiteAltMesaj": "Envoyer un autre message",
+    "seTrimite": "Envoi...",
+    "trimiteMesajul": "Envoyer le message",
+    "solicitareaDeRetragereAFost": "La demande de rétractation a été enregistrée et la confirmation placée dans la file d'e-mail.",
+    "cumApareInContSau": "Tel qu'il apparaît dans le compte ou la commande.",
+    "numeleTauComplet": "Ton nom complet",
+    "adresaAsociataContului": "L'adresse associée au compte.",
+    "abonament": "Abonnement",
+    "planulSauComandaVizata": "Le forfait ou la commande concernée.",
+    "comanda": "Commande",
+    "optionalDacaExista": "Facultatif, le cas échéant.",
+    "numarComandaSauFactura": "Numéro de commande ou de facture",
+    "optionalContextUtil": "Facultatif, contexte utile.",
+    "potiAdaugaDetaliiDespreSolicitare": "Tu peux ajouter des détails sur la demande...",
+    "confirmareObligatorie": "Confirmation obligatoire.",
+    "confirmCaDorescRetragereaDin": "Je confirme vouloir me rétracter du contrat pour l'abonnement ou la commande indiquée.",
+    "trimiteAltaSolicitare": "Envoyer une autre demande",
+    "seInregistreaza": "Enregistrement...",
+    "confirmaRetragerea": "Confirmer la rétractation",
+    "amAdaugatLengthDinSelectia": "Nous avons ajouté {length} de la sélection actuelle.",
+    "sesizareaAFostInregistrataSi": "Le signalement a été enregistré et sera analysé.",
+    "sesizareaNuAPututFi": "Le signalement n'a pas pu être envoyé.",
+    "aiciItiTrimitemConfirmarea": "Nous t'envoyons la confirmation ici.",
+    "alegemFluxulPotrivit": "Nous choisissons le bon parcours.",
+    "alegeTipul": "Choisir le type",
+    "drepturiDeAutor": "Droits d'auteur",
+    "datePersonale": "Données personnelles",
+    "continutIncorect": "Contenu incorrect",
+    "altMotiv": "Autre motif",
+    "linkSauIdentificator": "Lien ou identifiant.",
+    "urlTitluProiectSauIdentificator": "URL, titre du projet ou identifiant",
+    "explicaProblema": "Explique le problème.",
+    "descrieCeTrebuieAnalizat": "Décris ce qui doit être analysé...",
+    "linkuriExplicatiiSiDocumente": "Liens, explications et documents.",
+    "linkuriSauExplicatiiSuplimentare": "Liens ou explications supplémentaires...",
+    "adaugaDocumente": "Ajouter des documents",
+    "pdfDocDocxTxtRtf": "PDF, DOC, DOCX, TXT, RTF, JPG, PNG ou WEBP. 10 Mo chacun.",
+    "sterge": "Supprimer",
+    "declarCaInformatiileFurnizateSunt": "Je déclare que les informations fournies sont correctes et que la demande est faite de bonne foi.",
+    "trimiteAltaSesizare": "Envoyer un autre signalement",
+    "trimiteSesizarea": "Envoyer le signalement",
+    "operator": "Opérateur",
+    "sediuSocial": "Siège social",
+    "nrRegistrulComertului": "N° registre du commerce",
+    "telefon": "Téléphone",
+    "dateFirma": "Informations entreprise",
+    "urmaresteNe": "Suis-nous",
+    "documente": "Documents",
+    "eMail": "E-mail",
+    "formular": "Formulaire",
+    "verificareAntiSpam": "Vérification anti-spam",
+    "motiv": "Motif",
+    "dovezi": "Preuves",
+    "verificare": "Vérification",
+    "introduAdresaDeEMail": "Saisis ton adresse e-mail.",
+    "attachmentErrorTokens": "document, documents, joins, joindre"
+  },
+  "upgrade": {
+    "ronLuna": "RON / mois",
+    "ronAn": "RON / an",
+    "pentruInceput": "Pour commencer",
+    "studiuActiv": "Étude active",
+    "sesiunePro": "Session Pro",
+    "ronPermanent": "RON / permanent",
+    "finalulPerioadeiPlatite": "la fin de la période payée",
+    "astazi": "aujourd'hui",
+    "maine": "demain",
+    "abonamentulNuAPututFi": "L'abonnement n'a pas pu être mis à jour pour le moment.",
+    "abonamentulCurrentplannameExpiraPeAccess": "L'abonnement {currentPlanName} expire le {accessUntilLabel}",
+    "maiAiAccesRenewalcountdownDupa": "Tu as encore accès {renewalCountdown}. Après cette date, le compte passe automatiquement au forfait gratuit.",
+    "dupaAceastaDataContulTrece": "Après cette date, le compte passe automatiquement au forfait gratuit.",
+    "abonamentulCurrentplannameSeReinnoiesteP": "L'abonnement {currentPlanName} se renouvelle le {accessUntilLabel}",
+    "urmatoareaPlataAreLocRenewalcountdown": "Le prochain paiement a lieu {renewalCountdown}. Tu peux arrêter le renouvellement à tout moment d'ici là.",
+    "potiOpriReinnoireaOricandPana": "Tu peux arrêter le renouvellement à tout moment d'ici là.",
+    "reinnoireaEsteAnulataAiAcces": "Le renouvellement est annulé. Tu as accès jusqu'au {value}.",
+    "reinnoireaAbonamentuluiEsteActivaDin": "Le renouvellement de l'abonnement est de nouveau actif.",
+    "abonament": "Abonnement",
+    "alegePlanulPotrivit": "Choisis le bon forfait.",
+    "planuriSimpleTransparenteCuReinnoire": "Forfaits simples et transparents avec renouvellement mensuel.",
+    "activ": "actif",
+    "seOpresteLa": "s'arrête le",
+    "seReinnoieste": "se renouvelle",
+    "facturi": "Factures",
+    "activ2": "Actif",
+    "recomandat": "Recommandé",
+    "activPanaLaAccessuntillabel": "Actif jusqu'au {accessUntilLabel}",
+    "planActual": "Forfait actuel",
+    "seActualizeaza": "Mise à jour...",
+    "reactiveazaReinnoirea": "Réactiver le renouvellement",
+    "anuleazaReinnoirea": "Annuler le renouvellement",
+    "programatPe": "Prévu le",
+    "trecePePlanulGratuit": "Passer au forfait gratuit",
+    "veziDetaliilePlanului": "Voir les détails du forfait",
+    "anulareReinnoire": "Annuler le renouvellement",
+    "oprestiPlataLunaraPentru": "Tu arrêtes le paiement mensuel pour",
+    "nuVeiMaiFiTaxat": "Tu ne seras plus facturé au prochain renouvellement. Le forfait reste actif jusqu'au",
+    "apoiContulTreceAutomatPe": ", puis le compte passe automatiquement au forfait gratuit.",
+    "renunta": "Annuler",
+    "seAnuleaza": "Annulation...",
+    "nZile": "{days} jours"
+  },
+  "checkout": {
+    "lunarReinnoireAutomata": "Mensuel, renouvellement automatique",
+    "anualReinnoireAutomata": "Annuel, renouvellement automatique",
+    "intervalReinnoireAutomata": "{interval}, renouvellement automatique",
+    "trebuieSaFiiAutentificatCa": "Tu dois être connecté pour activer un abonnement.",
+    "plataNuAPututFi": "Le paiement n'a pas pu être lancé pour le moment.",
+    "inapoiLaAbonamente": "Retour aux abonnements",
+    "confirmareAbonament": "Confirmation d'abonnement",
+    "verificaPlanulInainteDePlata": "Vérifie ton forfait avant le paiement.",
+    "planulAlesPretulSiBeneficiile": "Le forfait choisi, le prix et les avantages inclus. Le paiement est sécurisé via Stripe.",
+    "ronLuna": "RON / mois",
+    "sumarPlata": "Résumé du paiement",
+    "planSelectat": "Forfait sélectionné",
+    "monedaPlata": "Devise de paiement",
+    "tvaInclus": "TVA incluse",
+    "daDacaEsteAplicabil": "Oui, le cas échéant",
+    "frecventaPlata": "Fréquence de paiement",
+    "pretTotal": "Prix total",
+    "ceUrmeaza": "Et ensuite ?",
+    "dupaPlataPlanulDevineActiv": "Après paiement, le forfait devient actif immédiatement. Tu peux le modifier ou l'annuler depuis ton compte.",
+    "planulNuAreIncaUn": "Le forfait n'a pas encore d'ID de prix Stripe configuré dans l'administration.",
+    "continuaInCont": "Continuer vers le compte",
+    "sePregatesteCheckoutUl": "Préparation du paiement...",
+    "continuaCatrePlataSecurizata": "Continuer vers le paiement sécurisé →",
+    "prinApasareaButonuluiEstiDe": "En appuyant sur le bouton, tu acceptes les",
+    "termeniiSiConditiile": "Conditions générales",
+    "informatiiDespreRetragereSuntIn": ". Les informations sur le retrait sont disponibles dans la politique de retrait du contrat.",
+    "lunar": "Mensuel",
+    "anual": "Annuel"
+  },
+  "invoices": {
+    "inAsteptare": "En attente",
+    "platita": "Payée",
+    "deschisa": "Ouverte",
+    "anulata": "Annulée",
+    "neincasabila": "Irrécouvrable",
+    "facturi": "Factures",
+    "istoricPlati": "Historique des paiements.",
+    "facturileStripePentruAbonamentulTau": "Factures Stripe pour ton abonnement.",
+    "planuri": "Forfaits",
+    "reincarca": "Recharger",
+    "seIncarcaFacturile": "Chargement des factures...",
+    "listaNuAPututFi": "La liste n'a pas pu être chargée. Appuie sur « Recharger » pour réessayer.",
+    "nuExistaIncaFacturiPentru": "Il n'y a pas encore de factures pour ton compte.",
+    "factura": "Facture",
+    "valoare": "Montant",
+    "status": "Statut",
+    "actiuni": "Actions",
+    "veziFactura": "Voir la facture",
+    "ciorna": "Brouillon",
+    "necunoscut": "Inconnu",
+    "facturileNuAuPututFi": "Les factures n'ont pas pu être chargées pour le moment."
+  },
+  "cancellation": {
+    "t24Iulie2026": "24 juillet 2026",
+    "reinnoireaAutomataAFostOprita": "Le renouvellement automatique a été arrêté. L'accès reste actif jusqu'à la fin de la période payée.",
+    "anulareaNuAPututFi": "L'annulation n'a pas pu être traitée.",
+    "abonament": "Abonnement",
+    "anulareAbonament": "Annulation de l'abonnement.",
+    "potiOpriReinnoireaAutomataDirect": "Tu peux arrêter le renouvellement automatique directement depuis ton compte, sans envoyer d'e-mail. L'accès reste actif jusqu'à la fin de la période déjà payée.",
+    "planActiv": "Forfait actif",
+    "pret": "Prix",
+    "t29RonLuna": "29 RON / mois",
+    "urmatoareaDataDeFacturare": "Prochaine date de facturation",
+    "reinnoireAutomata": "Renouvellement automatique",
+    "oprita": "Arrêté",
+    "activa": "Actif",
+    "dacaOprestiReinnoireaAccesulRamane": "Si tu arrêtes le renouvellement, l'accès reste actif jusqu'au",
+    "dupaAceastaDataPlanulRevine": ". Après cette date, le plan revient à Beginner si tu ne réactives pas l'abonnement.",
+    "seProceseaza": "Traitement...",
+    "reinnoireAutomataOprita": "Renouvellement automatique arrêté",
+    "opresteReinnoireaAutomata": "Arrêter le renouvellement automatique",
+    "ceSeIntamplaDupaAnulare": "Ce qui se passe après l'annulation",
+    "nuVeiMaiFiTaxat": "Tu ne seras plus facturé à la prochaine date de facturation.",
+    "materialeleSiProgresulRamanIn": "Les supports et la progression restent dans le compte.",
+    "potiReactivaUnPlanOricand": "Tu peux réactiver un plan à tout moment depuis la page Abonnement."
+  },
+  "notifications": {
+    "notificarileNuAuPututFi": "Les notifications n'ont pas pu être chargées.",
+    "notificari": "Notifications",
+    "inchideNotificarile": "Fermer les notifications",
+    "marcheazaTotCaCitit": "Tout marquer comme lu",
+    "seIncarca": "Chargement...",
+    "nuAiNicioNotificareInca": "Tu n'as pas encore de notification.",
+    "stergeNotificarea": "Supprimer la notification"
+  },
+  "quizAnswers": {
+    "asocierileTale": "Tes associations",
+    "alegeUnElementDinStanga": "Choisis un élément à gauche",
+    "acumAlegePerecheaDinDreapta": "Choisis maintenant sa paire à droite",
+    "propozitiaTa": "Ta phrase",
+    "trageSauApasaCuvinteleDe": "Fais glisser ou touche les mots ci-dessous pour former la phrase.",
+    "apasaPentruAScoateCuvantul": "Appuie pour retirer le mot",
+    "cuvinteDisponibile": "Mots disponibles",
+    "aiFolositToateCuvintele": "Tu as utilisé tous les mots.",
+    "propozitiaCorecta": "La phrase correcte :",
+    "propozitia": "La phrase"
+  },
+  "projectSlots": {
+    "planulSASchimbat": "Ton forfait a changé",
+    "alegeCeProiecteRamanActive": "Choisis quels projets restent actifs",
+    "proiectActiv": "projet actif",
+    "proiecteActive": "projets actifs",
+    "iarTuAi": ", et tu en as",
+    "restulRamanInContSi": ". Les autres restent dans ton compte et ne sont pas supprimés — ils ne peuvent simplement plus être étudiés tant que tu ne reviens pas à un forfait supérieur.",
+    "potiAlegeIncaRemaining": "Tu peux encore en choisir {remaining}.",
+    "aiFolositToateSloturile": "Tu as utilisé tous les emplacements.",
+    "proiectVaFiDezactivat": "projet sera désactivé",
+    "proiecteVorFiDezactivate": "projets seront désactivés",
+    "seSalveaza": "Enregistrement...",
+    "confirmaSelectia": "Confirmer la sélection",
+    "nuAmPututSalvaSelectia": "Nous n'avons pas pu enregistrer la sélection. Réessaie."
+  },
+  "checkoutDisclosure": {
+    "lunara": "mensuelle",
+    "lunarCuReinnoireAutomata": "Mensuel, avec renouvellement automatique",
+    "informatiiInainteDePlata": "Informations avant paiement",
+    "plan": "Plan",
+    "pretTotal": "Prix total",
+    "moneda": "Devise",
+    "tva": "TVA",
+    "inclusDacaEsteAplicabil": "Incluse, si applicable",
+    "perioadaAbonament": "Période d'abonnement",
+    "frecventaPlatii": "Fréquence de paiement",
+    "anulare": "Annulation",
+    "dinPagina": "Depuis la page",
+    "anulareAbonament": "Annuler l'abonnement",
+    "intrareInVigoare": "Entrée en vigueur",
+    "anulareaOpresteUrmatoareaReinnoire": "L'annulation arrête le prochain renouvellement.",
+    "informatiiDespreDreptulDeRetragere": "Les informations sur le droit de rétractation sont disponibles sur la page",
+    "retragereDinContract": "Rétractation du contrat",
+    "prinApasareaButonuluiDePlata": ". En appuyant sur le bouton de paiement, tu acceptes les",
+    "termeniiSiConditiile": "Conditions générales"
+  },
+  "themeToggle": {
+    "luminoasa": "clair",
+    "intunecata": "sombre",
+    "activeazaTemaNexttheme": "Activer le thème {nextTheme}"
+  },
+  "pagination": {
+    "inregistrari": "enregistrements",
+    "inapoi": "Retour",
+    "inainte": "Précédent",
+    "intervalDinTotal": "{start}-{end} sur {total} {label}"
+  },
+  "toasts": {
+    "inchideNotificarea": "Fermer la notification"
+  },
+  "quizConfig": {
+    "quizNou": "Nouveau quiz",
+    "configureazaQuizul": "Configure le quiz",
+    "generamUnSingurQuiz": "Nous générons un seul quiz, exactement comme tu le demandes. Il consomme les crédits IA de ton forfait.",
+    "dificultate": "Difficulté",
+    "complexity": {
+      "low": {
+        "label": "Facile",
+        "detail": "Définitions et reconnaissance"
+      },
+      "medium": {
+        "label": "Moyen",
+        "detail": "Compréhension et comparaisons"
+      },
+      "high": {
+        "label": "Difficile",
+        "detail": "Raisonnement en deux étapes"
+      },
+      "exam": {
+        "label": "Examen",
+        "detail": "Sujets combinés, pièges"
+      }
+    },
+    "types": {
+      "single_choice": {
+        "label": "Une seule réponse",
+        "detail": "Quatre options, une bonne réponse"
+      },
+      "multiple_choice": {
+        "label": "Plusieurs réponses",
+        "detail": "Plusieurs bonnes réponses"
+      },
+      "matching": {
+        "label": "Association",
+        "detail": "Relie chaque élément à sa paire"
+      },
+      "ordering": {
+        "label": "Forme la phrase",
+        "detail": "Place les mots dans le bon ordre"
+      },
+      "cloze": {
+        "label": "Complète les trous",
+        "detail": "Choisis les termes manquants dans la phrase"
+      }
+    },
+    "tipuriDeIntrebari": "Types de questions",
+    "alegeCelPutinUnTip": "Choisis au moins un type de question.",
+    "numarDeIntrebari": "Nombre de questions",
+    "planulPermiteMaximum": "Ton forfait autorise au maximum {cap} {cap, plural, one {question} other {questions}} par quiz.",
+    "tipurileAleseSeImpart": "Les {count} types choisis se répartissent les questions.",
+    "renunta": "Annuler",
+    "seGenereaza": "Génération...",
+    "genereazaQuizul": "Générer le quiz"
+  },
+  "common": {
+    "home": "Accueil",
+    "loadingPage": "Chargement de la page",
+    "loadingProjectTab": "Chargement de l'onglet du projet"
+  },
+  "apiRoutes": {
+    "googleNotConfigured": "La connexion via Google n'est pas configurée.",
+    "authRouteMissing": "La route d'authentification n'existe pas.",
+    "complianceRouteMissing": "La route de conformité n'existe pas.",
+    "visitsRouteMissing": "La route des visites n'existe pas."
+  },
+  "seo": {
+    "title": "Reviss | Plateforme IA pour résumés, flashcards et quiz",
+    "description": "Reviss aide les étudiants à transformer cours, PDF, documents et présentations en résumés clairs, flashcards, quiz et plans d'étude.",
+    "ogAlt": "Reviss - plateforme IA pour l'étude active",
+    "keywords": "Reviss, résumés IA, résumés IA pour étudiants, résumé PDF, générateur de résumé PDF, flashcards IA, flashcards à partir des cours, générateur de flashcards, quiz d'examen, quiz à partir des cours, apprentissage actif, répétition espacée, préparation aux examens, préparation examens universitaires, application d'étude, plateforme éducative IA, outils IA pour étudiants, organisation des cours universitaires, apprendre avec des flashcards, simulation d'examen"
+  },
+  "meta": {
+    "myaccount": {
+      "title": "Mon compte",
+      "description": "Gère ton compte et ton activité Reviss."
+    },
+    "chatAi": {
+      "title": "Chat IA",
+      "description": "Chat IA contextuel pour ton projet Reviss."
+    },
+    "flashcards": {
+      "title": "Flashcards",
+      "description": "Les flashcards générées pour ton projet Reviss."
+    },
+    "createFlashcard": {
+      "title": "Créer une flashcard",
+      "description": "Crée manuellement des flashcards pour ton projet Reviss."
+    },
+    "progress": {
+      "title": "Progression",
+      "description": "La progression de ton projet Reviss."
+    },
+    "quizzes": {
+      "title": "Quiz",
+      "description": "Les quiz de ton projet Reviss."
+    },
+    "summary": {
+      "title": "Résumé",
+      "description": "Le résumé complet de ton projet Reviss."
+    },
+    "strategies": {
+      "title": "Stratégies",
+      "description": "Les stratégies d'apprentissage pour ton projet Reviss."
+    },
+    "settings": {
+      "title": "Paramètres",
+      "description": "Configure les préférences de ton compte Reviss."
+    },
+    "changeEmail": {
+      "title": "Changer l'e-mail",
+      "description": "Mets à jour l'adresse e-mail de ton compte Reviss."
+    },
+    "changeName": {
+      "title": "Changer le nom",
+      "description": "Mets à jour le nom de ton compte Reviss."
+    },
+    "changePassword": {
+      "title": "Changer le mot de passe",
+      "description": "Mets à jour le mot de passe de ton compte Reviss."
+    },
+    "checkout": {
+      "title": "Confirmation d'abonnement",
+      "description": "Vérifie les informations du forfait avant de payer."
+    },
+    "upgrade": {
+      "title": "Abonnement",
+      "description": "Choisis le forfait Reviss adapté à tes études."
+    },
+    "cancelSubscription": {
+      "title": "Annulation d'abonnement",
+      "description": "Arrête le renouvellement automatique de ton abonnement Reviss directement depuis ton compte."
+    },
+    "cookiePolicy": {
+      "title": "Politique relative aux cookies",
+      "description": "Informations sur les catégories de cookies utilisées par Reviss et la gestion du consentement."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "description": "La politique de confidentialité de Reviss concernant les données personnelles et leur traitement."
+    },
+    "terms": {
+      "title": "Conditions générales",
+      "description": "Les conditions générales d'utilisation de la plateforme Reviss."
+    },
+    "contentReport": {
+      "title": "Signaler un contenu",
+      "description": "Signale un contenu incorrect, contenant des données personnelles ou portant potentiellement atteinte à des droits."
+    },
+    "withdrawal": {
+      "title": "Rétractation du contrat",
+      "description": "Formulaire pour exercer le droit de rétractation pour les abonnements ou commandes Reviss."
+    }
+  },
+  "legal": {
+    "home": "Accueil",
+    "cookiePolicy": {
+      "eyebrow": "Cookies",
+      "title": "Politique relative aux cookies.",
+      "description": "Les cookies optionnels ne sont pas chargés avant le consentement. Tu peux accepter, refuser ou personnaliser tes préférences à tout moment.",
+      "categoriesTitle": "Catégories de cookies",
+      "alwaysActive": "toujours actifs",
+      "consentOnly": "uniquement avec accord",
+      "preferences": "Préférences",
+      "consentVersion": "Version du consentement : {version}. Tu peux modifier ton accord sans perdre l'accès à la plateforme."
+    },
+    "privacy": {
+      "eyebrow": "Confidentialité",
+      "summary": "Détails sur les données personnelles traitées dans Reviss, les finalités de leur utilisation, les droits des utilisateurs et les mesures de protection appliquées."
+    },
+    "terms": {
+      "eyebrow": "Mentions légales",
+      "summary": "Les règles d'utilisation de la plateforme Reviss, les droits et responsabilités applicables au compte, aux supports importés et aux fonctionnalités disponibles."
+    },
+    "contentReport": {
+      "eyebrow": "Signalements",
+      "title": "Signaler un contenu.",
+      "description": "Envoie des détails sur le support ou le contenu généré que l'équipe Reviss doit examiner."
+    },
+    "withdrawal": {
+      "eyebrow": "Droit de rétractation",
+      "title": "Rétractation du contrat.",
+      "description": "Remplis le formulaire pour enregistrer une demande de rétractation. Tu recevras un numéro d'enregistrement après l'envoi."
+    }
+  }
+}

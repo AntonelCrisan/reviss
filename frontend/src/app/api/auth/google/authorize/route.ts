@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { siteUrl } from "@/lib/seo";
 
@@ -21,7 +22,7 @@ export async function GET(request: Request): Promise<Response> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     return Response.json(
-      { detail: "Autentificarea prin Google nu este configurată." },
+      { detail: (await getTranslations("apiRoutes"))("googleNotConfigured") },
       { status: 500 },
     );
   }

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 type CheckoutDisclosureProps = {
@@ -11,71 +12,75 @@ type CheckoutDisclosureProps = {
 export function CheckoutDisclosure({
   planName,
   price,
-  period = "lunară",
-  paymentFrequency = "Lunar, cu reînnoire automată",
+  period: periodProp,
+  paymentFrequency: paymentFrequencyProp,
   className = "",
 }: CheckoutDisclosureProps) {
+  const t = useTranslations("checkoutDisclosure");
+  const period = periodProp ?? t("lunara");
+  const paymentFrequency =
+    paymentFrequencyProp ?? t("lunarCuReinnoireAutomata");
   return (
     <div
       className={`rounded-[1.5rem] border border-subtle bg-app p-4 text-xs leading-5 text-muted ${className}`}
     >
-      <p className="font-black text-content">Informații înainte de plată</p>
+      <p className="font-black text-content">{t("informatiiInainteDePlata")}</p>
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <div>
-          <dt className="font-bold text-content">Plan</dt>
+          <dt className="font-bold text-content">{t("plan")}</dt>
           <dd>{planName}</dd>
         </div>
         <div>
-          <dt className="font-bold text-content">Preț total</dt>
+          <dt className="font-bold text-content">{t("pretTotal")}</dt>
           <dd>{price} RON</dd>
         </div>
         <div>
-          <dt className="font-bold text-content">Monedă</dt>
+          <dt className="font-bold text-content">{t("moneda")}</dt>
           <dd>RON</dd>
         </div>
         <div>
-          <dt className="font-bold text-content">TVA</dt>
-          <dd>Inclus, dacă este aplicabil</dd>
+          <dt className="font-bold text-content">{t("tva")}</dt>
+          <dd>{t("inclusDacaEsteAplicabil")}</dd>
         </div>
         <div>
-          <dt className="font-bold text-content">Perioadă abonament</dt>
+          <dt className="font-bold text-content">{t("perioadaAbonament")}</dt>
           <dd>{period}</dd>
         </div>
         <div>
-          <dt className="font-bold text-content">Frecvența plății</dt>
+          <dt className="font-bold text-content">{t("frecventaPlatii")}</dt>
           <dd>{paymentFrequency}</dd>
         </div>
         <div>
-          <dt className="font-bold text-content">Anulare</dt>
+          <dt className="font-bold text-content">{t("anulare")}</dt>
           <dd>
-            Din pagina{" "}
+            {t("dinPagina")}{" "}
             <Link
               href="/anulare-abonament"
               className="font-bold text-content underline decoration-subtle underline-offset-4"
             >
-              Anulare abonament
+              {t("anulareAbonament")}
             </Link>
           </dd>
         </div>
         <div>
-          <dt className="font-bold text-content">Intrare în vigoare</dt>
-          <dd>Anularea oprește următoarea reînnoire.</dd>
+          <dt className="font-bold text-content">{t("intrareInVigoare")}</dt>
+          <dd>{t("anulareaOpresteUrmatoareaReinnoire")}</dd>
         </div>
       </dl>
       <p className="mt-3">
-        Informații despre dreptul de retragere sunt disponibile în pagina{" "}
+        {t("informatiiDespreDreptulDeRetragere")}{" "}
         <Link
           href="/retragere-din-contract"
           className="font-bold text-content underline decoration-subtle underline-offset-4"
         >
-          Retragere din contract
+          {t("retragereDinContract")}
         </Link>
-        . Prin apăsarea butonului de plată accepți{" "}
+        {t("prinApasareaButonuluiDePlata")}{" "}
         <Link
           href="/termeni-si-conditii"
           className="font-bold text-content underline decoration-subtle underline-offset-4"
         >
-          Termenii și condițiile
+          {t("termeniiSiConditiile")}
         </Link>
         .
       </p>

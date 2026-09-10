@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -41,6 +42,8 @@ function ArrowRightIcon() {
 }
 
 export function ChangeFullNamePage() {
+  const t = useTranslations("settings.changeName");
+  const tSecurity = useTranslations("settings.security");
   const { user, setUser } = useAuth();
   const [fullName, setFullName] = useState(user?.full_name ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,12 +54,12 @@ export function ChangeFullNamePage() {
 
     const normalized = fullName.trim().replace(/\s+/g, " ");
     if (normalized.length < 2) {
-      toast.error("Numele complet trebuie să aibă minimum 2 caractere.");
+      toast.error(t("tooShort"));
       return;
     }
 
     if (user && normalized === user.full_name) {
-      toast.error("Numele introdus este identic cu cel curent.");
+      toast.error(t("sameAsCurrent"));
       return;
     }
 
@@ -66,12 +69,10 @@ export function ChangeFullNamePage() {
       const updatedUser = await updateFullName(normalized);
       setUser(updatedUser);
       setFullName(updatedUser.full_name);
-      toast.success("Numele a fost actualizat.");
+      toast.success(t("updated"));
     } catch (error) {
       toast.error(
-        error instanceof AuthApiError
-          ? error.message
-          : "Numele nu a putut fi actualizat momentan.",
+        error instanceof AuthApiError ? error.message : t("updateFailed"),
       );
     } finally {
       setIsSubmitting(false);
@@ -89,17 +90,17 @@ export function ChangeFullNamePage() {
                 className="inline-flex w-fit items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-sm font-semibold text-muted transition hover:bg-surface-hover hover:text-content"
               >
                 <ArrowLeftIcon />
-                Securitate
+                {tSecurity("tabLabel")}
               </Link>
               <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-                Nume
+                {t("eyebrow")}
               </p>
             </div>
             <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-              Schimbă numele.
+              {t("title")}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-              Actualizează numele afișat pe contul tău Reviss.
+              {t("description")}
             </p>
           </div>
         </div>
@@ -112,14 +113,12 @@ export function ChangeFullNamePage() {
           <div className="grid gap-5 border-b border-subtle p-5 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Nume complet
+                {t("fieldLabel")}
               </p>
-              <p className="mt-1 text-xs leading-5 text-muted">
-                Vizibil pe contul și profilul tău.
-              </p>
+              <p className="mt-1 text-xs leading-5 text-muted">{t("fieldHint")}</p>
             </div>
             <label className="block min-w-0">
-              <span className="sr-only">Nume complet</span>
+              <span className="sr-only">{t("fieldLabel")}</span>
               <input
                 id="fullName"
                 name="fullName"
@@ -130,7 +129,7 @@ export function ChangeFullNamePage() {
                 maxLength={120}
                 value={fullName}
                 onChange={(event) => setFullName(event.target.value)}
-                placeholder="Nume și prenume"
+                placeholder={t("placeholder")}
                 className={inputClassName}
               />
             </label>
@@ -141,14 +140,14 @@ export function ChangeFullNamePage() {
               href="/settings#security"
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-subtle bg-app px-5 py-3 text-sm font-bold text-content transition hover:bg-surface-hover"
             >
-              Înapoi la securitate
+              {tSecurity("backToSecurity")}
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60"
             >
-              {isSubmitting ? "Se salvează..." : "Salvează numele"}
+              {isSubmitting ? t("saving") : t("save")}
               <ArrowRightIcon />
             </button>
           </div>

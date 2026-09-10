@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 type FlashcardTone = "success" | "warning" | "info" | "danger";
@@ -12,34 +13,27 @@ type FlashcardEntry = {
   tone: FlashcardTone;
 };
 
-const flashcards: FlashcardEntry[] = [
-  {
-    topic: "Biologie celulară",
-    question: "Care este rolul principal al ribozomilor?",
-    answer:
-      "Ribozomii sintetizează proteine prin traducerea informației din ARNm.",
-    tone: "success",
-  },
-  {
-    topic: "Chimie organică",
-    question: "Ce definește o legătură covalentă?",
-    answer: "Punerea în comun a uneia sau mai multor perechi de electroni.",
-    tone: "warning",
-  },
-  {
-    topic: "Istorie modernă",
-    question: "În ce an a început Revoluția Franceză?",
-    answer: "Revoluția Franceză a început în anul 1789.",
-    tone: "info",
-  },
-  {
-    topic: "Programare",
-    question: "",
-    questionImage: "/bubble-sort.png",
-    answer: "Bubble sort",
-    tone: "danger",
-  },
-];
+// Card copy lives in messages/*.json under marketing.flashcards.cards; the
+// fourth card shows an image instead of a question.
+const flashcardSlots = [
+  { id: "1", tone: "success" },
+  { id: "2", tone: "warning" },
+  { id: "3", tone: "info" },
+  { id: "4", tone: "danger", questionImage: "/bubble-sort.png" },
+] as const;
+
+type FlashcardTranslator = ReturnType<typeof useTranslations<"marketing.flashcards">>;
+
+function useFlashcards(t: FlashcardTranslator): FlashcardEntry[] {
+  return flashcardSlots.map((slot) => ({
+    topic: t(`cards.${slot.id}.topic`),
+    question:
+      "questionImage" in slot ? "" : t(`cards.${slot.id as "1" | "2" | "3"}.question`),
+    questionImage: "questionImage" in slot ? slot.questionImage : undefined,
+    answer: t(`cards.${slot.id}.answer`),
+    tone: slot.tone,
+  }));
+}
 
 const deskLayouts = [
   {
@@ -64,7 +58,7 @@ const deskLayouts = [
   },
 ];
 
-type Flashcard = (typeof flashcards)[number];
+type Flashcard = FlashcardEntry;
 
 type ShuffleState = {
   id: number;
@@ -83,6 +77,7 @@ function FlashcardFaceContent({
   card: Flashcard;
   side: "question" | "answer";
 }) {
+  const t = useTranslations("marketing.flashcards");
   const isAnswer = side === "answer";
   const text = isAnswer ? card.answer : card.question;
   const image = isAnswer ? undefined : card.questionImage;
@@ -109,7 +104,7 @@ function FlashcardFaceContent({
 
       <div className="flashcard-card-footer absolute inset-x-6 bottom-6 flex items-center border-t border-subtle pt-4 text-xs font-bold text-muted sm:inset-x-8">
         <span className="flashcard-card-action">
-          {isAnswer ? "Vezi întrebarea" : "Vezi răspunsul"}
+          {isAnswer ? t("seeQuestion") : t("seeAnswer")}
         </span>
       </div>
     </div>
@@ -141,14 +136,17 @@ function FlashcardContent({
 }
 
 function StaticFlashcards() {
+  const t = useTranslations("marketing.flashcards");
+  const flashcards = useFlashcards(t);
+
   return (
     <section id="flashcards" className="border-y border-subtle bg-surface/55">
       <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-          Flashcard-uri active
+          {t("staticEyebrow")}
         </p>
         <h2 className="mt-3 max-w-3xl font-serif text-4xl font-semibold sm:text-5xl">
-          Din curs direct în memorie.
+          {t("staticTitle")}
         </h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           {flashcards.map((card) => (
@@ -181,6 +179,8 @@ function StaticFlashcards() {
 }
 
 export function FlashcardStory() {
+  const t = useTranslations("marketing.flashcards");
+  const flashcards = useFlashcards(t);
   const sectionRef = useRef<HTMLElement>(null);
   const activeIndexRef = useRef(0);
   const shuffleIdRef = useRef(0);
@@ -221,8 +221,8 @@ export function FlashcardStory() {
       const passed = Math.min(Math.max(-rect.top, 0), scrollDistance);
       const nextProgress = passed / scrollDistance;
       const nextIndex = Math.min(
-        flashcards.length - 1,
-        Math.floor(nextProgress * flashcards.length),
+        flashcardSlots.length - 1,
+        Math.floor(nextProgress * flashcardSlots.length),
       );
 
       if (nextIndex !== activeIndexRef.current) {
@@ -288,29 +288,24 @@ export function FlashcardStory() {
         <div className="flashcard-story-layout relative mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[0.86fr_1.14fr] lg:items-center lg:gap-16">
           <div className="flashcard-story-copy">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-              Flashcard-uri care țin pasul cu tine
+              {t("eyebrow")}
             </p>
             <h2 className="flashcard-story-heading mt-3 max-w-xl font-serif text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              Nu doar citești. Îți testezi memoria.
+              {t("title")}
             </h2>
             <p className="flashcard-story-description mt-5 hidden max-w-lg text-sm leading-7 text-muted sm:block sm:text-base">
-              Încarci cursul, iar Reviss extrage ideile-cheie și le transformă
-              în flashcard-uri. Derulează pentru a răsfoi pachetul în ambele
-              direcții.
+              {t("description")}
             </p>
 
             <div className="flashcard-story-active mt-6 hidden min-h-24 rounded-2xl border border-subtle bg-app/70 p-4 sm:block">
-              <p className="text-sm font-semibold leading-6">
-                Apasă pe primul card pentru a-l întoarce și click din nou
-                pentru a reveni la întrebare.
-              </p>
+              <p className="text-sm font-semibold leading-6">{t("hint")}</p>
             </div>
           </div>
 
           <div className="flashcard-story-deck relative mx-auto w-full max-w-xl">
             {flashcards.map((card, index) => {
               const distance =
-                (index - activeIndex + flashcards.length) % flashcards.length;
+                (index - activeIndex + flashcardSlots.length) % flashcardSlots.length;
               const isActive = distance === 0;
               const isShuffling = shuffle?.cardIndex === index;
 
@@ -323,7 +318,7 @@ export function FlashcardStory() {
                   aria-hidden={!isActive}
                   className="flashcard-desk-card flashcard-face absolute inset-x-3 top-0 rounded-[1.75rem] text-left outline-none transition focus-visible:ring-2 focus-visible:ring-action sm:inset-x-0"
                   style={{
-                    zIndex: flashcards.length - distance,
+                    zIndex: flashcardSlots.length - distance,
                     transform: toTransform(deskLayouts[distance]),
                     visibility: isShuffling ? "hidden" : "visible",
                     pointerEvents: isActive ? "auto" : "none",
@@ -351,11 +346,11 @@ export function FlashcardStory() {
                     "--shuffle-start": toTransform(
                       shuffle.direction === 1
                         ? deskLayouts[0]
-                        : deskLayouts[flashcards.length - 1],
+                        : deskLayouts[flashcardSlots.length - 1],
                     ),
                     "--shuffle-end": toTransform(
                       shuffle.direction === 1
-                        ? deskLayouts[flashcards.length - 1]
+                        ? deskLayouts[flashcardSlots.length - 1]
                         : deskLayouts[0],
                     ),
                   } as React.CSSProperties

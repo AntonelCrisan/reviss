@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 const allowedRoutes = new Map([
   ["GET:me", "/api/auth/me"],
   ["POST:me/deletion-request", "/api/auth/me/deletion-request"],
@@ -49,7 +50,7 @@ async function proxyAuthRequest(
 
   if (!backendPath) {
     return Response.json(
-      { detail: "Ruta de autentificare nu există." },
+      { detail: (await getTranslations("apiRoutes"))("authRouteMissing") },
       { status: 404 },
     );
   }

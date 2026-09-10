@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.config import Settings
+from app.core.i18n import get_request_language, language_for_user, t
 from app.core.security import (
     dummy_password_hash,
     generate_session_token,
@@ -157,15 +158,18 @@ class AuthService:
 
         await self._session.flush()
 
+        # No account yet: the language is the one the visitor registers in.
+        language = get_request_language()
         html, text = verification_email(
             verification_url=self._verification_url(token),
             logo_html=self._email_logo_html(),
+            language=language,
         )
         try:
             await self._email.send(
                 EmailMessage(
                     to=email,
-                    subject="Confirmă contul Reviss",
+                    subject=t("email.verification.subject", language),
                     html=html,
                     text=text,
                 )
@@ -471,15 +475,17 @@ class AuthService:
 
         await self._session.flush()
 
+        language = language_for_user(user.language_preference)
         html, text = password_reset_email(
             reset_url=self._password_reset_url(token),
             logo_html=self._email_logo_html(),
+            language=language,
         )
         try:
             await self._email.send(
                 EmailMessage(
                     to=email,
-                    subject="Resetare parolă Reviss",
+                    subject=t("email.password_reset.subject", language),
                     html=html,
                     text=text,
                 )
@@ -933,16 +939,18 @@ class AuthService:
         )
         await self._session.flush()
 
+        language = language_for_user(user.language_preference)
         html, text = email_change_confirmation_email(
             confirmation_url=self._email_change_confirmation_url(token),
             logo_html=self._email_logo_html(),
             new_email=normalized_email,
+            language=language,
         )
         try:
             await self._email.send(
                 EmailMessage(
                     to=normalized_email,
-                    subject="Confirmă noua adresă de email Reviss",
+                    subject=t("email.email_change.subject", language),
                     html=html,
                     text=text,
                 )

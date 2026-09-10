@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useOpenCloseTransition } from "@/components/use-open-close-transition";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -76,6 +77,7 @@ function formatRelativeTime(value: string) {
 const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
 
 export function NotificationBell() {
+  const t = useTranslations("notifications");
   const [isOpen, setIsOpen] = useState(false);
   const { isMounted: isPanelMounted, isVisible: isPanelVisible } =
     useOpenCloseTransition(isOpen);
@@ -121,7 +123,7 @@ export function NotificationBell() {
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Notificările nu au putut fi încărcate.",
+            : t("notificarileNuAuPututFi"),
         );
       }
     } finally {
@@ -130,7 +132,7 @@ export function NotificationBell() {
         setIsLoading(false);
       }
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -260,7 +262,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={toggleOpen}
-        aria-label="Notificări"
+        aria-label={t("notificari")}
         aria-expanded={isOpen}
         className="relative flex h-10 w-10 items-center justify-center rounded-md border border-subtle bg-surface text-content transition hover:bg-surface-hover"
       >
@@ -276,7 +278,7 @@ export function NotificationBell() {
         <>
           <button
             type="button"
-            aria-label="Închide notificările"
+            aria-label={t("inchideNotificarile")}
             onClick={() => setIsOpen(false)}
             className="fixed inset-0 z-[100] cursor-default bg-transparent"
           />
@@ -290,7 +292,7 @@ export function NotificationBell() {
           >
             <div className="flex items-center justify-between border-b border-subtle px-4 py-3">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-muted">
-                Notificări
+                {t("notificari")}
               </p>
               {unreadCount > 0 ? (
                 <button
@@ -298,19 +300,19 @@ export function NotificationBell() {
                   onClick={() => void handleMarkAllRead()}
                   className="text-xs font-bold text-action transition hover:opacity-75"
                 >
-                  Marchează tot ca citit
+                  {t("marcheazaTotCaCitit")}
                 </button>
               ) : null}
             </div>
 
             <div className="max-h-[26rem] overflow-y-auto">
               {isLoading ? (
-                <p className="p-4 text-sm text-muted">Se încarcă...</p>
+                <p className="p-4 text-sm text-muted">{t("seIncarca")}</p>
               ) : error ? (
                 <p className="p-4 text-sm font-semibold text-danger">{error}</p>
               ) : notifications.length === 0 ? (
                 <p className="p-4 text-sm text-muted">
-                  Nu ai nicio notificare încă.
+                  {t("nuAiNicioNotificareInca")}
                 </p>
               ) : (
                 <ul className="divide-y divide-subtle">
@@ -377,7 +379,7 @@ export function NotificationBell() {
                         <button
                           type="button"
                           onClick={() => void handleDelete(notification.id)}
-                          aria-label="Șterge notificarea"
+                          aria-label={t("stergeNotificarea")}
                           className="flex shrink-0 items-center px-2 text-muted transition hover:text-danger"
                         >
                           <TrashIcon />

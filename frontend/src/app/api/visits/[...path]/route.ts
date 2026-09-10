@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 const allowedRoutes = new Map([["POST:ping", "/api/visits/ping"]]);
 
 type VisitsRouteContext = {
@@ -14,7 +15,7 @@ async function proxyVisitsRequest(
 
   if (!backendPath) {
     return Response.json(
-      { detail: "Ruta de vizite nu există." },
+      { detail: (await getTranslations("apiRoutes"))("visitsRouteMissing") },
       { status: 404 },
     );
   }

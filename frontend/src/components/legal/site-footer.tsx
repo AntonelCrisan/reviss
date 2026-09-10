@@ -1,36 +1,51 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieSettingsButton } from "@/components/legal/cookie-consent";
 import { socialPlatforms } from "@/components/legal/social-icons";
-import {
-  footerGeneratedContentDisclaimer,
-  legalConfig,
-  legalLinks,
-  supportLinks,
-} from "@/lib/legal-config";
+import { legalConfig } from "@/lib/legal-config";
 import { getFallbackCompanyData, getServerCompanyData } from "@/lib/server-legal";
 
 export async function SiteFooter() {
+  const t = await getTranslations("marketing.footer");
   const currentYear = new Date().getFullYear();
   const companyData = (await getServerCompanyData()) ?? getFallbackCompanyData();
   const activeSocialLinks = socialPlatforms.filter(
     ({ key }) => companyData[key]?.trim(),
   );
+  const legalLinks = [
+    { href: "/termeni-si-conditii", label: t("links.terms") },
+    { href: "/politica-de-confidentialitate", label: t("links.privacy") },
+    { href: "/politica-cookies", label: t("links.cookies") },
+  ];
+  const supportLinks = [
+    { href: "/contact", label: t("links.contact") },
+    { href: "/retragere-din-contract", label: t("links.withdrawal") },
+    { href: "/raporteaza-continut", label: t("links.report") },
+  ];
+  const companyRows = [
+    { label: t("registeredOffice"), value: companyData.social_location },
+    { label: t("cui"), value: companyData.cui },
+    { label: t("registerNumber"), value: companyData.register_number },
+    { label: t("shareCapital"), value: companyData.social_capital },
+    { label: t("email"), value: companyData.email },
+    { label: t("phone"), value: companyData.phone },
+  ];
   const anpcLinks = [
     {
       href: legalConfig.anpcSalUrl,
       imagePath: legalConfig.anpcSalImagePath,
-      alt: "ANPC Soluționarea Alternativă a Litigiilor",
+      alt: t("anpcSalAlt"),
       label: "ANPC SAL",
     },
     {
       href: legalConfig.anpcSolUrl,
       imagePath: legalConfig.anpcSolImagePath,
-      alt: "Soluționarea Online a Litigiilor",
+      alt: t("anpcSolAlt"),
       label: "ANPC SOL",
     },
-  ] as const;
+  ];
 
   return (
     <footer className="border-t border-subtle bg-surface">
@@ -59,17 +74,17 @@ export async function SiteFooter() {
               </div>
             ) : null}
             <p className="mt-5 max-w-sm text-sm leading-7 text-muted">
-              Transformă materialele de studiu în flashcard-uri generate automat.
+              {t("tagline")}
             </p>
             <p className="mt-4 rounded-2xl border border-warning-border bg-warning-soft px-4 py-3 text-xs font-semibold leading-5 text-warning">
-              {footerGeneratedContentDisclaimer}
+              {t("disclaimer")}
             </p>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-muted">
-                Linkuri juridice
+                {t("legalHeading")}
               </p>
               <ul className="mt-5 space-y-3">
                 {legalLinks.map((link) => (
@@ -90,7 +105,7 @@ export async function SiteFooter() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-muted">
-                Asistență
+                {t("supportHeading")}
               </p>
               <ul className="mt-5 space-y-3">
                 {supportLinks.map((link) => (
@@ -108,37 +123,19 @@ export async function SiteFooter() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.17em] text-muted">
-                Datele firmei
+                {t("companyHeading")}
               </p>
               <dl className="mt-5 space-y-2 text-xs leading-5 text-muted">
                 <div>
-                  <dt className="sr-only">Denumire firmă</dt>
+                  <dt className="sr-only">{t("companyName")}</dt>
                   <dd className="font-bold text-content">{companyData.name}</dd>
                 </div>
-                <div>
-                  <dt className="font-bold text-content">Sediu social</dt>
-                  <dd>{companyData.social_location}</dd>
-                </div>
-                <div>
-                  <dt className="font-bold text-content">CUI</dt>
-                  <dd>{companyData.cui}</dd>
-                </div>
-                <div>
-                  <dt className="font-bold text-content">Nr. Registrul Comerțului</dt>
-                  <dd>{companyData.register_number}</dd>
-                </div>
-                <div>
-                  <dt className="font-bold text-content">Capital social</dt>
-                  <dd>{companyData.social_capital}</dd>
-                </div>
-                <div>
-                  <dt className="font-bold text-content">E-mail</dt>
-                  <dd>{companyData.email}</dd>
-                </div>
-                <div>
-                  <dt className="font-bold text-content">Telefon</dt>
-                  <dd>{companyData.phone}</dd>
-                </div>
+                {companyRows.map((row) => (
+                  <div key={row.label}>
+                    <dt className="font-bold text-content">{row.label}</dt>
+                    <dd>{row.value}</dd>
+                  </div>
+                ))}
               </dl>
             </div>
           </div>
@@ -147,10 +144,9 @@ export async function SiteFooter() {
         <div className="mt-7 grid gap-6 xl:grid-cols-[1fr_auto] xl:items-center">
           <div className="text-xs leading-6 text-muted">
             <p>
-              © {currentYear} {companyData.name}. Toate drepturile
-              rezervate.
+              © {currentYear} {companyData.name}. {t("rights")}
             </p>
-            <p>{footerGeneratedContentDisclaimer}</p>
+            <p>{t("disclaimer")}</p>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 xl:justify-end">

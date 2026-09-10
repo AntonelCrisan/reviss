@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -70,11 +71,12 @@ function PasswordField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations("settings.password");
   const [isVisible, setIsVisible] = useState(false);
 
   return (
     <label className="block min-w-0">
-      <span className="sr-only">Parola curentă</span>
+      <span className="sr-only">{t("current")}</span>
       <span className="relative block">
         <input
           id={id}
@@ -85,14 +87,14 @@ function PasswordField({
           maxLength={128}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Parola curentă"
+          placeholder={t("current")}
           className={`${inputClassName} pr-12`}
         />
         <button
           type="button"
           onClick={() => setIsVisible((visible) => !visible)}
           className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center text-muted transition hover:text-content"
-          aria-label={isVisible ? "Ascunde parola" : "Afișează parola"}
+          aria-label={isVisible ? t("hide") : t("show")}
         >
           <EyeIcon crossed={isVisible} />
         </button>
@@ -102,6 +104,9 @@ function PasswordField({
 }
 
 export function ChangeEmailPage() {
+  const t = useTranslations("settings.changeEmail");
+  const tSecurity = useTranslations("settings.security");
+  const tPassword = useTranslations("settings.password");
   const { user } = useAuth();
   const formRef = useRef<HTMLFormElement | null>(null);
   const submitLockRef = useRef(false);
@@ -125,13 +130,13 @@ export function ChangeEmailPage() {
 
     if (user && newEmail.trim().toLowerCase() === user.email.toLowerCase()) {
       setSubmitState("idle");
-      toast.error("Adresa introdusă este identică cu cea curentă.");
+      toast.error(t("sameAsCurrent"));
       return;
     }
 
     if (!currentPassword) {
       setSubmitState("idle");
-      toast.error("Introdu parola curentă.");
+      toast.error(tPassword("enterCurrent"));
       return;
     }
 
@@ -151,9 +156,7 @@ export function ChangeEmailPage() {
     } catch (error) {
       setSubmitState("idle");
       toast.error(
-        error instanceof AuthApiError
-          ? error.message
-          : "Cererea nu a putut fi trimisă momentan.",
+        error instanceof AuthApiError ? error.message : t("requestFailed"),
       );
     } finally {
       submitLockRef.current = false;
@@ -174,18 +177,17 @@ export function ChangeEmailPage() {
                 className="inline-flex w-fit items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-sm font-semibold text-muted transition hover:bg-surface-hover hover:text-content"
               >
                 <ArrowLeftIcon />
-                Securitate
+                {tSecurity("tabLabel")}
               </Link>
               <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-                Email
+                {t("eyebrow")}
               </p>
             </div>
             <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-              Schimbă emailul.
+              {t("title")}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-              Adresa curentă este {user?.email ?? "necunoscută"}. Noua adresă
-              devine activă doar după ce o confirmi din emailul primit.
+              {t("description", { email: user?.email ?? t("unknownEmail") })}
             </p>
           </div>
         </div>
@@ -199,14 +201,14 @@ export function ChangeEmailPage() {
           <div className="grid gap-5 border-b border-subtle p-5 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Adresă nouă
+                {t("newAddress")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Trimitem un link de confirmare aici.
+                {t("newAddressHint")}
               </p>
             </div>
             <label className="block min-w-0">
-              <span className="sr-only">Adresă de email nouă</span>
+              <span className="sr-only">{t("newAddressLabel")}</span>
               <input
                 id="newEmail"
                 name="newEmail"
@@ -216,7 +218,7 @@ export function ChangeEmailPage() {
                 maxLength={320}
                 value={newEmail}
                 onChange={(event) => setNewEmail(event.target.value)}
-                placeholder="nume@exemplu.ro"
+                placeholder={t("placeholder")}
                 className={inputClassName}
               />
             </label>
@@ -225,10 +227,10 @@ export function ChangeEmailPage() {
           <div className="grid gap-5 border-b border-subtle p-5 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Parola curentă
+                {tPassword("current")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Verificăm că ești tu.
+                {tPassword("currentHint")}
               </p>
             </div>
             <PasswordField
@@ -243,7 +245,7 @@ export function ChangeEmailPage() {
               href="/settings#security"
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-subtle bg-app px-5 py-3 text-sm font-bold text-content transition hover:bg-surface-hover"
             >
-              {isSuccess ? "Înapoi la securitate" : "Renunță"}
+              {isSuccess ? tSecurity("backToSecurity") : tSecurity("cancel")}
             </Link>
             {isSuccess ? (
               <button
@@ -252,7 +254,7 @@ export function ChangeEmailPage() {
                 onClick={resetForAnotherRequest}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover"
               >
-                Trimite din nou
+                {t("sendAgain")}
                 <ArrowRightIcon />
               </button>
             ) : (
@@ -262,7 +264,7 @@ export function ChangeEmailPage() {
                 disabled={isSubmitting}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60"
               >
-                {isSubmitting ? "Se trimite..." : "Trimite confirmarea"}
+                {isSubmitting ? t("sending") : t("send")}
                 <ArrowRightIcon />
               </button>
             )}

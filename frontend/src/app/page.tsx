@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { BrandLogo } from "@/components/brand-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { FlashcardStory } from "@/components/marketing/flashcard-story";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
-import { TranslatedText } from "@/components/translated-text";
 import type { SubscriptionPlanPublic } from "@/lib/plans-api";
 import {
   absoluteUrl,
-  defaultLocale,
   openGraphImagePath,
   planDetailPath,
-  seoKeywords,
   serializeJsonLd,
   siteName,
   siteUrl,
@@ -22,54 +20,59 @@ import {
   getServerPublicPlans,
 } from "@/lib/server-plans";
 
-const homepageSeoTitle =
-  "Reviss | Rezumate AI, flashcard-uri și quiz-uri pentru studenți";
-const homepageSeoDescription =
-  "Încarcă PDF-uri, cursuri sau prezentări, iar Reviss le transformă în rezumate AI, flashcard-uri, quiz-uri și planuri clare pentru examen.";
-
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-export const metadata: Metadata = {
-  title: homepageSeoTitle,
-  description: homepageSeoDescription,
-  keywords: [
-    ...seoKeywords,
-    "rezumate cursuri AI",
-    "flashcard-uri din cursuri",
-    "quiz-uri personalizate pentru examen",
-    "rezumate pentru facultate",
-    "AI pentru învățare activă",
-    "recapitulare inteligentă",
-  ],
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: homepageSeoTitle,
-    description:
-      "Transformă cursurile în pachete de studiu: rezumate clare, flashcard-uri, quiz-uri și progres măsurabil.",
-    url: "/",
-    siteName,
-    locale: defaultLocale,
-    type: "website",
-    images: [
-      {
-        url: openGraphImagePath,
-        width: 1200,
-        height: 630,
-        alt: "Reviss - rezumate AI, flashcard-uri și quiz-uri pentru studenți",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: homepageSeoTitle,
-    description: homepageSeoDescription,
-    images: [openGraphImagePath],
-  },
-};
+type MarketingTranslator = Awaited<ReturnType<typeof getTranslations<"marketing">>>;
+
+const localeTags = { ro: "ro-RO", en: "en-US", fr: "fr-FR" } as const;
+const openGraphLocales = { ro: "ro_RO", en: "en_US", fr: "fr_FR" } as const;
+
+function localeTag(locale: string) {
+  return localeTags[locale as keyof typeof localeTags] ?? localeTags.ro;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("marketing.meta");
+  const tSeo = await getTranslations("seo");
+  const locale = await getLocale();
+  const title = t("title");
+  const description = t("description");
+
+  return {
+    title,
+    description,
+    keywords: [...tSeo("keywords").split(", "), ...t("keywords").split(", ")],
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      title,
+      description: t("ogDescription"),
+      url: "/",
+      siteName,
+      locale:
+        openGraphLocales[locale as keyof typeof openGraphLocales] ??
+        openGraphLocales.ro,
+      type: "website",
+      images: [
+        {
+          url: openGraphImagePath,
+          width: 1200,
+          height: 630,
+          alt: t("ogAlt"),
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [openGraphImagePath],
+    },
+  };
+}
 
 function ArrowIcon() {
   return (
@@ -167,194 +170,85 @@ function ChartIcon() {
   );
 }
 
-const workflow = [
-  {
-    step: "01",
-    title: "Încarci materialul",
-    description:
-      "Adaugi PDF-ul, notițele sau suportul de curs. Fără să rescrii manual capitole întregi.",
-    icon: <UploadIcon />,
-    tone: "border-info-border bg-info-soft text-info",
-  },
-  {
-    step: "02",
-    title: "AI-ul îl structurează",
-    description:
-      "Reviss identifică ideile importante și pregătește rezumatul, flashcard-urile și testele.",
-    icon: <SparkIcon />,
-    tone: "border-warning-border bg-warning-soft text-warning",
-  },
-  {
-    step: "03",
-    title: "Înveți activ",
-    description:
-      "Exersezi, primești explicații și vezi exact ce concepte trebuie recapitulate.",
-    icon: <ChartIcon />,
-    tone: "border-success-border bg-success-soft text-success",
-  },
-];
-
-const studyUseCases = [
-  {
-    title: "Rezumate AI din PDF-uri și cursuri",
-    description:
-      "Încarci suporturi de curs, documente Word, prezentări sau notițe, iar Reviss le transformă într-un rezumat structurat pentru recapitulare rapidă.",
-  },
-  {
-    title: "Flashcard-uri pentru învățare activă",
-    description:
-      "Conceptele importante devin carduri de repetat, astfel încât să verifici ce știi deja și ce trebuie reluat înainte de examen.",
-  },
-  {
-    title: "Quiz-uri personalizate pentru facultate",
-    description:
-      "Generezi întrebări din materialele tale, cu explicații și feedback, ca să exersezi aplicarea ideilor, nu doar recitirea lor.",
-  },
-  {
-    title: "Plan de recapitulare pentru sesiune",
-    description:
-      "Reviss adună rezumate, cuvinte-cheie, flashcard-uri și progres într-un flux clar pentru colocvii, examene și licență.",
-  },
+const workflowSteps = [
+  { id: "1", step: "01", icon: <UploadIcon />, tone: "border-info-border bg-info-soft text-info" },
+  { id: "2", step: "02", icon: <SparkIcon />, tone: "border-warning-border bg-warning-soft text-warning" },
+  { id: "3", step: "03", icon: <ChartIcon />, tone: "border-success-border bg-success-soft text-success" },
 ] as const;
 
-const fallbackMarketingPricingPlans = [
-  {
-    slug: "start",
-    name: "Beginner",
-    description: "Pentru primul curs și primele sesiuni de studiu activ.",
-    price: "0",
-    suffix: "gratuit",
-    features: [
-      "3 materiale procesate lunar",
-      "Rezumat, flashcard-uri și quiz",
-      "Maximum 25 de pagini per material",
-      "Istoric pentru ultimele 7 zile",
-    ],
-    featured: false,
-    discount: "",
-    oldPrice: "",
-  },
-  {
-    slug: "focus",
-    name: "Focus",
-    description: "Tot ce ai nevoie pentru facultate, de la seminar la examen.",
-    price: "29",
-    suffix: "/ lună",
-    features: [
-      "30 de materiale procesate lunar",
-      "Maximum 200 de pagini per material",
-      "Flashcard-uri și quiz-uri nelimitate",
-      "Repetiție inteligentă și explicații AI",
-      "Progres complet pentru fiecare curs",
-    ],
-    featured: true,
-    discount: "25% reducere lansare",
-    oldPrice: "39",
-  },
-  {
-    slug: "pro",
-    name: "Exam Pro",
-    description: "Pentru sesiuni intense, licență și volume mari de cursuri.",
-    price: "59",
-    suffix: "/ lună",
-    features: [
-      "100 de materiale procesate lunar",
-      "Maximum 500 de pagini per material",
-      "Generare prioritară în perioade aglomerate",
-      "Simulări de examen și analiză avansată",
-      "Export pentru rezumate și flashcard-uri",
-    ],
-    featured: false,
-    discount: "20 RON economie",
-    oldPrice: "79",
-  },
-] as const;
+const useCaseIds = ["1", "2", "3", "4"] as const;
+const statIds = ["1", "2", "3", "4"] as const;
+const sessionCardIds = ["1", "2", "3", "4"] as const;
+const faqIds = ["1", "2", "3", "4", "5", "6"] as const;
 
-const homepageFaq = [
-  [
-    "Ce materiale pot încărca în Reviss?",
-    "Poți încărca PDF-uri, documente Word, prezentări și notițe text. Pentru documente scanate sau poze cu text, accesul este rezervat planului Pro, unde activăm procesare OCR.",
-  ],
-  [
-    "Ce generează Reviss dintr-un curs?",
-    "Mai întâi primești rezumatul, cuvintele-cheie, strategiile de învățare și flashcard-urile. Quiz-urile se generează separat, când ești pregătit să intri în testare activă.",
-  ],
-  [
-    "Quiz-urile sunt utile pentru examen?",
-    "Da, întrebările sunt gândite pe niveluri: recapitulare, înțelegere și aplicare, apoi simulare de examen. Nu înlocuiesc subiectele oficiale, dar te ajută să vezi unde trebuie să revii.",
-  ],
-  [
-    "Pot cere explicații AI pe fragmente din rezumat sau flashcarduri?",
-    "Da, în planul Pro poți selecta un text care nu este clar și poți cere o explicație contextuală, legată de materia, proiectul și conținutul încărcat.",
-  ],
-  [
-    "Materialele mele sunt publice?",
-    "Nu. Materialele sunt asociate contului tău și proiectelor tale. Tu trebuie să ai dreptul să folosești fișierele încărcate, iar conținutul generat trebuie verificat înainte de utilizare.",
-  ],
-  [
-    "Există un plan gratuit?",
-    "Da. Planul Beginner este pentru testarea fluxului cu limite mai mici. Planurile plătite adaugă mai multe materiale, documente mai mari, explicații AI și opțiuni avansate pentru studiu.",
-  ],
-] as const;
-
-const homepageStructuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      name: siteName,
-      url: siteUrl,
-      logo: absoluteUrl("/assets/logos/Reviss_logo_dark.svg"),
-    },
-    {
-      "@type": "WebSite",
-      name: siteName,
-      url: siteUrl,
-      inLanguage: "ro-RO",
-    },
-    {
-      "@type": "WebPage",
-      name: homepageSeoTitle,
-      url: siteUrl,
-      description: homepageSeoDescription,
-      inLanguage: "ro-RO",
-      isPartOf: {
-        "@type": "WebSite",
-        name: siteName,
-        url: siteUrl,
-      },
-    },
-    {
-      "@type": "SoftwareApplication",
-      name: siteName,
-      applicationCategory: "EducationalApplication",
-      operatingSystem: "Web",
-      url: siteUrl,
-      description:
-        "Platformă AI pentru studenți care transformă cursuri, PDF-uri, documente și prezentări în rezumate, flashcard-uri, quiz-uri și strategii de învățare.",
-      audience: {
-        "@type": "EducationalAudience",
-        educationalRole: "student",
-      },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "RON",
-      },
-    },
-    {
-      "@type": "FAQPage",
-      mainEntity: homepageFaq.map(([question, answer]) => ({
-        "@type": "Question",
-        name: question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: answer,
-        },
-      })),
-    },
-  ],
+type PricingPlan = {
+  slug: string;
+  name: string;
+  description: string;
+  price: string;
+  suffix: string;
+  features: string[];
+  featured: boolean;
+  discount: string;
+  oldPrice: string;
 };
+
+/** Shown only when the plans API is down and no plan is stored either. */
+function fallbackMarketingPricingPlans(t: MarketingTranslator): PricingPlan[] {
+  const p = (key: Parameters<typeof t>[0]) => t(key);
+  return [
+    {
+      slug: "start",
+      name: p("pricing.fallback.start.name"),
+      description: p("pricing.fallback.start.description"),
+      price: "0",
+      suffix: p("pricing.free"),
+      features: [
+        p("pricing.fallback.start.features.1"),
+        p("pricing.fallback.start.features.2"),
+        p("pricing.fallback.start.features.3"),
+        p("pricing.fallback.start.features.4"),
+      ],
+      featured: false,
+      discount: "",
+      oldPrice: "",
+    },
+    {
+      slug: "focus",
+      name: p("pricing.fallback.focus.name"),
+      description: p("pricing.fallback.focus.description"),
+      price: "29",
+      suffix: p("pricing.perMonth"),
+      features: [
+        p("pricing.fallback.focus.features.1"),
+        p("pricing.fallback.focus.features.2"),
+        p("pricing.fallback.focus.features.3"),
+        p("pricing.fallback.focus.features.4"),
+        p("pricing.fallback.focus.features.5"),
+      ],
+      featured: true,
+      discount: p("pricing.fallback.focus.discount"),
+      oldPrice: "39",
+    },
+    {
+      slug: "pro",
+      name: p("pricing.fallback.pro.name"),
+      description: p("pricing.fallback.pro.description"),
+      price: "59",
+      suffix: p("pricing.perMonth"),
+      features: [
+        p("pricing.fallback.pro.features.1"),
+        p("pricing.fallback.pro.features.2"),
+        p("pricing.fallback.pro.features.3"),
+        p("pricing.fallback.pro.features.4"),
+        p("pricing.fallback.pro.features.5"),
+      ],
+      featured: false,
+      discount: p("pricing.fallback.pro.discount"),
+      oldPrice: "79",
+    },
+  ];
+}
 
 function formatPlanPrice(value: SubscriptionPlanPublic["price_ron"]) {
   const numericValue = Number(value);
@@ -364,10 +258,14 @@ function formatPlanPrice(value: SubscriptionPlanPublic["price_ron"]) {
     : numericValue.toFixed(2).replace(".", ",");
 }
 
-function billingSuffix(interval: string) {
+function billingSuffix(t: MarketingTranslator, interval: string) {
   const normalized = interval.trim().toLowerCase();
-  if (normalized.includes("lun")) return "/ lună";
-  if (normalized.includes("an")) return "/ an";
+  if (normalized.includes("lun") || normalized.includes("month")) {
+    return t("pricing.perMonth");
+  }
+  if (normalized.includes("an") || normalized.includes("year")) {
+    return t("pricing.perYear");
+  }
   return `/ ${interval}`;
 }
 
@@ -381,7 +279,10 @@ function uniqueFeatures(features: string[]) {
   });
 }
 
-function toPricingPlans(plans: SubscriptionPlanPublic[]) {
+function toPricingPlans(
+  t: MarketingTranslator,
+  plans: SubscriptionPlanPublic[],
+): PricingPlan[] {
   return [...plans]
     .filter((plan) => plan.is_visible)
     .sort((first, second) => first.sort_order - second.sort_order)
@@ -400,7 +301,7 @@ function toPricingPlans(plans: SubscriptionPlanPublic[]) {
         name: plan.name,
         description: plan.description,
         price,
-        suffix: isFree ? "gratuit" : billingSuffix(plan.billing_interval),
+        suffix: isFree ? t("pricing.free") : billingSuffix(t, plan.billing_interval),
         features: uniqueFeatures([
           plan.material_limit,
           ...sortedFeatures.map((feature) => feature.label),
@@ -413,12 +314,88 @@ function toPricingPlans(plans: SubscriptionPlanPublic[]) {
 }
 
 export default async function Home() {
+  const t = await getTranslations("marketing");
+  const locale = await getLocale();
+  const inLanguage = localeTag(locale);
   const subscriptionPlans =
     (await getServerPublicPlans()) ?? fallbackSubscriptionPlans;
-  const databasePricingPlans = toPricingPlans(subscriptionPlans);
+  const databasePricingPlans = toPricingPlans(t, subscriptionPlans);
   const pricingPlans = databasePricingPlans.length
     ? databasePricingPlans
-    : fallbackMarketingPricingPlans;
+    : fallbackMarketingPricingPlans(t);
+  const faq = faqIds.map((id) => ({
+    question: t(`faq.items.${id}.question`),
+    answer: t(`faq.items.${id}.answer`),
+  }));
+  const previewStats = [
+    [t("preview.summary"), t("preview.summaryValue")],
+    [t("preview.flashcards"), "24"],
+    [t("preview.quizzes"), "3"],
+    [t("preview.concepts"), "18"],
+  ] as const;
+  const quizAnswers = [
+    t("benefits.quiz.answers.1"),
+    t("benefits.quiz.answers.2"),
+    t("benefits.quiz.answers.3"),
+  ];
+
+  const homepageStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: siteName,
+        url: siteUrl,
+        logo: absoluteUrl("/assets/logos/Reviss_logo_dark.svg"),
+      },
+      {
+        "@type": "WebSite",
+        name: siteName,
+        url: siteUrl,
+        inLanguage,
+      },
+      {
+        "@type": "WebPage",
+        name: t("meta.title"),
+        url: siteUrl,
+        description: t("meta.description"),
+        inLanguage,
+        isPartOf: {
+          "@type": "WebSite",
+          name: siteName,
+          url: siteUrl,
+        },
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: siteName,
+        applicationCategory: "EducationalApplication",
+        operatingSystem: "Web",
+        url: siteUrl,
+        description: t("meta.appDescription"),
+        audience: {
+          "@type": "EducationalAudience",
+          educationalRole: "student",
+        },
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "RON",
+        },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: faq.map(({ question, answer }) => ({
+          "@type": "Question",
+          name: question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: answer,
+          },
+        })),
+      },
+    ],
+  };
 
   return (
     <main className="min-h-screen overflow-x-clip bg-app text-content">
@@ -438,18 +415,16 @@ export default async function Home() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-[11px] font-bold uppercase tracking-[0.17em] text-muted shadow-sm">
               <SparkIcon />
-              <TranslatedText id="marketing.hero.badge" />
+              {t("hero.badge")}
             </div>
 
             <h1 className="mt-7 max-w-3xl font-serif text-5xl font-semibold leading-[1.03] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-              <TranslatedText id="marketing.hero.title.main" />
-              <span className="block italic text-muted">
-                <TranslatedText id="marketing.hero.title.accent" />
-              </span>
+              {t("hero.title.main")}
+              <span className="block italic text-muted">{t("hero.title.accent")}</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-8 text-muted sm:text-lg">
-              <TranslatedText id="marketing.hero.description" />
+              {t("hero.description")}
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -457,28 +432,28 @@ export default async function Home() {
                 href="/register"
                 className="theme-shadow-action inline-flex items-center justify-center gap-3 rounded-md bg-action px-6 py-3.5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover"
               >
-                <TranslatedText id="marketing.hero.cta.primary" />
+                {t("hero.cta.primary")}
                 <ArrowIcon />
               </Link>
               <a
                 href="#cum-functioneaza"
                 className="inline-flex items-center justify-center rounded-md border border-subtle bg-surface px-6 py-3.5 text-sm font-bold transition hover:bg-surface-hover"
               >
-                <TranslatedText id="marketing.hero.cta.secondary" />
+                {t("hero.cta.secondary")}
               </a>
             </div>
 
             <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-sm font-medium text-muted">
               {([
-                "marketing.hero.feature.files",
-                "marketing.hero.feature.quiz",
-                "marketing.hero.feature.progress",
+                "hero.feature.files",
+                "hero.feature.quiz",
+                "hero.feature.progress",
               ] as const).map((item) => (
                   <span key={item} className="flex items-center gap-2">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success-soft text-success">
                       <CheckIcon />
                     </span>
-                    <TranslatedText id={item} />
+                    {t(item)}
                   </span>
                 ))}
             </div>
@@ -497,21 +472,21 @@ export default async function Home() {
                     />
                   </span>
                   <div>
-                    <p className="text-xs font-bold">Biologie celulară</p>
+                    <p className="text-xs font-bold">{t("preview.course")}</p>
                     <p className="mt-0.5 text-[10px] text-muted">
-                      Curs procesat de Reviss
+                      {t("preview.processed")}
                     </p>
                   </div>
                 </div>
                 <span className="rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-bold text-success">
-                  Gata de studiu
+                  {t("preview.ready")}
                 </span>
               </div>
 
               <div className="grid gap-4 py-5 sm:grid-cols-[0.85fr_1.15fr]">
                 <div className="rounded-2xl border border-subtle bg-app/70 p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-muted">
-                    Curs încărcat
+                    {t("preview.uploaded")}
                   </p>
                   <div className="mt-4 flex items-center gap-3 rounded-xl border border-subtle bg-surface p-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-danger-soft text-danger">
@@ -521,7 +496,7 @@ export default async function Home() {
                       <p className="truncate text-xs font-bold">
                         Celula_capitolul_3.pdf
                       </p>
-                      <p className="mt-1 text-[10px] text-muted">28 pagini</p>
+                      <p className="mt-1 text-[10px] text-muted">{t("preview.pages")}</p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
@@ -538,17 +513,12 @@ export default async function Home() {
                 <div className="rounded-2xl border border-subtle bg-app/70 p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-muted">
-                      Pachet generat
+                      {t("preview.generated")}
                     </p>
                     <SparkIcon />
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-2">
-                    {[
-                      ["Rezumat", "6 min"],
-                      ["Flashcard-uri", "24"],
-                      ["Quiz-uri", "3"],
-                      ["Concepte", "18"],
-                    ].map(([label, value]) => (
+                    {previewStats.map(([label, value]) => (
                       <div
                         key={label}
                         className="rounded-xl border border-subtle bg-surface p-3"
@@ -564,13 +534,13 @@ export default async function Home() {
               <div className="rounded-2xl border border-info-border bg-info-soft p-4 text-info">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold">Următoarea sesiune</p>
+                    <p className="text-xs font-bold">{t("preview.nextSession")}</p>
                     <p className="mt-1 text-[10px] opacity-80">
-                      12 flashcard-uri + quiz de 8 întrebări
+                      {t("preview.nextSessionDetail")}
                     </p>
                   </div>
                   <span className="rounded-md bg-info px-3 py-2 text-[10px] font-bold text-info-soft">
-                    25 min
+                    {t("preview.nextSessionTime")}
                   </span>
                 </div>
               </div>
@@ -581,15 +551,10 @@ export default async function Home() {
 
       <section className="border-y border-subtle bg-surface/55">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-subtle px-5 sm:grid-cols-4 sm:divide-y-0 sm:px-8">
-          {[
-            ["Un singur curs", "rezumat, carduri și test"],
-            ["Învățare activă", "nu citire pasivă"],
-            ["Repetiție ghidată", "exact când ai nevoie"],
-            ["Temă adaptivă", "confort zi și noapte"],
-          ].map(([title, text]) => (
-            <div key={title} className="px-4 py-7 text-center sm:px-6">
-              <p className="font-serif text-lg font-semibold">{title}</p>
-              <p className="mt-1 text-[11px] text-muted">{text}</p>
+          {statIds.map((id) => (
+            <div key={id} className="px-4 py-7 text-center sm:px-6">
+              <p className="font-serif text-lg font-semibold">{t(`stats.${id}.title`)}</p>
+              <p className="mt-1 text-[11px] text-muted">{t(`stats.${id}.text`)}</p>
             </div>
           ))}
         </div>
@@ -602,25 +567,23 @@ export default async function Home() {
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div className="lg:sticky lg:top-28">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-              Pentru facultate, sesiune și examene
+              {t("useCases.eyebrow")}
             </p>
             <h2
               id="study-use-cases-title"
               className="mt-4 max-w-xl font-serif text-4xl font-semibold leading-tight sm:text-5xl"
             >
-              Când cursurile se adună, Reviss le transformă în pași clari.
+              {t("useCases.title")}
             </h2>
             <p className="mt-5 max-w-lg text-sm leading-7 text-muted sm:text-base">
-              Folosește Reviss când ai nevoie de rezumate AI din PDF-uri,
-              flashcard-uri pentru repetare, quiz-uri personalizate și un mod
-              mai simplu de a pregăti examenele la facultate.
+              {t("useCases.description")}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {studyUseCases.map((item, index) => (
+            {useCaseIds.map((id, index) => (
               <ScrollReveal
-                key={item.title}
+                key={id}
                 direction={index % 2 === 0 ? "left" : "right"}
                 delay={index * 60}
               >
@@ -629,10 +592,10 @@ export default async function Home() {
                     {index % 2 === 0 ? <SparkIcon /> : <CheckIcon />}
                   </span>
                   <h3 className="mt-6 font-serif text-2xl font-semibold">
-                    {item.title}
+                    {t(`useCases.items.${id}.title`)}
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-muted">
-                    {item.description}
+                    {t(`useCases.items.${id}.description`)}
                   </p>
                 </article>
               </ScrollReveal>
@@ -647,20 +610,18 @@ export default async function Home() {
       >
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-            Din material brut în progres clar
+            {t("workflow.eyebrow")}
           </p>
           <h2 className="mt-4 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-            Trei pași între curs și înțelegere.
+            {t("workflow.title")}
           </h2>
           <p className="mt-5 text-sm leading-7 text-muted sm:text-base">
-            Fără zeci de tab-uri și fără ore pierdute pregătind materiale.
-            Reviss construiește spațiul de studiu, iar tu te concentrezi pe
-            învățare.
+            {t("workflow.description")}
           </p>
         </div>
 
         <div className="mt-14 grid gap-5 lg:grid-cols-3">
-          {workflow.map((item, index) => (
+          {workflowSteps.map((item, index) => (
             <ScrollReveal
               key={item.step}
               direction={index % 2 === 0 ? "left" : "right"}
@@ -678,10 +639,10 @@ export default async function Home() {
                   </span>
                 </div>
                 <h3 className="mt-10 font-serif text-2xl font-semibold">
-                  {item.title}
+                  {t(`workflow.steps.${item.id}.title`)}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-muted">
-                  {item.description}
+                  {t(`workflow.steps.${item.id}.description`)}
                 </p>
               </article>
             </ScrollReveal>
@@ -693,35 +654,28 @@ export default async function Home() {
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:py-24">
           <ScrollReveal direction="left">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-on-action/60">
-              O sesiune care știe ce urmează
+              {t("session.eyebrow")}
             </p>
             <h2 className="mt-4 max-w-xl font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-              De la „am citit” la „pot explica”.
+              {t("session.title")}
             </h2>
             <p className="mt-5 max-w-lg text-sm leading-7 text-on-action/70 sm:text-base">
-              Platforma combină rezumatul cu testarea activă și progresul
-              vizibil. Fiecare sesiune are un scop clar, nu doar încă o pagină
-              de parcurs.
+              {t("session.description")}
             </p>
             <Link
               href="/register"
               className="mt-8 inline-flex items-center gap-3 rounded-md bg-on-action px-5 py-3 text-sm font-bold text-action transition hover:opacity-90"
             >
-              Creează primul pachet
+              {t("session.cta")}
               <ArrowIcon />
             </Link>
           </ScrollReveal>
 
           <ScrollReveal direction="right">
             <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                "Rezumat esențial",
-                "Întrebări explicate",
-                "Repetiție inteligentă",
-                "Progres vizibil",
-              ].map((title, index) => (
+              {sessionCardIds.map((id, index) => (
                 <div
-                  key={title}
+                  key={id}
                   className={`flex min-h-[12.5rem] flex-col items-center justify-center rounded-3xl border border-on-action/10 bg-on-action/5 p-6 text-center ${
                     index % 2 ? "sm:translate-y-6" : ""
                   }`}
@@ -730,7 +684,7 @@ export default async function Home() {
                     {index % 2 ? <LayersIcon /> : <CheckIcon />}
                   </span>
                   <h3 className="mt-7 font-serif text-xl font-semibold">
-                    {title}
+                    {t(`session.cards.${id}`)}
                   </h3>
                 </div>
               ))}
@@ -748,15 +702,14 @@ export default async function Home() {
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-              Tot ce ai nevoie într-un singur loc
+              {t("benefits.eyebrow")}
             </p>
             <h2 className="mt-4 max-w-2xl font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-              Construit pentru sesiune, colocviu și examen.
+              {t("benefits.title")}
             </h2>
           </div>
           <p className="max-w-md text-sm leading-7 text-muted">
-            Fiecare instrument este legat de același curs, astfel încât să nu
-            pierzi contextul când treci de la înțelegere la exersare.
+            {t("benefits.description")}
           </p>
         </div>
 
@@ -764,35 +717,32 @@ export default async function Home() {
           <ScrollReveal direction="left" className="lg:col-span-7">
             <article className="theme-shadow-card relative h-full min-h-[25rem] overflow-hidden rounded-[2rem] border border-subtle bg-surface p-6 sm:p-8">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                Quiz-uri cu feedback
+                {t("benefits.quiz.eyebrow")}
               </p>
               <h3 className="mt-3 max-w-lg font-serif text-3xl font-semibold">
-                Înțelegi răspunsul, nu doar scorul.
+                {t("benefits.quiz.title")}
               </h3>
               <div className="mt-8 rounded-3xl border border-subtle bg-app/70 p-5">
                 <p className="text-xs font-bold text-muted">
-                  Care organit produce cea mai mare parte din ATP?
+                  {t("benefits.quiz.question")}
                 </p>
                 <div className="mt-4 space-y-2">
-                  {["Ribozomul", "Mitocondria", "Aparatul Golgi"].map(
-                    (answer, index) => (
-                      <div
-                        key={answer}
-                        className={`flex items-center justify-between rounded-xl border px-4 py-3 text-xs font-semibold ${
-                          index === 1
-                            ? "border-success-border bg-success-soft text-success"
-                            : "border-subtle bg-surface text-muted"
-                        }`}
-                      >
-                        {answer}
-                        {index === 1 ? <CheckIcon /> : null}
-                      </div>
-                    ),
-                  )}
+                  {quizAnswers.map((answer, index) => (
+                    <div
+                      key={answer}
+                      className={`flex items-center justify-between rounded-xl border px-4 py-3 text-xs font-semibold ${
+                        index === 1
+                          ? "border-success-border bg-success-soft text-success"
+                          : "border-subtle bg-surface text-muted"
+                      }`}
+                    >
+                      {answer}
+                      {index === 1 ? <CheckIcon /> : null}
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-4 rounded-xl border border-info-border bg-info-soft p-4 text-xs leading-6 text-info">
-                  Mitocondria transformă energia nutrienților în ATP, forma de
-                  energie folosită de celulă.
+                  {t("benefits.quiz.explanation")}
                 </div>
               </div>
             </article>
@@ -805,11 +755,10 @@ export default async function Home() {
                   <ChartIcon />
                 </span>
                 <h3 className="mt-7 font-serif text-2xl font-semibold">
-                  Progres fără presupuneri
+                  {t("benefits.progress.title")}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-muted">
-                  Vezi conceptele stăpânite, răspunsurile dificile și ce trebuie
-                  repetat în următoarea sesiune.
+                  {t("benefits.progress.description")}
                 </p>
                 <div className="mt-6 h-2 overflow-hidden rounded-full bg-surface-hover">
                   <div className="h-full w-[78%] rounded-full bg-action" />
@@ -823,11 +772,10 @@ export default async function Home() {
                   <SparkIcon />
                 </span>
                 <h3 className="mt-7 font-serif text-2xl font-semibold">
-                  Materialele tale rămân sursa
+                  {t("benefits.source.title")}
                 </h3>
                 <p className="mt-3 text-sm leading-7 opacity-80">
-                  Întrebările și explicațiile pornesc din cursul încărcat, ca
-                  studiul să rămână relevant pentru materia ta.
+                  {t("benefits.source.description")}
                 </p>
               </article>
             </ScrollReveal>
@@ -842,18 +790,17 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-              Abonamente simple, fără surprize
+              {t("pricing.eyebrow")}
             </p>
             <h2 className="mt-4 text-balance font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-              Alege cât de intens vrei să înveți.
+              {t("pricing.title")}
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              Începi gratuit, iar când cursurile se adună poți trece la un plan
-              cu mai mult spațiu, repetiție inteligentă și analiză de progres.
+              {t("pricing.description")}
             </p>
             <div className="mt-7 inline-flex items-center gap-2 rounded-md border border-success-border bg-success-soft px-4 py-2 text-xs font-bold text-success">
               <CheckIcon />
-              Poți anula sau schimba planul oricând
+              {t("pricing.cancelAnytime")}
             </div>
           </div>
 
@@ -880,7 +827,7 @@ export default async function Home() {
                 >
                   {plan.featured ? (
                     <div className="absolute right-5 top-5 rounded-md bg-on-action px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-action">
-                      Cea mai bună alegere
+                      {t("pricing.bestChoice")}
                     </div>
                   ) : null}
 
@@ -919,7 +866,7 @@ export default async function Home() {
                         plan.featured ? "text-on-action/65" : "text-muted"
                       }`}
                     >
-                      RON {plan.suffix}
+                      {t("pricing.currency")} {plan.suffix}
                     </span>
                   </div>
 
@@ -971,7 +918,7 @@ export default async function Home() {
                         : "border border-subtle bg-app hover:bg-surface-hover"
                     }`}
                   >
-                    Vezi detaliile planului
+                    {t("pricing.viewPlan")}
                     <ArrowIcon />
                   </Link>
                 </article>
@@ -980,7 +927,7 @@ export default async function Home() {
           </div>
 
           <p className="mt-8 text-center text-xs leading-6 text-muted">
-            Plata se face lunar, fără perioadă contractuală.
+            {t("pricing.monthlyNote")}
           </p>
         </div>
       </section>
@@ -993,28 +940,27 @@ export default async function Home() {
               <div className="pointer-events-none absolute -bottom-32 -right-24 h-80 w-80 rounded-full bg-on-action/5 blur-2xl" />
               <div className="relative mx-auto max-w-3xl">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-on-action/60">
-                  Începe cu următorul tău curs
+                  {t("cta.eyebrow")}
                 </p>
                 <h2 className="mt-4 text-balance font-serif text-4xl font-semibold leading-tight sm:text-6xl">
-                  Începe simplu. Învață sigur.
+                  {t("cta.title")}
                 </h2>
                 <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-on-action/70 sm:text-base">
-                  Creează-ți contul și transformă primul material într-o sesiune
-                  de studiu clară și activă.
+                  {t("cta.description")}
                 </p>
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                   <Link
                     href="/register"
                     className="inline-flex items-center justify-center gap-3 rounded-md bg-on-action px-6 py-3.5 text-sm font-bold text-action transition hover:opacity-90"
                   >
-                    Creează cont gratuit
+                    {t("cta.primary")}
                     <ArrowIcon />
                   </Link>
                   <Link
                     href="/login"
                     className="inline-flex items-center justify-center rounded-md border border-on-action/20 px-6 py-3.5 text-sm font-bold transition hover:bg-on-action/10"
                   >
-                    Am deja un cont
+                    {t("cta.secondary")}
                   </Link>
                 </div>
               </div>
@@ -1029,15 +975,15 @@ export default async function Home() {
       >
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-            Întrebări frecvente
+            {t("faq.eyebrow")}
           </p>
           <h2 className="mt-4 font-serif text-4xl font-semibold sm:text-5xl">
-            Înainte să începi.
+            {t("faq.title")}
           </h2>
         </div>
 
         <div className="mt-12 space-y-3">
-          {homepageFaq.map(([question, answer]) => (
+          {faq.map(({ question, answer }) => (
             <details
               key={question}
               className="group rounded-2xl border border-subtle bg-surface px-5 py-4 open:bg-surface-hover/45 sm:px-6"

@@ -7,6 +7,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import AppSettings, CurrentAdminUser, DbSession
+from app.core.i18n import normalize_language, t
 from app.models import AccountDeletionRequest, User
 from app.schemas.admin_account_deletion_requests import (
     AccountDeletionRequestStatus,
@@ -175,6 +176,7 @@ async def delete_user_from_account_deletion_request(
     await _ensure_not_last_active_admin(session, target_user)
 
     target_snapshot = {
+        "target_language": target_user.language_preference,
         "target_user_id": str(target_user.id),
         "target_email": target_user.email,
         "target_name": target_user.full_name,
@@ -206,16 +208,18 @@ async def delete_user_from_account_deletion_request(
     await session.delete(target_user)
     await session.flush()
 
+    language = normalize_language(target_snapshot.get("target_language"))
     html, text = account_deleted_email(
         app_url=settings.public_app_url,
         full_name=target_snapshot["target_name"],
         logo_html=email_logo_html(settings.email_logo_url, app_name="Reviss"),
+        language=language,
     )
     try:
         await EmailService(settings).send(
             EmailMessage(
                 to=target_snapshot["target_email"],
-                subject="Contul Reviss a fost șters",
+                subject=t("email.account_deleted.subject", language),
                 html=html,
                 text=text,
             )

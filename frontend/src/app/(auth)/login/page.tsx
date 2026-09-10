@@ -1,11 +1,10 @@
-import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthForm } from "@/components/auth/auth-form";
-import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthPage, authPageMetadata } from "@/components/auth/auth-page";
 
-export const metadata: Metadata = {
-  title: "Autentificare | Reviss",
-  description: "Intră în contul tău Reviss.",
-};
+export function generateMetadata() {
+  return authPageMetadata("login");
+}
 
 type LoginPageProps = {
   searchParams: Promise<{ next?: string | string[]; error?: string | string[] }>;
@@ -15,37 +14,19 @@ function firstSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function googleErrorMessage(error: string | undefined) {
-  if (error === "google_oauth") {
-    return "Autentificarea prin Google a eșuat. Încearcă din nou.";
-  }
-  return undefined;
-}
-
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { next, error } = await searchParams;
+  const t = await getTranslations("auth");
+  const initialError =
+    firstSearchParam(error) === "google_oauth" ? t("googleFailed") : undefined;
 
   return (
-    <AuthShell
-      eyebrow="Bine ai revenit"
-      title="Continuă să construiești pe ce ai învățat."
-      description="Intră în cont pentru a-ți relua sesiunile, quiz-urile și progresul exact de unde ai rămas."
-      alternateText="Nu ai încă un cont?"
-      alternateLabel="Înregistrează-te"
-      alternateHref="/register"
-      asideTitle="Ritmul tău. Progresul tău."
-      asideDescription="Reviss organizează materialele de curs într-un spațiu calm, clar și ușor de reluat în fiecare zi."
-      features={[
-        "Quiz-uri adaptate nivelului tău",
-        "Progres păstrat între sesiuni",
-        "Recapitulări programate inteligent",
-      ]}
-    >
+    <AuthPage page="login">
       <AuthForm
         mode="login"
         redirectTo={firstSearchParam(next)}
-        initialError={googleErrorMessage(firstSearchParam(error))}
+        initialError={initialError}
       />
-    </AuthShell>
+    </AuthPage>
   );
 }

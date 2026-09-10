@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
@@ -10,6 +11,8 @@ import { toast } from "@/lib/toast-store";
 type CheckoutPlanPageProps = {
   plan: SubscriptionPlanPublic;
 };
+
+type CheckoutTranslator = ReturnType<typeof useTranslations<"checkout">>;
 
 function CheckIcon() {
   return (
@@ -34,18 +37,18 @@ function formatPlanPrice(value: SubscriptionPlanPublic["price_ron"]) {
     : numericValue.toFixed(2).replace(".", ",");
 }
 
-function billingPeriod(interval: string) {
+function billingPeriod(t: CheckoutTranslator, interval: string) {
   const normalized = interval.trim().toLowerCase();
-  if (normalized.includes("lun")) return "Lunar";
-  if (normalized.includes("an")) return "Anual";
+  if (normalized.includes("lun")) return t("lunar");
+  if (normalized.includes("an")) return t("anual");
   return interval;
 }
 
-function paymentFrequency(interval: string) {
+function paymentFrequency(t: CheckoutTranslator, interval: string) {
   const normalized = interval.trim().toLowerCase();
-  if (normalized.includes("lun")) return "Lunar, reînnoire automată";
-  if (normalized.includes("an")) return "Anual, reînnoire automată";
-  return `${interval}, reînnoire automată`;
+  if (normalized.includes("lun")) return t("lunarReinnoireAutomata");
+  if (normalized.includes("an")) return t("anualReinnoireAutomata");
+  return t("intervalReinnoireAutomata", { interval });
 }
 
 function uniqueFeatures(plan: SubscriptionPlanPublic) {
@@ -65,25 +68,26 @@ function uniqueFeatures(plan: SubscriptionPlanPublic) {
   });
 }
 
-function paymentErrorMessage(error: unknown) {
+function paymentErrorMessage(t: CheckoutTranslator, error: unknown) {
   if (error instanceof PaymentsApiError) {
     if (error.status === 401) {
-      return "Trebuie să fii autentificat ca să activezi un abonament.";
+      return t("trebuieSaFiiAutentificatCa");
     }
     return error.message;
   }
   if (error instanceof Error) return error.message;
-  return "Plata nu a putut fi pornită momentan.";
+  return t("plataNuAPututFi");
 }
 
 export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
+  const t = useTranslations("checkout");
   const [isStartingPayment, setIsStartingPayment] = useState(false);
   const price = formatPlanPrice(plan.price_ron);
   const isFree = Number(plan.price_ron) === 0;
   const hasStripePrice = plan.is_purchasable;
   const canStartPayment = !isFree && hasStripePrice && !isStartingPayment;
   const features = uniqueFeatures(plan).slice(0, 6);
-  const period = billingPeriod(plan.billing_interval);
+  const period = billingPeriod(t, plan.billing_interval);
 
   async function startPayment() {
     if (!canStartPayment) return;
@@ -93,7 +97,7 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
       const checkoutSession = await createCheckoutSession(plan.slug);
       window.location.assign(checkoutSession.checkout_url);
     } catch (error) {
-      toast.error(paymentErrorMessage(error));
+      toast.error(paymentErrorMessage(t, error));
       setIsStartingPayment(false);
     }
   }
@@ -107,18 +111,17 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
             className="inline-flex items-center gap-2 text-sm font-bold text-muted transition hover:text-content"
           >
             <span aria-hidden="true">←</span>
-            Înapoi la abonamente
+            {t("inapoiLaAbonamente")}
           </Link>
 
           <p className="mt-6 text-xs font-black uppercase tracking-[0.22em] text-warning">
-            Confirmare abonament
+            {t("confirmareAbonament")}
           </p>
           <h1 className="mt-2 max-w-3xl font-serif text-2xl font-semibold leading-tight sm:text-3xl">
-            Verifică planul înainte de plată.
+            {t("verificaPlanulInainteDePlata")}
           </h1>
           <p className="mt-3 max-w-2xl text-[13px] leading-6 text-muted">
-            Planul ales, prețul și beneficiile incluse. Plata se face securizat
-            prin Stripe.
+            {t("planulAlesPretulSiBeneficiile")}
           </p>
 
           <div className="mt-6 rounded-md border border-subtle bg-surface p-5 shadow-sm">
@@ -142,7 +145,7 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
                   {price}
                 </span>
                 <span className="text-xs text-muted">
-                  {isFree ? "RON" : "RON / lună"}
+                  {isFree ? "RON" : t("ronLuna")}
                 </span>
               </p>
             </div>
@@ -163,14 +166,14 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
         </section>
 
         <aside className="rounded-md border border-subtle bg-surface p-5 shadow-lg shadow-black/10 lg:sticky lg:top-6">
-          <h2 className="text-base font-black">Sumar Plată</h2>
+          <h2 className="text-base font-black">{t("sumarPlata")}</h2>
 
           <dl className="mt-4 space-y-0 text-sm">
             {[
-              ["Plan selectat", `${plan.name} (${period})`],
-              ["Monedă plată", "RON"],
-              ["TVA inclus", "Da, dacă este aplicabil"],
-              ["Frecvență plată", paymentFrequency(plan.billing_interval)],
+              [t("planSelectat"), `${plan.name} (${period})`],
+              [t("monedaPlata"), "RON"],
+              [t("tvaInclus"), t("daDacaEsteAplicabil")],
+              [t("frecventaPlata"), paymentFrequency(t, plan.billing_interval)],
             ].map(([label, value]) => (
               <div
                 key={label}
@@ -181,16 +184,15 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
               </div>
             ))}
             <div className="flex items-center justify-between gap-4 py-4">
-              <dt className="font-black">Preț Total</dt>
+              <dt className="font-black">{t("pretTotal")}</dt>
               <dd className="text-lg font-black">{price} RON</dd>
             </div>
           </dl>
 
           <div className="mt-4 border-t border-subtle pt-4 text-xs leading-6 text-muted">
-            <p className="font-black text-content">Ce urmează?</p>
+            <p className="font-black text-content">{t("ceUrmeaza")}</p>
             <p className="mt-2">
-              După plată, planul devine activ imediat. Îl poți schimba sau
-              anula din cont.
+              {t("dupaPlataPlanulDevineActiv")}
             </p>
             {plan.conditions ? (
               <p className="mt-4 border-t border-subtle pt-4">
@@ -201,7 +203,7 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
 
           {!hasStripePrice && !isFree ? (
             <p className="mt-4 rounded-2xl border border-warning-border bg-warning-soft px-4 py-3 text-sm font-bold text-warning">
-              Planul nu are încă un Stripe Price ID configurat în administrare.
+              {t("planulNuAreIncaUn")}
             </p>
           ) : null}
 
@@ -210,7 +212,7 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
               href="/myaccount"
               className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-content px-5 py-3 text-sm font-black text-app transition hover:opacity-90"
             >
-              Continuă în cont
+              {t("continuaInCont")}
             </Link>
           ) : (
             <button
@@ -220,17 +222,17 @@ export function CheckoutPlanPage({ plan }: CheckoutPlanPageProps) {
               className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-content px-5 py-3 text-sm font-black text-app transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
             >
               {isStartingPayment
-                ? "Se pregătește checkout-ul..."
-                : "Continuă către plată securizată →"}
+                ? t("sePregatesteCheckoutUl")
+                : t("continuaCatrePlataSecurizata")}
             </button>
           )}
 
           <p className="mt-5 text-center text-[10px] leading-5 text-muted">
-            Prin apăsarea butonului, ești de acord cu{" "}
+            {t("prinApasareaButonuluiEstiDe")}{" "}
             <Link href="/termeni-si-conditii" className="underline">
-              Termenii și Condițiile
+              {t("termeniiSiConditiile")}
             </Link>
-            . Informații despre retragere sunt în politica de contract.
+            {t("informatiiDespreRetragereSuntIn")}
           </p>
         </aside>
       </div>

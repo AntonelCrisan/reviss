@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 /**
  * Loading placeholders for the pages built on `AccountStaticShell`.
  *
@@ -126,10 +127,11 @@ export function InvoicesPageSkeletonBody() {
  * yet because it depends on the account.
  */
 export function AccountShellSkeleton({ body }: { body?: React.ReactNode }) {
+  const t = useTranslations("common");
   return (
     <div
       aria-busy="true"
-      aria-label="Se încarcă pagina"
+      aria-label={t("loadingPage")}
       className="min-h-svh bg-app text-content lg:flex"
     >
       <aside

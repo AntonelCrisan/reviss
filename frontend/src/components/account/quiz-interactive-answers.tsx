@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Fragment,
   useCallback,
@@ -74,6 +75,7 @@ export function QuizMatchingAnswer({
   submittedAnswer,
   onDraftChange,
 }: MatchingProps) {
+  const t = useTranslations("quizAnswers");
   const isAnswered = submittedAnswer !== undefined;
   const answer = submittedAnswer ?? draftAnswer;
   const [activeItem, setActiveItem] = useState<number | null>(null);
@@ -213,10 +215,10 @@ export function QuizMatchingAnswer({
     <div className="mt-8">
       <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
         {isAnswered
-          ? "Asocierile tale"
+          ? t("asocierileTale")
           : activeItem === null
-            ? "Alege un element din stânga"
-            : "Acum alege perechea din dreapta"}
+            ? t("alegeUnElementDinStanga")
+            : t("acumAlegePerecheaDinDreapta")}
       </p>
 
       {/* One grid rather than two columns: `auto-rows-fr` makes every row
@@ -355,6 +357,7 @@ export function QuizOrderingAnswer({
   submittedAnswer,
   onDraftChange,
 }: OrderingProps) {
+  const t = useTranslations("quizAnswers");
   const isAnswered = submittedAnswer !== undefined;
   const placed = submittedAnswer ?? draftAnswer;
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -387,7 +390,7 @@ export function QuizOrderingAnswer({
     <div className="mt-8 space-y-4">
       <div>
         <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-          Propoziția ta
+          {t("propozitiaTa")}
         </p>
         <div
           onDragOver={(event) => {
@@ -404,7 +407,7 @@ export function QuizOrderingAnswer({
         >
           {placed.length === 0 ? (
             <p className="text-xs leading-6 text-muted">
-              Trage sau apasă cuvintele de mai jos ca să formezi propoziția.
+              {t("trageSauApasaCuvinteleDe")}
             </p>
           ) : null}
 
@@ -430,7 +433,7 @@ export function QuizOrderingAnswer({
                 }}
                 onClick={() => removeAt(slot)}
                 disabled={isAnswered}
-                title={isAnswered ? undefined : "Apasă pentru a scoate cuvântul"}
+                title={isAnswered ? undefined : t("apasaPentruAScoateCuvantul")}
                 className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${
                   isAnswered
                     ? isWordCorrect
@@ -449,12 +452,12 @@ export function QuizOrderingAnswer({
       {!isAnswered ? (
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-            Cuvinte disponibile
+            {t("cuvinteDisponibile")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {remaining.length === 0 ? (
               <p className="text-xs leading-6 text-muted">
-                Ai folosit toate cuvintele.
+                {t("aiFolositToateCuvintele")}
               </p>
             ) : null}
             {remaining.map((wordIndex) => (
@@ -475,7 +478,7 @@ export function QuizOrderingAnswer({
 
       {isAnswered ? (
         <p className="rounded-md border border-subtle bg-surface px-4 py-3 text-xs leading-6 text-muted">
-          Propoziția corectă:{" "}
+          {t("propozitiaCorecta")}{" "}
           <strong className="text-content">{words.join(" ")}</strong>
         </p>
       ) : null}
@@ -507,6 +510,7 @@ export function QuizClozeAnswer({
   submittedAnswer,
   onDraftChange,
 }: ClozeProps) {
+  const t = useTranslations("quizAnswers");
   const isAnswered = submittedAnswer !== undefined;
   const answer = submittedAnswer ?? draftAnswer;
   const [activeGap, setActiveGap] = useState(0);
@@ -561,7 +565,7 @@ export function QuizClozeAnswer({
     <div className="mt-8 space-y-4">
       <div>
         <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-          Propoziția
+          {t("propozitia")}
         </p>
         <p className="mt-3 rounded-md border border-subtle bg-app p-4 text-base leading-9 text-content">
           {segments.map((segment, segmentIndex) => {
@@ -611,7 +615,7 @@ export function QuizClozeAnswer({
       {!isAnswered ? (
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-            Cuvinte disponibile
+            {t("cuvinteDisponibile")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {bank.map((wordIndex) => {

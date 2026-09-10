@@ -1,3 +1,4 @@
+import { localizedFallback } from "@/lib/client-locale";
 import type { LanguagePreference } from "@/lib/auth-api";
 
 export type StudyProjectFile = {
@@ -241,7 +242,11 @@ function extractErrorMessage(payload: ApiErrorPayload): string {
   ) {
     return payload.detail.message;
   }
-  return "A apărut o eroare la proiect. Te rugăm să încerci din nou.";
+  return localizedFallback({
+    ro: "A apărut o eroare la proiect. Te rugăm să încerci din nou.",
+    en: "Something went wrong with the project. Please try again.",
+    fr: "Une erreur est survenue sur le projet. Réessaie, s'il te plaît.",
+  });
 }
 
 function extractErrorCode(payload: ApiErrorPayload): string | undefined {

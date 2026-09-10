@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { UpgradePage } from "@/components/account/upgrade-page";
 import {
   fallbackSubscriptionPlans,
   getServerPublicPlans,
 } from "@/lib/server-plans";
 
-export const metadata: Metadata = {
-  title: "Abonament | Reviss",
-  description: "Alege planul Reviss potrivit pentru studiul tău.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.upgrade");
+  return { title: t("title"), description: t("description") };
+}
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

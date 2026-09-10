@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { AuthApiError, confirmEmailChange } from "@/lib/auth-api";
 
@@ -11,10 +12,9 @@ type ConfirmEmailChangeClientProps = {
 export function ConfirmEmailChangeClient({
   token,
 }: ConfirmEmailChangeClientProps) {
+  const t = useTranslations("auth.confirmChange");
   const [message, setMessage] = useState(
-    token
-      ? "Confirmăm noua adresă de email..."
-      : "Linkul de confirmare lipsește sau este incomplet.",
+    token ? t("checking") : t("missingToken"),
   );
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     token ? "loading" : "error",
@@ -36,15 +36,13 @@ export function ConfirmEmailChangeClient({
       } catch (error) {
         setStatus("error");
         setMessage(
-          error instanceof AuthApiError
-            ? error.message
-            : "Nu am putut confirma adresa momentan.",
+          error instanceof AuthApiError ? error.message : t("failed"),
         );
       }
     }
 
     void confirmEmail();
-  }, [token]);
+  }, [t, token]);
 
   return (
     <div className="space-y-4">
@@ -77,13 +75,13 @@ export function ConfirmEmailChangeClient({
           href="/login"
           className="flex h-11 items-center justify-center rounded-md border border-subtle bg-surface px-5 text-sm font-bold text-content transition hover:border-action"
         >
-          Autentificare
+          {t("login")}
         </Link>
         <Link
           href="/myaccount"
           className="theme-shadow-action flex h-11 items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover"
         >
-          Mergi în cont
+          {t("goToAccount")}
         </Link>
       </div>
     </div>

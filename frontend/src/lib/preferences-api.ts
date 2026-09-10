@@ -1,3 +1,4 @@
+import { genericErrorFallback } from "@/lib/client-locale";
 export type StudyPace = "light" | "balanced" | "exam";
 export type AiFeedbackStyle = "short" | "guided" | "exam";
 export type NotifyFrequency = "instant" | "daily";
@@ -43,7 +44,7 @@ function extractErrorMessage(payload: ApiErrorPayload): string {
     if (firstMessage) return firstMessage;
   }
 
-  return "A apărut o eroare. Te rugăm să încerci din nou.";
+  return genericErrorFallback();
 }
 
 async function preferencesRequest<T>(

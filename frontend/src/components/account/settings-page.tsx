@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CookieSettingsButton } from "@/components/legal/cookie-consent";
@@ -61,317 +62,106 @@ type SettingsTabId =
   | "security"
   | "privacy";
 type AccountDeletionRequestState = "idle" | "submitting" | "sent";
+type SettingsTranslator = ReturnType<typeof useTranslations<"settings">>;
+
+// Ids of the colour presets and variables in src/lib/theme-colors.ts; their
+// names and descriptions live in messages/*.json under settings.themePresets
+// and settings.colorVariables.
+type ColorPresetId = "classic" | "forest" | "ocean" | "rose" | "graphite";
+type ColorVariableKey =
+  | "app"
+  | "sidebar"
+  | "surface"
+  | "border"
+  | "content"
+  | "muted"
+  | "action"
+  | "actionSoft"
+  | "successText"
+  | "warningText"
+  | "infoText";
 
 const settingsSectionChangeEvent = "revizzio:settings-section-change";
 
-const settingsTabs: Array<{
-  id: SettingsTabId;
-  label: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-}> = [
-  {
-    id: "account",
-    label: "Cont",
-    eyebrow: "Profil",
-    title: "Datele contului tău.",
-    description: "Informațiile de bază, planul curent și sumarul contului.",
-  },
-  {
-    id: "study",
-    label: "Studiu",
-    eyebrow: "Învățare",
-    title: "Cum vrei să lucreze Reviss.",
-    description: "Preferințe pentru ritmul de studiu și feedback-ul AI.",
-  },
-  {
-    id: "appearance",
-    label: "Aspect",
-    eyebrow: "Interfață",
-    title: "Alege modul de afișare.",
-    description: "Light, dark sau system, separat de paleta de culori.",
-  },
-  {
-    id: "colors",
-    label: "Culori",
-    eyebrow: "Editor temă",
-    title: "Culorile aplicației.",
-    description: "Preset-uri ca într-un editor de cod și override-uri fine.",
-  },
-  {
-    id: "notifications",
-    label: "Notificări",
-    eyebrow: "Reminder",
-    title: "Alerte și emailuri.",
-    description: "Alege ce notificări primești în timpul studiului.",
-  },
-  {
-    id: "security",
-    label: "Securitate",
-    eyebrow: "Acces",
-    title: "Sesiuni și protecție.",
-    description: "Setări pentru cont, sesiuni și acțiuni critice.",
-  },
-  {
-    id: "privacy",
-    label: "Date",
-    eyebrow: "Confidențialitate",
-    title: "Confidențialitate și date.",
-    description:
-      "Exportă, șterge sau modifică acordurile legate de datele contului.",
-  },
+const settingsTabIds: SettingsTabId[] = [
+  "account",
+  "study",
+  "appearance",
+  "colors",
+  "notifications",
+  "security",
+  "privacy",
 ];
 
 const defaultSettingsTab: SettingsTabId = "account";
 
-function formatArchiveDate(value: string | null) {
-  if (!value) return "data necunoscută";
-
-  try {
-    return new Intl.DateTimeFormat("ro-RO", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(value));
-  } catch {
-    return "data necunoscută";
-  }
-}
-
-function formatAccountDate(value?: string) {
-  if (!value) return "necunoscut";
-
-  try {
-    return new Intl.DateTimeFormat("ro-RO", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(value));
-  } catch {
-    return "necunoscut";
-  }
-}
-
-function formatThemePreference(value: ThemePreference) {
-  if (value === "system") return "Sistem";
-  if (value === "dark") return "Dark";
-  return "Luminos";
-}
-
-function formatLanguagePreference(value: LanguagePreference) {
-  if (value === "en") return "Engleză";
-  if (value === "fr") return "Franceză";
-  return "Română";
-}
-
-const languageOptions: Array<{
-  value: LanguagePreference;
-  title: string;
-  description: string;
-}> = [
-  {
-    value: "ro",
-    title: "Română",
-    description: "Interfața principală pentru studenții din România.",
-  },
-  {
-    value: "en",
-    title: "English",
-    description: "For international students who prefer English.",
-  },
-  {
-    value: "fr",
-    title: "Français",
-    description: "Pentru studenții francofoni.",
-  },
-];
-
-const themeOptions: Array<{
-  value: ThemePreference;
-  title: string;
-  description: string;
-}> = [
-  {
-    value: "light",
-    title: "Luminos",
-    description: "Interfață clară pentru studiu ziua.",
-  },
-  {
-    value: "dark",
-    title: "Dark",
-    description: "Contrast calm pentru sesiuni seara.",
-  },
-  {
-    value: "system",
-    title: "System",
-    description: "Urmează preferința dispozitivului.",
-  },
-];
-
-const studyPaceOptions = [
-  {
-    id: "light",
-    title: "Flexibil",
-    description: "Pentru zile încărcate, cu recapitulare minimă.",
-  },
-  {
-    id: "balanced",
-    title: "Structurat",
-    description: "Sesiuni scurte, dar constante, pentru progres zilnic.",
-  },
-  {
-    id: "exam",
-    title: "Intensiv",
-    description: "Ritm intens, cu quiz-uri mai dese și recapitulare activă.",
-  },
-] as const;
-
-const aiFeedbackOptions = [
-  {
-    id: "short",
-    title: "Concis",
-    description: "Răspunsuri scurte, bune când repeți rapid.",
-  },
-  {
-    id: "guided",
-    title: "Ghidat",
-    description: "Explicații pas cu pas, cu exemple simple.",
-  },
-  {
-    id: "exam",
-    title: "Stil examen",
-    description: "Feedback orientat pe formulări și capcane de test.",
-  },
-] as const;
-
-const studyAutomationOptions = [
-  {
-    id: "dailyReview",
-    title: "Recapitulare zilnică",
-    description: "Primești recomandarea de 5-20 minute pentru azi.",
-  },
-  {
-    id: "weakConceptAlerts",
-    title: "Alerte concepte slabe",
-    description: "Apar când un concept riscă să fie uitat.",
-  },
-  {
-    id: "weeklyProgress",
-    title: "Progres săptămânal",
-    description: "Primești un rezumat cu statistici în fiecare luni.",
-  },
-  {
-    id: "inactivityReminder",
-    title: "Reminder inactivitate",
-    description: "Un mesaj de revenire dacă nu mai studiezi de câteva zile.",
-  },
-] as const;
-
-type StudyAutomationId = (typeof studyAutomationOptions)[number]["id"];
+const languageIds: LanguagePreference[] = ["ro", "en", "fr"];
+const themeIds: ThemePreference[] = ["light", "dark", "system"];
+const studyPaceIds = ["light", "balanced", "exam"] as const;
+const aiFeedbackIds = ["short", "guided", "exam"] as const;
+const deliveryIds = ["instant", "daily"] as const;
 
 type BooleanPreferenceKey = {
   [K in keyof StudyPreferences]: StudyPreferences[K] extends boolean ? K : never;
 }[keyof StudyPreferences];
 
-const studyAutomationPreferenceKey: Record<
-  StudyAutomationId,
-  BooleanPreferenceKey
-> = {
+const studyAutomationPreferenceKey = {
   dailyReview: "automation_daily_review",
   weakConceptAlerts: "automation_weak_concept_alerts",
   weeklyProgress: "automation_weekly_progress",
   inactivityReminder: "automation_inactivity_reminder",
-};
+} as const satisfies Record<string, BooleanPreferenceKey>;
 
-const notificationChannelOptions = [
-  {
-    id: "email",
-    title: "Email",
-    description:
-      "Reminder-uri și alerte prin email. Confirmările de securitate și facturile ajung mereu, indiferent de acest comutator.",
-  },
-  {
-    id: "study",
-    title: "Reminder studiu",
-    description:
-      "Alerte blânde pentru recapitularea zilnică. Aceeași setare ca „Recapitulare zilnică” din tab-ul Studiu.",
-  },
-  {
-    id: "product",
-    title: "Noutăți produs",
-    description: "Funcționalități noi și schimbări relevante în aplicație.",
-  },
-] as const;
+type StudyAutomationId = keyof typeof studyAutomationPreferenceKey;
+const studyAutomationIds = Object.keys(
+  studyAutomationPreferenceKey,
+) as StudyAutomationId[];
 
-type NotificationChannelId = (typeof notificationChannelOptions)[number]["id"];
-
-const notificationChannelPreferenceKey: Record<
-  NotificationChannelId,
-  BooleanPreferenceKey
-> = {
+const notificationChannelPreferenceKey = {
   email: "notify_email_enabled",
   study: "automation_daily_review",
   product: "newsletter_consent",
-};
+} as const satisfies Record<string, BooleanPreferenceKey>;
 
-const notificationAlertOptions = [
-  {
-    id: "projectReady",
-    title: "Proiect generat",
-    description: "Când rezumatul, flashcard-urile sau quiz-ul sunt gata.",
-  },
-  {
-    id: "weakConcepts",
-    title: "Concepte de repetat",
-    description:
-      "Când Reviss observă zone care scad la retenție. Aceeași setare ca „Alerte concepte slabe” din tab-ul Studiu.",
-  },
-  {
-    id: "billing",
-    title: "Facturi și abonament",
-    description:
-      "Confirmarea de plată e mereu trimisă; acest comutator e doar pentru viitoare alerte suplimentare.",
-  },
-  {
-    id: "weeklyProgress",
-    title: "Progres săptămânal",
-    description:
-      "Statistici despre studiul tău din ultima săptămână. Aceeași setare ca „Progres săptămânal” din tab-ul Studiu.",
-  },
-  {
-    id: "inactivityReminder",
-    title: "Reminder inactivitate",
-    description:
-      "Când nu mai studiezi de câteva zile. Aceeași setare ca „Reminder inactivitate” din tab-ul Studiu.",
-  },
-  {
-    id: "streakMilestone",
-    title: "Streak și realizări",
-    description: "Când atingi un număr de zile consecutive de studiu.",
-  },
-] as const;
+type NotificationChannelId = keyof typeof notificationChannelPreferenceKey;
+const notificationChannelIds = Object.keys(
+  notificationChannelPreferenceKey,
+) as NotificationChannelId[];
 
-type NotificationAlertId = (typeof notificationAlertOptions)[number]["id"];
-
-const notificationAlertPreferenceKey: Record<
-  NotificationAlertId,
-  BooleanPreferenceKey
-> = {
+const notificationAlertPreferenceKey = {
   projectReady: "notify_alert_project_ready",
   weakConcepts: "automation_weak_concept_alerts",
   billing: "notify_alert_billing",
   weeklyProgress: "automation_weekly_progress",
   inactivityReminder: "automation_inactivity_reminder",
   streakMilestone: "notify_alert_streak_milestone",
-};
+} as const satisfies Record<string, BooleanPreferenceKey>;
+
+type NotificationAlertId = keyof typeof notificationAlertPreferenceKey;
+const notificationAlertIds = Object.keys(
+  notificationAlertPreferenceKey,
+) as NotificationAlertId[];
+
+function formatDate(locale: string, value: string | null | undefined, fallback: string) {
+  if (!value) return fallback;
+
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(value));
+  } catch {
+    return fallback;
+  }
+}
 
 function dataExportHref() {
   return "/api/auth/me/data-export";
 }
 
 function isSettingsTabId(value: string): value is SettingsTabId {
-  return settingsTabs.some((tab) => tab.id === value);
+  return (settingsTabIds as string[]).includes(value);
 }
 
 // Distance from the viewport top marking the section considered "current".
@@ -444,7 +234,7 @@ function initials(name: string) {
   );
 }
 
-function getPreviewStyle(colors: {
+type PreviewColors = {
   app: string;
   surface: string;
   border: string;
@@ -466,7 +256,9 @@ function getPreviewStyle(colors: {
   infoBg: string;
   infoText: string;
   infoBorder: string;
-}): CSSProperties {
+};
+
+function getPreviewStyle(colors: PreviewColors): CSSProperties {
   return {
     "--settings-preview-app": colors.app,
     "--settings-preview-surface": colors.surface,
@@ -493,6 +285,8 @@ function getPreviewStyle(colors: {
 }
 
 export function SettingsPage() {
+  const t = useTranslations("settings");
+  const locale = useLocale();
   const { user, setUser } = useAuth();
   const {
     preference,
@@ -537,19 +331,22 @@ export function SettingsPage() {
     ...customColors,
   };
   const customColorCount = Object.keys(customColors).length;
-  const activeTabMeta =
-    settingsTabs.find((tab) => tab.id === activeTab) ?? settingsTabs[0];
   const settingsContentRef = useRef<HTMLElement | null>(null);
   const activeSectionLabel = useActiveSectionLabel(
     settingsContentRef,
     activeTab,
   );
   const selectedStudyPace =
-    studyPaceOptions.find((option) => option.id === preferences?.study_pace) ??
-    studyPaceOptions[1];
+    studyPaceIds.find((id) => id === preferences?.study_pace) ?? "balanced";
   const hasPendingAccountDeletionRequest =
     accountDeletionState === "sent" ||
     Boolean(user?.account_deletion_request_pending);
+
+  const themeLabel = (value: ThemePreference) => t(`theme.${value}`);
+  const presetName = (id: string) => t(`themePresets.${id as ColorPresetId}.name`);
+  const presetDescription = (id: string) =>
+    t(`themePresets.${id as ColorPresetId}.description`);
+  const unknownDate = t("dates.unknown");
 
   useEffect(() => {
     let isMounted = true;
@@ -563,9 +360,7 @@ export function SettingsPage() {
       } catch (error) {
         if (!isMounted) return;
         toast.error(
-          error instanceof Error
-            ? error.message
-            : "Preferințele nu au putut fi încărcate.",
+          error instanceof Error ? error.message : t("toasts.preferencesLoadFailed"),
         );
       } finally {
         if (isMounted) setIsLoadingPreferences(false);
@@ -577,7 +372,7 @@ export function SettingsPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [t]);
 
   async function savePreference(patch: StudyPreferencesUpdate) {
     if (!preferences || isSavingPreferences) return;
@@ -592,9 +387,7 @@ export function SettingsPage() {
     } catch (error) {
       setPreferences(previousPreferences);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Preferința nu a putut fi salvată.",
+        error instanceof Error ? error.message : t("toasts.preferenceSaveFailed"),
       );
     } finally {
       setIsSavingPreferences(false);
@@ -655,9 +448,7 @@ export function SettingsPage() {
         if (!isMounted) return;
         setArchivedProjects([]);
         toast.error(
-          error instanceof Error
-            ? error.message
-            : "Arhiva proiectelor nu a putut fi încărcată.",
+          error instanceof Error ? error.message : t("toasts.archiveLoadFailed"),
         );
       } finally {
         if (isMounted) {
@@ -671,7 +462,7 @@ export function SettingsPage() {
     return () => {
       isMounted = false;
     };
-  }, [activeTab, user]);
+  }, [activeTab, t, user]);
 
   async function restoreArchivedProject(projectId: string) {
     setArchiveActionProjectId(projectId);
@@ -680,12 +471,10 @@ export function SettingsPage() {
       setArchivedProjects((projects) =>
         projects.filter((project) => project.id !== projectId),
       );
-      toast.success("Proiectul a fost restabilit în lista proiectelor active.");
+      toast.success(t("toasts.projectRestored"));
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Proiectul nu a putut fi restabilit.",
+        error instanceof Error ? error.message : t("toasts.projectRestoreFailed"),
       );
     } finally {
       setArchiveActionProjectId(null);
@@ -703,12 +492,10 @@ export function SettingsPage() {
         projects.filter((project) => project.id !== projectId),
       );
       setArchiveDeleteCandidate(null);
-      toast.success("Proiectul arhivat a fost șters definitiv.");
+      toast.success(t("toasts.archivedDeleted"));
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Proiectul nu a putut fi șters.",
+        error instanceof Error ? error.message : t("toasts.projectDeleteFailed"),
       );
     } finally {
       deletingArchivedProjectIdsRef.current.delete(projectId);
@@ -728,9 +515,7 @@ export function SettingsPage() {
       toast.success(result.message);
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Acțiunea nu a putut fi finalizată momentan.",
+        error instanceof Error ? error.message : t("toasts.actionFailed"),
       );
     } finally {
       setPrivacyActionState("idle");
@@ -749,7 +534,7 @@ export function SettingsPage() {
       toast.error(
         error instanceof AuthApiError
           ? error.message
-          : "Consimțământul nu a putut fi retras momentan.",
+          : t("toasts.newsletterWithdrawFailed"),
       );
     } finally {
       setPrivacyActionState("idle");
@@ -759,9 +544,7 @@ export function SettingsPage() {
   function openAccountDeletionModal() {
     if (hasPendingAccountDeletionRequest) {
       setAccountDeletionState("sent");
-      toast.info(
-        "Ai deja o solicitare de ștergere înregistrată. Un administrator o va procesa.",
-      );
+      toast.info(t("toasts.deletionAlreadyPending"));
       return;
     }
 
@@ -794,9 +577,7 @@ export function SettingsPage() {
       }
 
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Solicitarea de ștergere nu a putut fi trimisă.",
+        error instanceof Error ? error.message : t("toasts.deletionRequestFailed"),
       );
       setAccountDeletionState("idle");
     }
@@ -842,21 +623,20 @@ export function SettingsPage() {
     }
   }
 
-
   function renderActiveTab() {
     switch (activeTab) {
       case "account":
         return (
           <div className="space-y-5">
             <section
-              data-settings-section="Profil"
+              data-settings-section={t("account.section")}
               className="rounded-xl border border-subtle bg-surface p-6 sm:p-7"
             >
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                   <div className="relative w-fit">
                     <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-action font-serif text-2xl font-semibold text-on-action">
-                      {initials(user?.full_name ?? "Student Reviss")}
+                      {initials(user?.full_name ?? t("account.defaultName"))}
                     </span>
                     <span className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border border-subtle bg-surface text-success">
                       <svg
@@ -879,10 +659,10 @@ export function SettingsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-serif text-3xl font-semibold leading-tight text-content">
-                        {user?.full_name ?? "Student Reviss"}
+                        {user?.full_name ?? t("account.defaultName")}
                       </h2>
                       <span className="inline-flex rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-success">
-                        {user?.is_active ? "Cont activ" : "Neverificat"}
+                        {user?.is_active ? t("account.active") : t("account.unverified")}
                       </span>
                     </div>
                     <p className="mt-2 break-all text-sm text-muted">
@@ -893,25 +673,23 @@ export function SettingsPage() {
 
                 <div className="grid gap-3 border-t border-subtle pt-5 text-sm sm:grid-cols-2 xl:grid-cols-4 lg:min-w-[520px] lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
                   <AccountDetail
-                    label="Membru din"
-                    value={formatAccountDate(user?.created_at)}
+                    label={t("account.memberSince")}
+                    value={formatDate(locale, user?.created_at, unknownDate)}
                   />
                   <AccountDetail
-                    label="Interfață"
-                    value={formatThemePreference(preference)}
+                    label={t("account.interface")}
+                    value={themeLabel(preference)}
                   />
                   <AccountDetail
-                    label="Limba"
-                    value={formatLanguagePreference(
-                      user?.language_preference ?? language,
-                    )}
+                    label={t("account.language")}
+                    value={t(`languages.${user?.language_preference ?? language}.title`)}
                   />
                   <AccountDetail
-                    label="Rol"
+                    label={t("account.role")}
                     value={
                       user?.role.trim().toLowerCase() === "admin"
-                        ? "Admin"
-                        : "Utilizator"
+                        ? t("account.admin")
+                        : t("account.userRole")
                     }
                   />
                 </div>
@@ -919,45 +697,44 @@ export function SettingsPage() {
             </section>
 
             <SettingsList
-              title="Limba aplicației"
-              detail="Preferința este salvată pe cont și se aplică după autentificare."
+              title={t("account.languageTitle")}
+              detail={t("account.languageDetail")}
             >
-              {languageOptions.map((option) => {
-                const isSelected =
-                  (user?.language_preference ?? language) === option.value;
+              {languageIds.map((id) => {
+                const isSelected = (user?.language_preference ?? language) === id;
                 return (
                   <SettingsOptionButton
-                    key={option.value}
+                    key={id}
                     disabled={isSavingLanguage}
-                    onClick={() => saveLanguagePreference(option.value)}
-                    title={option.title}
-                    description={option.description}
+                    onClick={() => saveLanguagePreference(id)}
+                    title={t(`languages.${id}.title`)}
+                    description={t(`languages.${id}.description`)}
                   >
                     <ToggleSwitch checked={isSelected} />
-                    <OptionState active={isSelected} activeLabel="activ" />
+                    <OptionState active={isSelected} activeLabel={t("state.active")} />
                   </SettingsOptionButton>
                 );
               })}
             </SettingsList>
 
             <div
-              data-settings-section="Plan și limite"
+              data-settings-section={t("account.planSection")}
               className="grid gap-5 md:grid-cols-3"
             >
               <SettingsMetric
-                label="Plan curent"
+                label={t("account.currentPlan")}
                 value={getActivePlanName(user)}
                 detail={`${getActivePlanBadge(user)} · ${getActivePlanPriceLabel(user)}`}
               />
               <SettingsMetric
-                label="Limită materiale"
+                label={t("account.materialLimit")}
                 value={getActivePlanMaterialLimit(user)}
-                detail="Stabilită de abonamentul activ"
+                detail={t("account.materialLimitDetail")}
               />
               <SettingsMetric
-                label="Protecție date"
-                value="Securizat"
-                detail="Sesiune autentificată și date protejate"
+                label={t("account.dataProtection")}
+                value={t("account.secured")}
+                detail={t("account.securedDetail")}
               />
             </div>
           </div>
@@ -967,76 +744,69 @@ export function SettingsPage() {
         return (
           <div className="space-y-5">
             <section
-              data-settings-section="Ritmul curent"
+              data-settings-section={t("study.paceSection")}
               className="rounded-xl border border-subtle bg-surface p-6"
             >
               <div>
-                <SectionLabel>Ritmul curent</SectionLabel>
+                <SectionLabel>{t("study.paceSection")}</SectionLabel>
                 <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight text-content">
-                  {selectedStudyPace.title}
+                  {t(`studyPace.${selectedStudyPace}.title`)}
                 </h2>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
-                  {selectedStudyPace.description}
+                  {t(`studyPace.${selectedStudyPace}.description`)}
                 </p>
               </div>
             </section>
 
             <div className="grid gap-5 lg:grid-cols-2">
-              <SettingsList title="Alege ritmul">
-                {studyPaceOptions.map((option) => {
-                  const isSelected = option.id === preferences?.study_pace;
+              <SettingsList title={t("study.choosePace")}>
+                {studyPaceIds.map((id) => {
+                  const isSelected = id === preferences?.study_pace;
                   return (
                     <SettingsOptionButton
-                      key={option.id}
+                      key={id}
                       disabled={isLoadingPreferences || isSavingPreferences}
-                      title={option.title}
-                      description={option.description}
-                      onClick={() => void savePreference({ study_pace: option.id })}
+                      title={t(`studyPace.${id}.title`)}
+                      description={t(`studyPace.${id}.description`)}
+                      onClick={() => void savePreference({ study_pace: id })}
                     >
                       <ToggleSwitch checked={isSelected} />
-                      <OptionState active={isSelected} activeLabel="activ" />
+                      <OptionState active={isSelected} activeLabel={t("state.active")} />
                     </SettingsOptionButton>
                   );
                 })}
               </SettingsList>
 
-              <SettingsList title="Feedback AI">
-                {aiFeedbackOptions.map((option) => {
-                  const isSelected = option.id === preferences?.ai_feedback_style;
+              <SettingsList title={t("study.aiFeedback")}>
+                {aiFeedbackIds.map((id) => {
+                  const isSelected = id === preferences?.ai_feedback_style;
                   return (
                     <SettingsOptionButton
-                      key={option.id}
+                      key={id}
                       disabled={isLoadingPreferences || isSavingPreferences}
-                      title={option.title}
-                      description={option.description}
-                      onClick={() =>
-                        void savePreference({ ai_feedback_style: option.id })
-                      }
+                      title={t(`aiFeedback.${id}.title`)}
+                      description={t(`aiFeedback.${id}.description`)}
+                      onClick={() => void savePreference({ ai_feedback_style: id })}
                     >
                       <ToggleSwitch checked={isSelected} />
-                      <OptionState active={isSelected} activeLabel="activ" />
+                      <OptionState active={isSelected} activeLabel={t("state.active")} />
                     </SettingsOptionButton>
                   );
                 })}
               </SettingsList>
             </div>
 
-            <SettingsList title="Automatizări">
-              {studyAutomationOptions.map((option) => {
-                const isActive = Boolean(
-                  preferences?.[studyAutomationPreferenceKey[option.id]],
-                );
+            <SettingsList title={t("study.automations")}>
+              {studyAutomationIds.map((id) => {
+                const key = studyAutomationPreferenceKey[id];
+                const isActive = Boolean(preferences?.[key]);
                 return (
                   <SettingsOptionButton
-                    key={option.id}
+                    key={id}
                     disabled={isLoadingPreferences || isSavingPreferences}
-                    title={option.title}
-                    description={option.description}
-                    onClick={() =>
-                      void savePreference({
-                        [studyAutomationPreferenceKey[option.id]]: !isActive,
-                      })
-                    }
+                    title={t(`automation.${id}.title`)}
+                    description={t(`automation.${id}.description`)}
+                    onClick={() => void savePreference({ [key]: !isActive })}
                   >
                     <ToggleSwitch checked={isActive} />
                     <OptionState active={isActive} />
@@ -1051,40 +821,39 @@ export function SettingsPage() {
         return (
           <div className="space-y-5">
             <div
-              data-settings-section="Stare temă"
+              data-settings-section={t("appearance.stateSection")}
               className="grid gap-5 md:grid-cols-3"
             >
               <SettingsMetric
-                label="Mod activ"
-                value={formatThemePreference(preference)}
-                detail={`Afișat acum ca ${formatThemePreference(resolvedTheme)}`}
+                label={t("appearance.activeMode")}
+                value={themeLabel(preference)}
+                detail={t("appearance.displayedAs", { mode: themeLabel(resolvedTheme) })}
               />
               <SettingsMetric
-                label="Paletă"
-                value={selectedPreset.name}
-                detail="Configurată separat în Culori"
+                label={t("appearance.palette")}
+                value={presetName(selectedPreset.id)}
+                detail={t("appearance.paletteDetail")}
               />
               <SettingsMetric
-                label="Sincronizare"
-                value={isSavingTheme ? "Se salvează" : "Preferință cont"}
-                detail="Se aplică automat după autentificare"
+                label={t("appearance.sync")}
+                value={isSavingTheme ? t("appearance.saving") : t("appearance.accountPreference")}
+                detail={t("appearance.syncDetail")}
               />
             </div>
 
-            <SettingsList title="Mod afișare">
-              {themeOptions.map((option) => {
-                const isSelected =
-                  (user?.theme_preference ?? preference) === option.value;
+            <SettingsList title={t("appearance.displayMode")}>
+              {themeIds.map((id) => {
+                const isSelected = (user?.theme_preference ?? preference) === id;
                 return (
                   <SettingsOptionButton
-                    key={option.value}
+                    key={id}
                     disabled={isSavingTheme}
-                    onClick={() => saveThemePreference(option.value)}
-                    title={option.title}
-                    description={option.description}
+                    onClick={() => saveThemePreference(id)}
+                    title={t(`themeOptions.${id}.title`)}
+                    description={t(`themeOptions.${id}.description`)}
                   >
                     <ToggleSwitch checked={isSelected} />
-                    <OptionState active={isSelected} activeLabel="activ" />
+                    <OptionState active={isSelected} activeLabel={t("state.active")} />
                   </SettingsOptionButton>
                 );
               })}
@@ -1096,17 +865,17 @@ export function SettingsPage() {
         return (
           <div className="space-y-5">
             <section
-              data-settings-section="Tema curentă"
+              data-settings-section={t("colors.currentSection")}
               className="rounded-xl border border-subtle bg-surface p-5"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <SectionLabel>Tema curentă</SectionLabel>
+                  <SectionLabel>{t("colors.currentSection")}</SectionLabel>
                   <p className="mt-2 font-serif text-2xl font-semibold text-content">
-                    {selectedPreset.name}
+                    {presetName(selectedPreset.id)}
                   </p>
                   <p className="mt-1 text-sm text-muted">
-                    {customColorCount} culori modificate manual
+                    {t("colors.customCount", { count: customColorCount })}
                   </p>
                 </div>
 
@@ -1116,21 +885,21 @@ export function SettingsPage() {
                     onClick={resetCustomColors}
                     className="w-fit rounded-md border border-danger-border bg-danger-soft px-4 py-2 text-xs font-bold text-danger transition hover:opacity-80"
                   >
-                    Resetează modificările
+                    {t("colors.reset")}
                   </button>
                 ) : null}
               </div>
             </section>
 
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-              <SettingsList title="Preseturi">
+              <SettingsList title={t("colors.presets")}>
                 {colorThemePresets.map((preset) => {
                   const isSelected = preset.id === colorScheme;
                   return (
                     <SettingsOptionButton
                       key={preset.id}
-                      title={preset.name}
-                      description={preset.description}
+                      title={presetName(preset.id)}
+                      description={presetDescription(preset.id)}
                       onClick={() => setColorScheme(preset.id)}
                     >
                       <span className="flex items-center gap-2">
@@ -1143,28 +912,31 @@ export function SettingsPage() {
                         ))}
                       </span>
                       <ToggleSwitch checked={isSelected} />
-                      <OptionState active={isSelected} activeLabel="activ" />
+                      <OptionState active={isSelected} activeLabel={t("state.active")} />
                     </SettingsOptionButton>
                   );
                 })}
               </SettingsList>
 
-              <ThemePreview colors={selectedColors} />
+              <ThemePreview colors={selectedColors} t={t} />
             </div>
 
             <SettingsList
-              title="Editor culori"
-              detail="Modificările suprascriu paleta selectată."
-              meta={`${customColorCount} custom`}
+              title={t("colors.editor")}
+              detail={t("colors.editorDetail")}
+              meta={t("colors.customMeta", { count: customColorCount })}
             >
               {themeColorVariables.map((variable) => (
                 <ColorControl
                   key={variable.key}
-                  label={variable.label}
-                  description={variable.description}
+                  label={t(`colorVariables.${variable.key as ColorVariableKey}.label`)}
+                  description={t(
+                    `colorVariables.${variable.key as ColorVariableKey}.description`,
+                  )}
                   value={selectedColors[variable.key]}
                   isCustom={customColors[variable.key] !== undefined}
                   onChange={(value) => setCustomColor(variable.key, value)}
+                  t={t}
                 />
               ))}
             </SettingsList>
@@ -1172,82 +944,69 @@ export function SettingsPage() {
         );
 
       case "notifications": {
-        const activeChannelCount = notificationChannelOptions.filter(
-          (option) => preferences?.[notificationChannelPreferenceKey[option.id]],
+        const activeChannelCount = notificationChannelIds.filter(
+          (id) => preferences?.[notificationChannelPreferenceKey[id]],
         ).length;
-        const activeAlertCount = notificationAlertOptions.filter(
-          (option) => preferences?.[notificationAlertPreferenceKey[option.id]],
+        const activeAlertCount = notificationAlertIds.filter(
+          (id) => preferences?.[notificationAlertPreferenceKey[id]],
         ).length;
 
         return (
           <div className="space-y-5">
             <div
-              data-settings-section="Sumar notificări"
+              data-settings-section={t("notifications.summarySection")}
               className="grid gap-5 md:grid-cols-3"
             >
               <SettingsMetric
-                label="Frecvență"
+                label={t("notifications.frequency")}
                 value={
                   preferences?.notify_frequency === "instant"
-                    ? "Instant"
-                    : "Zilnic"
+                    ? t("delivery.instant.title")
+                    : t("notifications.daily")
                 }
-                detail="Cum primești notificările importante"
+                detail={t("notifications.frequencyDetail")}
               />
               <SettingsMetric
-                label="Canale active"
-                value={`${activeChannelCount}/${notificationChannelOptions.length}`}
-                detail="Email, studiu și noutăți produs"
+                label={t("notifications.activeChannels")}
+                value={`${activeChannelCount}/${notificationChannelIds.length}`}
+                detail={t("notifications.channelsDetail")}
               />
               <SettingsMetric
-                label="Evenimente"
-                value={`${activeAlertCount}/${notificationAlertOptions.length}`}
-                detail="Tipuri de alerte permise"
+                label={t("notifications.events")}
+                value={`${activeAlertCount}/${notificationAlertIds.length}`}
+                detail={t("notifications.eventsDetail")}
               />
             </div>
 
-            <SettingsList title="Livrare">
-              {[
-                {
-                  id: "instant" as const,
-                  title: "Instant",
-                  description: "Primești alertele imediat ce apar.",
-                },
-                {
-                  id: "daily" as const,
-                  title: "Rezumat zilnic",
-                  description: "Un singur email cu ce contează pentru azi.",
-                },
-              ].map((option) => {
-                const isSelected = preferences?.notify_frequency === option.id;
+            <SettingsList title={t("notifications.delivery")}>
+              {deliveryIds.map((id) => {
+                const isSelected = preferences?.notify_frequency === id;
                 return (
                   <SettingsOptionButton
-                    key={option.id}
+                    key={id}
                     disabled={isLoadingPreferences || isSavingPreferences}
-                    title={option.title}
-                    description={option.description}
-                    onClick={() =>
-                      void savePreference({ notify_frequency: option.id })
-                    }
+                    title={t(`delivery.${id}.title`)}
+                    description={t(`delivery.${id}.description`)}
+                    onClick={() => void savePreference({ notify_frequency: id })}
                   >
                     <ToggleSwitch checked={isSelected} />
-                    <OptionState active={isSelected} activeLabel="activ" />
+                    <OptionState active={isSelected} activeLabel={t("state.active")} />
                   </SettingsOptionButton>
                 );
               })}
             </SettingsList>
 
             <div className="grid gap-5 lg:grid-cols-2">
-              <SettingsList title="Canale">
-                {notificationChannelOptions.map((option) => {
-                  const key = notificationChannelPreferenceKey[option.id];
+              <SettingsList title={t("notifications.channels")}>
+                {notificationChannelIds.map((id) => {
+                  const key = notificationChannelPreferenceKey[id];
                   const isActive = Boolean(preferences?.[key]);
                   return (
                     <SettingsOptionButton
-                      key={option.id}
+                      key={id}
                       disabled={isLoadingPreferences || isSavingPreferences}
-                      title={option.title}
-                      description={option.description}
+                      title={t(`channels.${id}.title`)}
+                      description={t(`channels.${id}.description`)}
                       onClick={() => void savePreference({ [key]: !isActive })}
                     >
                       <ToggleSwitch checked={isActive} />
@@ -1257,20 +1016,20 @@ export function SettingsPage() {
                 })}
               </SettingsList>
 
-              <SettingsList title="Evenimente">
-                {notificationAlertOptions.map((option) => {
-                  const key = notificationAlertPreferenceKey[option.id];
+              <SettingsList title={t("notifications.events")}>
+                {notificationAlertIds.map((id) => {
+                  const key = notificationAlertPreferenceKey[id];
                   const isActive = Boolean(preferences?.[key]);
                   return (
                     <SettingsOptionButton
-                      key={option.id}
+                      key={id}
                       disabled={isLoadingPreferences || isSavingPreferences}
-                      title={option.title}
-                      description={option.description}
+                      title={t(`alerts.${id}.title`)}
+                      description={t(`alerts.${id}.description`)}
                       onClick={() => void savePreference({ [key]: !isActive })}
                     >
                       <ToggleSwitch checked={isActive} />
-                      <OptionState active={isActive} activeLabel="activ" />
+                      <OptionState active={isActive} activeLabel={t("state.active")} />
                     </SettingsOptionButton>
                   );
                 })}
@@ -1283,43 +1042,34 @@ export function SettingsPage() {
       case "security":
         return (
           <div className="space-y-5">
-            <SettingsList title="Acțiuni securitate">
+            <SettingsList title={t("security.actions")}>
               <SettingsActionRow
-                title="Schimbă numele"
-                description="Actualizează numele afișat pe contul tău."
+                title={t("security.changeName")}
+                description={t("security.changeNameDesc")}
               >
-                <Link
-                  href="/settings/schimba-numele"
-                  className="group inline-flex"
-                >
-                  <ActionPill>Schimbă</ActionPill>
+                <Link href="/settings/schimba-numele" className="group inline-flex">
+                  <ActionPill>{t("security.change")}</ActionPill>
                 </Link>
               </SettingsActionRow>
               <SettingsActionRow
-                title="Schimbă emailul"
-                description="Adresa nouă trebuie confirmată printr-un email trimis la ea."
+                title={t("security.changeEmail")}
+                description={t("security.changeEmailDesc")}
               >
-                <Link
-                  href="/settings/schimba-email"
-                  className="group inline-flex"
-                >
-                  <ActionPill>Schimbă</ActionPill>
+                <Link href="/settings/schimba-email" className="group inline-flex">
+                  <ActionPill>{t("security.change")}</ActionPill>
                 </Link>
               </SettingsActionRow>
               <SettingsActionRow
-                title="Schimbă parola"
-                description="Actualizează parola contului și revocă celelalte sesiuni active."
+                title={t("security.changePassword")}
+                description={t("security.changePasswordDesc")}
               >
-                <Link
-                  href="/settings/schimba-parola"
-                  className="group inline-flex"
-                >
-                  <ActionPill>Schimbă</ActionPill>
+                <Link href="/settings/schimba-parola" className="group inline-flex">
+                  <ActionPill>{t("security.change")}</ActionPill>
                 </Link>
               </SettingsActionRow>
               <SettingsOptionButton
-                title="Șterge contul"
-                description="Trimite o solicitare către administratori. Contul nu este șters automat."
+                title={t("security.deleteAccount")}
+                description={t("security.deleteAccountDesc")}
                 disabled={
                   accountDeletionState === "submitting" ||
                   hasPendingAccountDeletionRequest
@@ -1329,10 +1079,10 @@ export function SettingsPage() {
               >
                 <ActionPill tone="danger">
                   {accountDeletionState === "submitting"
-                    ? "Se trimite"
+                    ? t("security.sending")
                     : hasPendingAccountDeletionRequest
-                      ? "Solicitat"
-                      : "Solicită"}
+                      ? t("security.requested")
+                      : t("security.request")}
                 </ActionPill>
               </SettingsOptionButton>
             </SettingsList>
@@ -1342,69 +1092,75 @@ export function SettingsPage() {
       case "privacy":
         return (
           <div className="space-y-5">
-            <SettingsList title="Date și confidențialitate">
+            <SettingsList title={t("privacy.section")}>
               <SettingsActionRow
-                title="Descarcă datele contului"
-                description="Include profilul, preferințele, proiectele, materialele și flashcard-urile contului tău, într-un document PDF."
+                title={t("privacy.download")}
+                description={t("privacy.downloadDesc")}
               >
                 <a
                   href={dataExportHref()}
                   className="w-fit rounded-md border border-action px-4 py-2 text-xs font-bold transition hover:bg-action hover:text-on-action"
                 >
-                  Descarcă datele
+                  {t("privacy.downloadAction")}
                 </a>
               </SettingsActionRow>
 
               <SettingsOptionButton
-                title="Șterge materialele încărcate"
-                description="Elimină fișierele sursă asociate tuturor proiectelor tale. Quiz-urile, rezumatele și flashcard-urile rămân neatinse."
+                title={t("privacy.deleteMaterials")}
+                description={t("privacy.deleteMaterialsDesc")}
                 disabled={privacyActionState !== "idle"}
                 onClick={() => setPrivacyWipeConfirm("materials")}
               >
                 <ActionPill tone="danger">
-                  {privacyActionState === "materials" ? "Se șterge" : "Șterge"}
+                  {privacyActionState === "materials"
+                    ? t("privacy.deleting")
+                    : t("privacy.delete")}
                 </ActionPill>
               </SettingsOptionButton>
 
               <SettingsOptionButton
-                title="Șterge flashcard-urile"
-                description="Elimină cardurile generate automat din toate proiectele tale."
+                title={t("privacy.deleteFlashcards")}
+                description={t("privacy.deleteFlashcardsDesc")}
                 disabled={privacyActionState !== "idle"}
                 onClick={() => setPrivacyWipeConfirm("flashcards")}
               >
                 <ActionPill tone="danger">
-                  {privacyActionState === "flashcards" ? "Se șterge" : "Șterge"}
+                  {privacyActionState === "flashcards"
+                    ? t("privacy.deleting")
+                    : t("privacy.delete")}
                 </ActionPill>
               </SettingsOptionButton>
 
               <SettingsOptionButton
-                title="Retrage consimțământul newsletter"
-                description="Oprește comunicările comerciale prin e-mail."
+                title={t("privacy.withdrawNewsletter")}
+                description={t("privacy.withdrawNewsletterDesc")}
                 disabled={privacyActionState !== "idle"}
                 onClick={() => void withdrawNewsletter()}
               >
                 <ActionPill>
-                  {privacyActionState === "newsletter" ? "Se retrage" : "Retrage"}
+                  {privacyActionState === "newsletter"
+                    ? t("privacy.withdrawing")
+                    : t("privacy.withdraw")}
                 </ActionPill>
               </SettingsOptionButton>
 
               <SettingsActionRow
-                title="Setări cookie"
-                description="Poți modifica sau retrage acordul pentru cookie-urile opționale oricând."
+                title={t("privacy.cookies")}
+                description={t("privacy.cookiesDesc")}
               >
                 <CookieSettingsButton className="w-fit rounded-md bg-action px-4 py-2 text-xs font-bold text-on-action transition hover:bg-action-hover" />
               </SettingsActionRow>
 
               <SettingsActionRow
-                title="Arhiva proiectelor"
-                description="Proiectele arhivate sunt ascunse din dashboard și pot fi restabilite dintr-o fereastră separată."
+                title={t("privacy.archive")}
+                description={t("privacy.archiveDesc")}
               >
                 <button
                   type="button"
                   onClick={() => setIsArchiveModalOpen(true)}
                   className="group inline-flex w-fit items-center gap-2 rounded-md border border-action px-4 py-2 text-xs font-bold transition hover:bg-action hover:text-on-action"
                 >
-                  Vezi arhiva
+                  {t("privacy.viewArchive")}
                   <span className="rounded-md border border-subtle bg-surface px-2 py-0.5 text-[10px] text-content transition">
                     {archivedProjects.length}
                   </span>
@@ -1420,6 +1176,8 @@ export function SettingsPage() {
                 onClose={() => setIsArchiveModalOpen(false)}
                 onRestore={(projectId) => void restoreArchivedProject(projectId)}
                 onDelete={(project) => setArchiveDeleteCandidate(project)}
+                t={t}
+                locale={locale}
               />
             ) : null}
 
@@ -1433,6 +1191,7 @@ export function SettingsPage() {
                 onConfirm={() =>
                   void deleteArchivedProject(archiveDeleteCandidate.id)
                 }
+                t={t}
               />
             ) : null}
 
@@ -1442,6 +1201,7 @@ export function SettingsPage() {
                 isProcessing={privacyActionState === privacyWipeConfirm}
                 onCancel={() => setPrivacyWipeConfirm(null)}
                 onConfirm={() => void confirmPrivacyWipe(privacyWipeConfirm)}
+                t={t}
               />
             ) : null}
           </div>
@@ -1460,20 +1220,20 @@ export function SettingsPage() {
         <div className="flex flex-col gap-5 border-b border-subtle pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              {activeTabMeta.eyebrow}
+              {t(`tabs.${activeTab}.eyebrow`)}
             </p>
             <h1 className="mt-3 max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-              {activeTabMeta.title}
+              {t(`tabs.${activeTab}.title`)}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
-              {activeTabMeta.description}
+              {t(`tabs.${activeTab}.description`)}
             </p>
           </div>
 
           <div className="inline-flex w-fit items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-xs text-muted">
-            <span>Secțiune:</span>
+            <span>{t("header.section")}</span>
             <span className="font-black text-content">
-              {activeSectionLabel ?? activeTabMeta.label}
+              {activeSectionLabel ?? t(`tabs.${activeTab}.label`)}
             </span>
           </div>
         </div>
@@ -1485,6 +1245,7 @@ export function SettingsPage() {
             isSubmitting={accountDeletionState === "submitting"}
             onCancel={() => setIsAccountDeletionModalOpen(false)}
             onConfirm={() => void submitAccountDeletionRequest()}
+            t={t}
           />
         ) : null}
       </section>
@@ -1496,10 +1257,12 @@ function AccountDeletionRequestModal({
   isSubmitting,
   onCancel,
   onConfirm,
+  t,
 }: {
   isSubmitting: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  t: SettingsTranslator;
 }) {
   return (
     <div
@@ -1510,21 +1273,19 @@ function AccountDeletionRequestModal({
     >
       <div className="w-full max-w-xl rounded-xl border border-danger-border bg-surface p-6 shadow-2xl shadow-black/20">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-danger">
-          Solicitare ștergere
+          {t("deletionModal.eyebrow")}
         </p>
         <h2
           id="account-deletion-request-title"
           className="mt-3 font-serif text-3xl font-semibold leading-tight text-content"
         >
-          Trimiți solicitarea de ștergere a contului?
+          {t("deletionModal.title")}
         </h2>
         <p className="mt-3 text-sm leading-6 text-muted">
-          Contul nu va fi șters automat. Un administrator va vedea solicitarea
-          în zona de admin și va procesa acțiunea manual.
+          {t("deletionModal.description")}
         </p>
         <div className="mt-5 rounded-xl border border-warning-border bg-warning-soft px-4 py-3 text-sm font-semibold leading-6 text-warning">
-          După trimitere, nu vei putea crea o altă solicitare cât timp aceasta
-          este în așteptare.
+          {t("deletionModal.warning")}
         </div>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
@@ -1533,7 +1294,7 @@ function AccountDeletionRequestModal({
             disabled={isSubmitting}
             className="rounded-md border border-subtle px-5 py-3 text-sm font-bold transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
           >
-            Renunță
+            {t("modals.cancel")}
           </button>
           <button
             type="button"
@@ -1541,7 +1302,7 @@ function AccountDeletionRequestModal({
             disabled={isSubmitting}
             className="rounded-md bg-danger px-5 py-3 text-sm font-bold text-on-action transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
           >
-            {isSubmitting ? "Se trimite..." : "Trimite solicitarea"}
+            {isSubmitting ? t("deletionModal.submitting") : t("deletionModal.submit")}
           </button>
         </div>
       </div>
@@ -1556,6 +1317,8 @@ function ArchivedProjectsModal({
   onClose,
   onRestore,
   onDelete,
+  t,
+  locale,
 }: {
   projects: StudyProject[];
   isLoading: boolean;
@@ -1563,6 +1326,8 @@ function ArchivedProjectsModal({
   onClose: () => void;
   onRestore: (projectId: string) => void;
   onDelete: (project: StudyProject) => void;
+  t: SettingsTranslator;
+  locale: string;
 }) {
   return (
     <div
@@ -1575,24 +1340,23 @@ function ArchivedProjectsModal({
         <div className="flex items-start justify-between gap-4 border-b border-subtle p-6">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-warning">
-              Arhivă
+              {t("archiveModal.eyebrow")}
             </p>
             <h2
               id="archive-projects-title"
               className="mt-2 font-serif text-3xl font-semibold leading-tight"
             >
-              Proiecte arhivate
+              {t("archiveModal.title")}
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted">
-              Restabilește proiectele pe care vrei să le readuci în dashboard
-              sau șterge-le definitiv.
+              {t("archiveModal.description")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-subtle transition hover:bg-surface-hover"
-            aria-label="Închide arhiva"
+            aria-label={t("archiveModal.close")}
           >
             <svg
               aria-hidden="true"
@@ -1610,7 +1374,7 @@ function ArchivedProjectsModal({
         <div className="min-h-0 overflow-y-auto px-6">
           {isLoading ? (
             <div className="py-8 text-sm font-semibold text-muted">
-              Se încarcă arhiva...
+              {t("archiveModal.loading")}
             </div>
           ) : projects.length ? (
             <div className="divide-y divide-subtle">
@@ -1626,8 +1390,15 @@ function ArchivedProjectsModal({
                         {project.name}
                       </span>
                       <span className="mt-1 block text-xs leading-5 text-muted">
-                        {project.subject_name} · {project.file_count} materiale ·
-                        arhivat pe {formatArchiveDate(project.archived_at)}
+                        {t("archiveModal.meta", {
+                          subject: project.subject_name,
+                          count: project.file_count,
+                          date: formatDate(
+                            locale,
+                            project.archived_at,
+                            t("dates.unknownArchive"),
+                          ),
+                        })}
                       </span>
                     </span>
                     <span className="flex flex-wrap gap-2 sm:justify-end">
@@ -1637,7 +1408,7 @@ function ArchivedProjectsModal({
                         onClick={() => onRestore(project.id)}
                         className="rounded-md border border-action px-4 py-2 text-xs font-bold transition hover:bg-action hover:text-on-action disabled:cursor-wait disabled:opacity-60"
                       >
-                        Restabilește
+                        {t("archiveModal.restore")}
                       </button>
                       <button
                         type="button"
@@ -1645,7 +1416,7 @@ function ArchivedProjectsModal({
                         onClick={() => onDelete(project)}
                         className="rounded-md border border-danger-border px-4 py-2 text-xs font-bold text-danger transition hover:bg-danger-soft disabled:cursor-wait disabled:opacity-60"
                       >
-                        Șterge
+                        {t("privacy.delete")}
                       </button>
                     </span>
                   </div>
@@ -1654,7 +1425,7 @@ function ArchivedProjectsModal({
             </div>
           ) : (
             <div className="py-8 text-sm font-semibold text-muted">
-              Nu ai proiecte arhivate.
+              {t("archiveModal.empty")}
             </div>
           )}
         </div>
@@ -1668,11 +1439,13 @@ function ArchiveDeleteModal({
   isDeleting,
   onCancel,
   onConfirm,
+  t,
 }: {
   project: StudyProject;
   isDeleting: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  t: SettingsTranslator;
 }) {
   return (
     <div
@@ -1683,17 +1456,16 @@ function ArchiveDeleteModal({
     >
       <div className="w-full max-w-lg rounded-xl border border-subtle bg-surface p-6 shadow-2xl shadow-black/20">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-danger">
-          Ștergere definitivă
+          {t("modals.permanentDeletion")}
         </p>
         <h2
           id="archive-delete-title"
           className="mt-3 font-serif text-3xl font-semibold leading-tight"
         >
-          Ștergi proiectul arhivat „{project.name}”?
+          {t("archiveDelete.title", { name: project.name })}
         </h2>
         <p className="mt-3 text-sm leading-6 text-muted">
-          Această acțiune elimină proiectul și fișierele lui. Dacă vrei să-l
-          folosești din nou, alege Restabilește.
+          {t("archiveDelete.description")}
         </p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
@@ -1702,7 +1474,7 @@ function ArchiveDeleteModal({
             disabled={isDeleting}
             className="rounded-md border border-subtle px-5 py-3 text-sm font-bold transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
           >
-            Renunță
+            {t("modals.cancel")}
           </button>
           <button
             type="button"
@@ -1710,7 +1482,7 @@ function ArchiveDeleteModal({
             disabled={isDeleting}
             className="rounded-md bg-danger px-5 py-3 text-sm font-bold text-on-action transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
           >
-            {isDeleting ? "Se șterge..." : "Șterge definitiv"}
+            {isDeleting ? t("modals.deleting") : t("archiveDelete.confirm")}
           </button>
         </div>
       </div>
@@ -1723,27 +1495,14 @@ function PrivacyWipeConfirmModal({
   isProcessing,
   onCancel,
   onConfirm,
+  t,
 }: {
   target: "materials" | "flashcards";
   isProcessing: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  t: SettingsTranslator;
 }) {
-  const copy =
-    target === "materials"
-      ? {
-          title: "Ștergi toate materialele încărcate?",
-          description:
-            "Fișierele sursă din toate proiectele tale vor fi eliminate definitiv. Quiz-urile, rezumatele și flashcard-urile deja generate rămân neatinse.",
-          confirmLabel: "Șterge materialele",
-        }
-      : {
-          title: "Ștergi toate flashcard-urile?",
-          description:
-            "Cardurile generate din toate proiectele tale vor fi eliminate definitiv.",
-          confirmLabel: "Șterge flashcard-urile",
-        };
-
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-content/40 px-4 py-6 backdrop-blur-sm"
@@ -1753,17 +1512,19 @@ function PrivacyWipeConfirmModal({
     >
       <div className="w-full max-w-lg rounded-xl border border-subtle bg-surface p-6 shadow-2xl shadow-black/20">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-danger">
-          Ștergere definitivă
+          {t("modals.permanentDeletion")}
         </p>
         <h2
           id="privacy-wipe-title"
           className="mt-3 font-serif text-3xl font-semibold leading-tight"
         >
-          {copy.title}
+          {t(`wipe.${target}.title`)}
         </h2>
-        <p className="mt-3 text-sm leading-6 text-muted">{copy.description}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          {t(`wipe.${target}.description`)}
+        </p>
         <div className="mt-5 rounded-xl border border-warning-border bg-warning-soft px-4 py-3 text-sm font-semibold leading-6 text-warning">
-          Această acțiune este permanentă și nu poate fi anulată.
+          {t("wipe.warning")}
         </div>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
@@ -1772,7 +1533,7 @@ function PrivacyWipeConfirmModal({
             disabled={isProcessing}
             className="rounded-md border border-subtle px-5 py-3 text-sm font-bold transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
           >
-            Renunță
+            {t("modals.cancel")}
           </button>
           <button
             type="button"
@@ -1780,7 +1541,7 @@ function PrivacyWipeConfirmModal({
             disabled={isProcessing}
             className="rounded-md bg-danger px-5 py-3 text-sm font-bold text-on-action transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
           >
-            {isProcessing ? "Se șterge..." : copy.confirmLabel}
+            {isProcessing ? t("modals.deleting") : t(`wipe.${target}.confirm`)}
           </button>
         </div>
       </div>
@@ -1928,14 +1689,15 @@ function SettingsActionRow({
 
 function OptionState({
   active,
-  activeLabel = "pornit",
+  activeLabel,
 }: {
   active: boolean;
   activeLabel?: string;
 }) {
+  const t = useTranslations("settings.state");
   return (
     <span className="text-xs font-black text-muted group-hover:text-content">
-      {active ? activeLabel : "oprit"}
+      {active ? (activeLabel ?? t("on")) : t("off")}
     </span>
   );
 }
@@ -1982,58 +1744,40 @@ function ActionPill({
 
 function ThemePreview({
   colors,
+  t,
 }: {
-  colors: {
-    app: string;
-    surface: string;
-    border: string;
-    content: string;
-    muted: string;
-    action: string;
-    actionSoft: string;
-    onAction: string;
-    hover: string;
-    successBg: string;
-    successText: string;
-    successBorder: string;
-    warningBg: string;
-    warningText: string;
-    warningBorder: string;
-    dangerBg: string;
-    dangerText: string;
-    dangerBorder: string;
-    infoBg: string;
-    infoText: string;
-    infoBorder: string;
-  };
+  colors: PreviewColors;
+  t: SettingsTranslator;
 }) {
+  const rows = [
+    [t("colors.previewStatus"), t("colors.previewStatusValue"), "success"],
+    [t("colors.previewChat"), t("colors.previewChatValue"), "info"],
+    [t("colors.previewWarn"), t("colors.previewWarnValue"), "warning"],
+  ] as const;
+
   return (
     <section
       className="rounded-xl border border-subtle bg-surface p-5"
       style={getPreviewStyle(colors)}
     >
-      <SectionLabel>Preview paletă</SectionLabel>
+      <SectionLabel>{t("colors.preview")}</SectionLabel>
       <div className="mt-4 rounded-xl border border-[var(--settings-preview-border)] bg-[var(--settings-preview-app)] p-5 text-[var(--settings-preview-content)]">
         <div className="flex items-center justify-between gap-4 border-b border-[var(--settings-preview-border)] pb-5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--settings-preview-muted)]">
-              Curs activ
+              {t("colors.previewCourse")}
             </p>
             <p className="mt-1 font-serif text-3xl font-semibold leading-tight">
-              Biologie celulară
+              {t("colors.previewCourseName")}
             </p>
           </div>
           <span className="rounded-md bg-[var(--settings-preview-action)] px-4 py-2 text-xs font-black text-[var(--settings-preview-on-action)]">
-            Continuă
+            {t("colors.previewContinue")}
           </span>
         </div>
 
         <div className="divide-y divide-[var(--settings-preview-border)]">
-          {[
-            ["Status", "Gata de studiu", "success"],
-            ["Chat AI", "Revizuiește întâi membrana celulară.", "info"],
-            ["Atenție", "5 concepte intră în zona de uitare în 48h.", "warning"],
-          ].map(([label, value, tone]) => (
+          {rows.map(([label, value, tone]) => (
             <div
               key={label}
               className="grid gap-3 py-4 text-sm sm:grid-cols-[0.3fr_1fr] sm:items-center"
@@ -2072,12 +1816,14 @@ function ColorControl({
   value,
   isCustom,
   onChange,
+  t,
 }: {
   label: string;
   description: string;
   value: string;
   isCustom: boolean;
   onChange: (value: string) => void;
+  t: SettingsTranslator;
 }) {
   return (
     <label className="group -mx-3 grid w-[calc(100%+1.5rem)] cursor-pointer gap-3 rounded-xl px-3 py-4 transition hover:bg-surface-hover sm:grid-cols-[auto_1fr_auto] sm:items-center">
@@ -2090,7 +1836,7 @@ function ColorControl({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className="h-12 w-12 -translate-x-1 -translate-y-1 cursor-pointer opacity-0"
-          aria-label={`Schimbă culoarea pentru ${label}`}
+          aria-label={t("colors.changeColor", { label })}
         />
       </span>
       <span className="min-w-0">
@@ -2098,7 +1844,7 @@ function ColorControl({
           {label}
           {isCustom ? (
             <span className="rounded-md bg-warning-soft px-2 py-0.5 text-[10px] text-warning">
-              custom
+              {t("colors.custom")}
             </span>
           ) : null}
         </span>
@@ -2108,7 +1854,7 @@ function ColorControl({
       </span>
       <span className="flex items-center gap-3 sm:justify-end">
         <span className="rounded-md border border-subtle bg-surface px-3 py-1.5 text-xs font-black text-content transition group-hover:border-content">
-          Modifică
+          {t("colors.modify")}
         </span>
       </span>
     </label>

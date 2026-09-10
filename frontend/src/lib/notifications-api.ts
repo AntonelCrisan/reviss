@@ -1,3 +1,4 @@
+import { genericErrorFallback } from "@/lib/client-locale";
 export type NotificationType =
   | "project_ready"
   | "weak_concepts"
@@ -46,7 +47,7 @@ function extractErrorMessage(payload: ApiErrorPayload): string {
     if (firstMessage) return firstMessage;
   }
 
-  return "A apărut o eroare. Te rugăm să încerci din nou.";
+  return genericErrorFallback();
 }
 
 async function notificationsRequest<T>(

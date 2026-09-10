@@ -1,0 +1,868 @@
+{
+  "email.shell.link_fallback": {
+    "ro": "Dacă butonul nu se deschide, copiază acest link în browser:",
+    "en": "If the button does not open, copy this link into your browser:",
+    "fr": "Si le bouton ne s'ouvre pas, copiez ce lien dans votre navigateur :"
+  },
+  "email.shell.footer_default": {
+    "ro": "Acest email a fost trimis automat de {app_name} către adresa ta de cont.",
+    "en": "This email was sent automatically by {app_name} to your account address.",
+    "fr": "Cet email a été envoyé automatiquement par {app_name} à l'adresse de votre compte."
+  },
+
+  "email.verification.subject": {
+    "ro": "Confirmă contul Reviss",
+    "en": "Confirm your Reviss account",
+    "fr": "Confirmez votre compte Reviss"
+  },
+  "email.verification.text": {
+    "ro": "Bine ai venit în {app_name}.\n\nContul tău se creează abia după ce confirmi că această adresă de email îți aparține. Deschide linkul de mai jos și intri direct în cont.\n\nConfirmă adresa de email: {url}\n\nLinkul poate fi folosit o singură dată și expiră automat.\nDacă nu ai cerut tu contul, ignoră acest email: fără confirmare nu se creează nimic.",
+    "en": "Welcome to {app_name}.\n\nYour account is created only once you confirm that this email address belongs to you. Open the link below and you will be signed in straight away.\n\nConfirm your email address: {url}\n\nThe link can be used once and expires automatically.\nIf you did not request this account, ignore this email: nothing is created without confirmation.",
+    "fr": "Bienvenue sur {app_name}.\n\nVotre compte n'est créé qu'une fois que vous confirmez que cette adresse email vous appartient. Ouvrez le lien ci-dessous et vous serez connecté directement.\n\nConfirmez votre adresse email : {url}\n\nLe lien ne peut être utilisé qu'une seule fois et expire automatiquement.\nSi vous n'avez pas demandé ce compte, ignorez cet email : rien n'est créé sans confirmation."
+  },
+  "email.verification.eyebrow": {
+    "ro": "Confirmare cont",
+    "en": "Account confirmation",
+    "fr": "Confirmation du compte"
+  },
+  "email.verification.title": {
+    "ro": "Confirmă adresa de email",
+    "en": "Confirm your email address",
+    "fr": "Confirmez votre adresse email"
+  },
+  "email.verification.intro": {
+    "ro": "Contul tău se creează abia după ce confirmăm că această adresă de email îți aparține. Apasă butonul de mai jos și intri direct în spațiul tău de studiu, unde cursurile devin rezumate, flashcard-uri și quiz-uri.",
+    "en": "Your account is created only once we confirm that this email address belongs to you. Press the button below and you will land straight in your study space, where courses become summaries, flashcards and quizzes.",
+    "fr": "Votre compte n'est créé qu'une fois que nous confirmons que cette adresse email vous appartient. Appuyez sur le bouton ci-dessous et vous arriverez directement dans votre espace d'étude, où les cours deviennent résumés, flashcards et quiz."
+  },
+  "email.verification.preheader": {
+    "ro": "Un singur clic și contul tău este activ.",
+    "en": "One click and your account is active.",
+    "fr": "Un seul clic et votre compte est actif."
+  },
+  "email.verification.cta": {
+    "ro": "Confirmă adresa de email",
+    "en": "Confirm email address",
+    "fr": "Confirmer l'adresse email"
+  },
+  "email.verification.details_title": {
+    "ro": "Ce trebuie să știi",
+    "en": "Good to know",
+    "fr": "À savoir"
+  },
+  "email.verification.detail_validity": {
+    "ro": "Valabilitate: linkul poate fi folosit o singură dată și expiră automat.",
+    "en": "Validity: the link can be used once and expires automatically.",
+    "fr": "Validité : le lien ne peut être utilisé qu'une fois et expire automatiquement."
+  },
+  "email.verification.detail_after": {
+    "ro": "După confirmare: intri direct în cont, fără să mai introduci parola.",
+    "en": "After confirmation: you are signed in directly, without entering your password.",
+    "fr": "Après confirmation : vous êtes connecté directement, sans saisir votre mot de passe."
+  },
+  "email.verification.detail_not_you": {
+    "ro": "Nu ai cerut tu contul: ignoră acest email, fără confirmare nu se creează nimic.",
+    "en": "Did not request this account: ignore this email, nothing is created without confirmation.",
+    "fr": "Vous n'avez pas demandé ce compte : ignorez cet email, rien n'est créé sans confirmation."
+  },
+  "email.verification.footer": {
+    "ro": "Acest email a fost trimis automat de {app_name} pentru că adresa a fost folosită la înregistrare.",
+    "en": "This email was sent automatically by {app_name} because the address was used to register.",
+    "fr": "Cet email a été envoyé automatiquement par {app_name} car l'adresse a été utilisée lors de l'inscription."
+  },
+
+  "email.email_change.subject": {
+    "ro": "Confirmă noua adresă de email Reviss",
+    "en": "Confirm your new Reviss email address",
+    "fr": "Confirmez votre nouvelle adresse email Reviss"
+  },
+  "email.email_change.text": {
+    "ro": "Ai cerut ca adresa de email a contului {app_name} să devină {new_email}.\n\nConfirmă noua adresă: {url}\n\nPână la confirmare contul rămâne pe adresa veche, cu care te poți autentifica normal.\nLinkul poate fi folosit o singură dată și expiră automat.\nDacă nu ai cerut tu schimbarea, ignoră acest email.",
+    "en": "You asked for the email address of your {app_name} account to become {new_email}.\n\nConfirm the new address: {url}\n\nUntil you confirm, the account stays on the old address, which you can keep using to sign in.\nThe link can be used once and expires automatically.\nIf you did not request this change, ignore this email.",
+    "fr": "Vous avez demandé que l'adresse email de votre compte {app_name} devienne {new_email}.\n\nConfirmez la nouvelle adresse : {url}\n\nJusqu'à la confirmation, le compte reste sur l'ancienne adresse, avec laquelle vous pouvez vous connecter normalement.\nLe lien ne peut être utilisé qu'une fois et expire automatiquement.\nSi vous n'avez pas demandé ce changement, ignorez cet email."
+  },
+  "email.email_change.eyebrow": {
+    "ro": "Schimbare email",
+    "en": "Email change",
+    "fr": "Changement d'email"
+  },
+  "email.email_change.title": {
+    "ro": "Confirmă noua adresă de email",
+    "en": "Confirm your new email address",
+    "fr": "Confirmez votre nouvelle adresse email"
+  },
+  "email.email_change.intro": {
+    "ro": "Am primit o cerere de schimbare a adresei contului tău în {new_email}. Apasă butonul de mai jos ca să finalizăm schimbarea.",
+    "en": "We received a request to change your account address to {new_email}. Press the button below to complete the change.",
+    "fr": "Nous avons reçu une demande de changement de l'adresse de votre compte vers {new_email}. Appuyez sur le bouton ci-dessous pour finaliser le changement."
+  },
+  "email.email_change.preheader": {
+    "ro": "Confirmă mutarea contului pe {new_email}.",
+    "en": "Confirm moving your account to {new_email}.",
+    "fr": "Confirmez le transfert de votre compte vers {new_email}."
+  },
+  "email.email_change.cta": {
+    "ro": "Confirmă noua adresă",
+    "en": "Confirm new address",
+    "fr": "Confirmer la nouvelle adresse"
+  },
+  "email.email_change.details_title": {
+    "ro": "Ce se întâmplă mai departe",
+    "en": "What happens next",
+    "fr": "Ce qui se passe ensuite"
+  },
+  "email.email_change.detail_new": {
+    "ro": "Adresă nouă: {new_email}",
+    "en": "New address: {new_email}",
+    "fr": "Nouvelle adresse : {new_email}"
+  },
+  "email.email_change.detail_until": {
+    "ro": "Până la confirmare: contul rămâne pe adresa veche, cu care te poți autentifica normal.",
+    "en": "Until confirmation: the account stays on the old address, which you can keep using to sign in.",
+    "fr": "Jusqu'à la confirmation : le compte reste sur l'ancienne adresse, avec laquelle vous pouvez vous connecter normalement."
+  },
+  "email.email_change.detail_after": {
+    "ro": "După confirmare: te autentifici doar cu adresa nouă și acolo primești notificările.",
+    "en": "After confirmation: you sign in only with the new address and receive notifications there.",
+    "fr": "Après confirmation : vous vous connectez uniquement avec la nouvelle adresse et y recevez les notifications."
+  },
+  "email.email_change.detail_validity": {
+    "ro": "Valabilitate: linkul poate fi folosit o singură dată și expiră automat.",
+    "en": "Validity: the link can be used once and expires automatically.",
+    "fr": "Validité : le lien ne peut être utilisé qu'une fois et expire automatiquement."
+  },
+  "email.email_change.note_title": {
+    "ro": "Nu ai cerut tu schimbarea?",
+    "en": "Did not request this change?",
+    "fr": "Vous n'avez pas demandé ce changement ?"
+  },
+  "email.email_change.note": {
+    "ro": "Ignoră acest email și nu deschide linkul. Dacă bănuiești că altcineva are acces la contul tău, schimbă-ți parola.",
+    "en": "Ignore this email and do not open the link. If you suspect someone else has access to your account, change your password.",
+    "fr": "Ignorez cet email et n'ouvrez pas le lien. Si vous pensez que quelqu'un d'autre a accès à votre compte, changez votre mot de passe."
+  },
+
+  "email.password_reset.subject": {
+    "ro": "Resetare parolă Reviss",
+    "en": "Reset your Reviss password",
+    "fr": "Réinitialisation du mot de passe Reviss"
+  },
+  "email.password_reset.text": {
+    "ro": "Ai cerut resetarea parolei pentru contul tău {app_name}.\n\nSetează o parolă nouă: {url}\n\nParola actuală rămâne valabilă până când o schimbi din acest link.\nDupă schimbare, sesiunile deschise pe alte dispozitive se închid.\nLinkul poate fi folosit o singură dată și expiră automat.\nDacă nu ai cerut tu resetarea, ignoră acest email.",
+    "en": "You requested a password reset for your {app_name} account.\n\nSet a new password: {url}\n\nYour current password stays valid until you change it through this link.\nAfter the change, sessions open on other devices are signed out.\nThe link can be used once and expires automatically.\nIf you did not request the reset, ignore this email.",
+    "fr": "Vous avez demandé la réinitialisation du mot de passe de votre compte {app_name}.\n\nDéfinissez un nouveau mot de passe : {url}\n\nLe mot de passe actuel reste valable jusqu'à ce que vous le changiez via ce lien.\nAprès le changement, les sessions ouvertes sur d'autres appareils sont fermées.\nLe lien ne peut être utilisé qu'une fois et expire automatiquement.\nSi vous n'avez pas demandé cette réinitialisation, ignorez cet email."
+  },
+  "email.password_reset.eyebrow": {
+    "ro": "Securitate cont",
+    "en": "Account security",
+    "fr": "Sécurité du compte"
+  },
+  "email.password_reset.title": {
+    "ro": "Setează o parolă nouă",
+    "en": "Set a new password",
+    "fr": "Définissez un nouveau mot de passe"
+  },
+  "email.password_reset.intro": {
+    "ro": "Am primit o cerere de resetare a parolei pentru contul tău. Apasă butonul de mai jos ca să îți alegi o parolă nouă.",
+    "en": "We received a password reset request for your account. Press the button below to choose a new password.",
+    "fr": "Nous avons reçu une demande de réinitialisation du mot de passe de votre compte. Appuyez sur le bouton ci-dessous pour choisir un nouveau mot de passe."
+  },
+  "email.password_reset.preheader": {
+    "ro": "Linkul pentru resetarea parolei tale.",
+    "en": "Your password reset link.",
+    "fr": "Le lien de réinitialisation de votre mot de passe."
+  },
+  "email.password_reset.cta": {
+    "ro": "Setează parola nouă",
+    "en": "Set new password",
+    "fr": "Définir le nouveau mot de passe"
+  },
+  "email.password_reset.details_title": {
+    "ro": "Ce trebuie să știi",
+    "en": "Good to know",
+    "fr": "À savoir"
+  },
+  "email.password_reset.detail_until": {
+    "ro": "Până schimbi parola: parola actuală rămâne valabilă.",
+    "en": "Until you change it: your current password stays valid.",
+    "fr": "Jusqu'au changement : le mot de passe actuel reste valable."
+  },
+  "email.password_reset.detail_after": {
+    "ro": "După schimbare: sesiunile deschise pe alte dispozitive se închid.",
+    "en": "After the change: sessions open on other devices are signed out.",
+    "fr": "Après le changement : les sessions ouvertes sur d'autres appareils sont fermées."
+  },
+  "email.password_reset.detail_validity": {
+    "ro": "Valabilitate: linkul poate fi folosit o singură dată și expiră automat.",
+    "en": "Validity: the link can be used once and expires automatically.",
+    "fr": "Validité : le lien ne peut être utilisé qu'une fois et expire automatiquement."
+  },
+  "email.password_reset.note_title": {
+    "ro": "Nu ai cerut tu resetarea?",
+    "en": "Did not request the reset?",
+    "fr": "Vous n'avez pas demandé cette réinitialisation ?"
+  },
+  "email.password_reset.note": {
+    "ro": "Ignoră acest email și nu deschide linkul. Nimeni nu îți poate schimba parola fără linkul primit în acest inbox.",
+    "en": "Ignore this email and do not open the link. Nobody can change your password without the link delivered to this inbox.",
+    "fr": "Ignorez cet email et n'ouvrez pas le lien. Personne ne peut changer votre mot de passe sans le lien reçu dans cette boîte."
+  },
+  "email.password_reset.footer": {
+    "ro": "Acest email a fost trimis automat de {app_name} pentru cererea de resetare făcută pe această adresă.",
+    "en": "This email was sent automatically by {app_name} for the reset request made for this address.",
+    "fr": "Cet email a été envoyé automatiquement par {app_name} suite à la demande de réinitialisation faite pour cette adresse."
+  },
+
+  "email.digest.subject_many": {
+    "ro": "Rezumatul tău zilnic Reviss ({count} noutăți)",
+    "en": "Your daily Reviss digest ({count} updates)",
+    "fr": "Votre récapitulatif quotidien Reviss ({count} nouveautés)"
+  },
+  "email.digest.title_many": {
+    "ro": "Ai {count} noutăți în contul tău",
+    "en": "You have {count} updates in your account",
+    "fr": "Vous avez {count} nouveautés dans votre compte"
+  },
+  "email.digest.intro_many": {
+    "ro": "De la ultima ta vizită s-au strâns câteva actualizări. Le găsești pe toate mai jos, iar butonul te duce direct în cont.",
+    "en": "A few updates have piled up since your last visit. You will find them all below, and the button takes you straight to your account.",
+    "fr": "Quelques mises à jour se sont accumulées depuis votre dernière visite. Vous les trouverez toutes ci-dessous, et le bouton vous mène directement à votre compte."
+  },
+  "email.digest.details_title": {
+    "ro": "Ce s-a întâmplat",
+    "en": "What happened",
+    "fr": "Ce qui s'est passé"
+  },
+  "email.digest.preheader_many": {
+    "ro": "{count} actualizări noi în contul tău.",
+    "en": "{count} new updates in your account.",
+    "fr": "{count} nouvelles mises à jour dans votre compte."
+  },
+  "email.digest.open_app": {
+    "ro": "Deschide {app_name}: {url}",
+    "en": "Open {app_name}: {url}",
+    "fr": "Ouvrir {app_name} : {url}"
+  },
+  "email.digest.open_in_app": {
+    "ro": "Deschide în {app_name}: {url}",
+    "en": "Open in {app_name}: {url}",
+    "fr": "Ouvrir dans {app_name} : {url}"
+  },
+  "email.digest.eyebrow_many": {
+    "ro": "Rezumat notificări",
+    "en": "Notification digest",
+    "fr": "Récapitulatif des notifications"
+  },
+  "email.digest.eyebrow_single": {
+    "ro": "Notificare",
+    "en": "Notification",
+    "fr": "Notification"
+  },
+  "email.digest.cta_project": {
+    "ro": "Deschide proiectul",
+    "en": "Open the project",
+    "fr": "Ouvrir le projet"
+  },
+  "email.digest.cta_app": {
+    "ro": "Deschide {app_name}",
+    "en": "Open {app_name}",
+    "fr": "Ouvrir {app_name}"
+  },
+  "email.digest.note_title": {
+    "ro": "Primești prea multe email-uri?",
+    "en": "Getting too many emails?",
+    "fr": "Vous recevez trop d'emails ?"
+  },
+  "email.digest.note": {
+    "ro": "Poți alege exact ce notificări îți trimitem pe email din Setări → Notificări. În aplicație rămân vizibile toate.",
+    "en": "You can choose exactly which notifications we email you from Settings → Notifications. All of them stay visible in the app.",
+    "fr": "Vous pouvez choisir précisément les notifications que nous envoyons par email dans Paramètres → Notifications. Elles restent toutes visibles dans l'application."
+  },
+  "email.digest.footer": {
+    "ro": "Acest email a fost trimis automat de {app_name} pentru notificările pe care le-ai activat.",
+    "en": "This email was sent automatically by {app_name} for the notifications you enabled.",
+    "fr": "Cet email a été envoyé automatiquement par {app_name} pour les notifications que vous avez activées."
+  },
+
+  "email.contact_confirmation.subject": {
+    "ro": "Am primit mesajul tău Reviss ({reference})",
+    "en": "We received your Reviss message ({reference})",
+    "fr": "Nous avons reçu votre message Reviss ({reference})"
+  },
+  "email.contact_confirmation.text": {
+    "ro": "Am primit mesajul tău către {app_name} și l-am înregistrat.\n\nReferință: {reference}\nCategorie: {category}\nSubiect: {subject}\n\nÎți răspundem pe adresa completată în formular. Dacă revii cu detalii, menționează numărul de referință.\n\nDeschide {app_name}: {url}",
+    "en": "We received your message to {app_name} and recorded it.\n\nReference: {reference}\nCategory: {category}\nSubject: {subject}\n\nWe will reply to the address you filled in. If you follow up with details, mention the reference number.\n\nOpen {app_name}: {url}",
+    "fr": "Nous avons reçu votre message à {app_name} et l'avons enregistré.\n\nRéférence : {reference}\nCatégorie : {category}\nObjet : {subject}\n\nNous vous répondrons à l'adresse indiquée dans le formulaire. Si vous revenez avec des précisions, mentionnez le numéro de référence.\n\nOuvrir {app_name} : {url}"
+  },
+  "email.contact_confirmation.eyebrow": {
+    "ro": "Mesaj primit",
+    "en": "Message received",
+    "fr": "Message reçu"
+  },
+  "email.contact_confirmation.title": {
+    "ro": "Am primit mesajul tău",
+    "en": "We received your message",
+    "fr": "Nous avons reçu votre message"
+  },
+  "email.contact_confirmation.intro": {
+    "ro": "Mulțumim că ne-ai scris. Solicitarea a fost înregistrată cu datele de mai jos și a ajuns la echipa de suport.",
+    "en": "Thank you for writing to us. Your request was recorded with the details below and has reached the support team.",
+    "fr": "Merci de nous avoir écrit. Votre demande a été enregistrée avec les informations ci-dessous et transmise à l'équipe de support."
+  },
+  "email.contact_confirmation.preheader": {
+    "ro": "Solicitarea {reference} a fost înregistrată.",
+    "en": "Request {reference} has been recorded.",
+    "fr": "La demande {reference} a été enregistrée."
+  },
+  "email.contact_confirmation.details_title": {
+    "ro": "Datele solicitării tale",
+    "en": "Your request details",
+    "fr": "Les détails de votre demande"
+  },
+  "email.contact_confirmation.label_reference": {
+    "ro": "Referință",
+    "en": "Reference",
+    "fr": "Référence"
+  },
+  "email.contact_confirmation.label_category": {
+    "ro": "Categorie",
+    "en": "Category",
+    "fr": "Catégorie"
+  },
+  "email.contact_confirmation.label_subject": {
+    "ro": "Subiect",
+    "en": "Subject",
+    "fr": "Objet"
+  },
+  "email.contact_confirmation.note_title": {
+    "ro": "Ce urmează",
+    "en": "What happens next",
+    "fr": "La suite"
+  },
+  "email.contact_confirmation.note": {
+    "ro": "Îți răspundem pe adresa completată în formular. Dacă revii cu detalii, menționează numărul de referință ca să legăm mesajele.",
+    "en": "We will reply to the address you filled in. If you follow up with details, mention the reference number so we can link the messages.",
+    "fr": "Nous vous répondrons à l'adresse indiquée dans le formulaire. Si vous revenez avec des précisions, mentionnez le numéro de référence pour relier les messages."
+  },
+  "email.contact_confirmation.footer": {
+    "ro": "Acest email confirmă primirea mesajului trimis prin formularul de contact {app_name}.",
+    "en": "This email confirms receipt of the message sent through the {app_name} contact form.",
+    "fr": "Cet email confirme la réception du message envoyé via le formulaire de contact {app_name}."
+  },
+
+  "email.content_report_confirmation.subject": {
+    "ro": "Am primit raportarea ta Reviss ({reference})",
+    "en": "We received your Reviss report ({reference})",
+    "fr": "Nous avons reçu votre signalement Reviss ({reference})"
+  },
+  "email.content_report_confirmation.text": {
+    "ro": "Am primit raportarea ta de conținut și am înregistrat-o.\n\nNumăr de înregistrare: {reference}\nTip raportare: {report_type}\nConținut raportat: {content_reference}\nDocumente atașate: {attachments}\n\nAnalizăm sesizarea și îți scriem pe adresa din formular dacă avem nevoie de clarificări.\n\nDeschide {app_name}: {url}",
+    "en": "We received your content report and recorded it.\n\nRegistration number: {reference}\nReport type: {report_type}\nReported content: {content_reference}\nAttached documents: {attachments}\n\nWe are reviewing the report and will write to the address from the form if we need clarifications.\n\nOpen {app_name}: {url}",
+    "fr": "Nous avons reçu votre signalement de contenu et l'avons enregistré.\n\nNuméro d'enregistrement : {reference}\nType de signalement : {report_type}\nContenu signalé : {content_reference}\nDocuments joints : {attachments}\n\nNous analysons le signalement et vous écrirons à l'adresse du formulaire si nous avons besoin de précisions.\n\nOuvrir {app_name} : {url}"
+  },
+  "email.content_report_confirmation.eyebrow": {
+    "ro": "Raportare primită",
+    "en": "Report received",
+    "fr": "Signalement reçu"
+  },
+  "email.content_report_confirmation.title": {
+    "ro": "Am înregistrat sesizarea ta",
+    "en": "We recorded your report",
+    "fr": "Nous avons enregistré votre signalement"
+  },
+  "email.content_report_confirmation.intro": {
+    "ro": "Mulțumim pentru detalii. Raportarea a fost salvată cu datele de mai jos și intră în analiză conform procedurilor interne.",
+    "en": "Thank you for the details. The report was saved with the data below and enters review according to our internal procedures.",
+    "fr": "Merci pour les détails. Le signalement a été enregistré avec les informations ci-dessous et sera analysé selon nos procédures internes."
+  },
+  "email.content_report_confirmation.preheader": {
+    "ro": "Sesizarea {reference} a fost înregistrată.",
+    "en": "Report {reference} has been recorded.",
+    "fr": "Le signalement {reference} a été enregistré."
+  },
+  "email.content_report_confirmation.details_title": {
+    "ro": "Datele sesizării tale",
+    "en": "Your report details",
+    "fr": "Les détails de votre signalement"
+  },
+  "email.content_report_confirmation.label_reference": {
+    "ro": "Număr de înregistrare",
+    "en": "Registration number",
+    "fr": "Numéro d'enregistrement"
+  },
+  "email.content_report_confirmation.label_type": {
+    "ro": "Tip raportare",
+    "en": "Report type",
+    "fr": "Type de signalement"
+  },
+  "email.content_report_confirmation.label_content": {
+    "ro": "Conținut raportat",
+    "en": "Reported content",
+    "fr": "Contenu signalé"
+  },
+  "email.content_report_confirmation.label_attachments": {
+    "ro": "Documente atașate",
+    "en": "Attached documents",
+    "fr": "Documents joints"
+  },
+  "email.content_report_confirmation.attachments_none": {
+    "ro": "niciun document",
+    "en": "no documents",
+    "fr": "aucun document"
+  },
+  "email.content_report_confirmation.attachments.one": {
+    "ro": "1 document",
+    "en": "1 document",
+    "fr": "1 document"
+  },
+  "email.content_report_confirmation.attachments.other": {
+    "ro": "{count} documente",
+    "en": "{count} documents",
+    "fr": "{count} documents"
+  },
+  "email.content_report_confirmation.note_title": {
+    "ro": "Ce urmează",
+    "en": "What happens next",
+    "fr": "La suite"
+  },
+  "email.content_report_confirmation.note": {
+    "ro": "Dacă avem nevoie de clarificări, îți scriem pe adresa folosită în formular. Păstrează numărul de înregistrare pentru orice revenire.",
+    "en": "If we need clarifications, we will write to the address used in the form. Keep the registration number for any follow-up.",
+    "fr": "Si nous avons besoin de précisions, nous vous écrirons à l'adresse utilisée dans le formulaire. Conservez le numéro d'enregistrement pour tout échange ultérieur."
+  },
+  "email.content_report_confirmation.footer": {
+    "ro": "Acest email confirmă primirea raportării trimise prin formularul {app_name}.",
+    "en": "This email confirms receipt of the report sent through the {app_name} form.",
+    "fr": "Cet email confirme la réception du signalement envoyé via le formulaire {app_name}."
+  },
+
+  "email.withdrawal_confirmation.subject": {
+    "ro": "Am primit retragerea ta Reviss ({reference})",
+    "en": "We received your Reviss withdrawal request ({reference})",
+    "fr": "Nous avons reçu votre demande de rétractation Reviss ({reference})"
+  },
+  "email.withdrawal_confirmation.text": {
+    "ro": "Am primit solicitarea ta de retragere din contract și am înregistrat-o.\n\nNumăr de înregistrare: {reference}\nAbonament sau comandă: {subscription_or_order}\nNumăr comandă: {order_number}\n\nVerificăm solicitarea și îți scriem pe adresa din formular cu pașii următori.\n\nDeschide {app_name}: {url}",
+    "en": "We received your contract withdrawal request and recorded it.\n\nRegistration number: {reference}\nSubscription or order: {subscription_or_order}\nOrder number: {order_number}\n\nWe are checking the request and will write to the address from the form with the next steps.\n\nOpen {app_name}: {url}",
+    "fr": "Nous avons reçu votre demande de rétractation du contrat et l'avons enregistrée.\n\nNuméro d'enregistrement : {reference}\nAbonnement ou commande : {subscription_or_order}\nNuméro de commande : {order_number}\n\nNous vérifions la demande et vous écrirons à l'adresse du formulaire avec les prochaines étapes.\n\nOuvrir {app_name} : {url}"
+  },
+  "email.withdrawal_confirmation.eyebrow": {
+    "ro": "Retragere primită",
+    "en": "Withdrawal received",
+    "fr": "Rétractation reçue"
+  },
+  "email.withdrawal_confirmation.title": {
+    "ro": "Am primit solicitarea de retragere",
+    "en": "We received your withdrawal request",
+    "fr": "Nous avons reçu votre demande de rétractation"
+  },
+  "email.withdrawal_confirmation.intro": {
+    "ro": "Cererea ta de retragere din contract a fost înregistrată cu datele de mai jos și intră în verificare.",
+    "en": "Your contract withdrawal request was recorded with the details below and is being checked.",
+    "fr": "Votre demande de rétractation du contrat a été enregistrée avec les informations ci-dessous et est en cours de vérification."
+  },
+  "email.withdrawal_confirmation.preheader": {
+    "ro": "Solicitarea {reference} a fost înregistrată.",
+    "en": "Request {reference} has been recorded.",
+    "fr": "La demande {reference} a été enregistrée."
+  },
+  "email.withdrawal_confirmation.details_title": {
+    "ro": "Datele solicitării tale",
+    "en": "Your request details",
+    "fr": "Les détails de votre demande"
+  },
+  "email.withdrawal_confirmation.label_reference": {
+    "ro": "Număr de înregistrare",
+    "en": "Registration number",
+    "fr": "Numéro d'enregistrement"
+  },
+  "email.withdrawal_confirmation.label_subscription": {
+    "ro": "Abonament sau comandă",
+    "en": "Subscription or order",
+    "fr": "Abonnement ou commande"
+  },
+  "email.withdrawal_confirmation.label_order": {
+    "ro": "Număr comandă",
+    "en": "Order number",
+    "fr": "Numéro de commande"
+  },
+  "email.withdrawal_confirmation.note_title": {
+    "ro": "Ce urmează",
+    "en": "What happens next",
+    "fr": "La suite"
+  },
+  "email.withdrawal_confirmation.note": {
+    "ro": "Îți scriem pe adresa din formular cu pașii următori. Păstrează numărul de înregistrare pentru orice revenire.",
+    "en": "We will write to the address from the form with the next steps. Keep the registration number for any follow-up.",
+    "fr": "Nous vous écrirons à l'adresse du formulaire avec les prochaines étapes. Conservez le numéro d'enregistrement pour tout échange ultérieur."
+  },
+  "email.withdrawal_confirmation.footer": {
+    "ro": "Acest email confirmă primirea solicitării trimise prin formularul {app_name}.",
+    "en": "This email confirms receipt of the request sent through the {app_name} form.",
+    "fr": "Cet email confirme la réception de la demande envoyée via le formulaire {app_name}."
+  },
+
+  "email.account_deleted.subject": {
+    "ro": "Contul Reviss a fost șters",
+    "en": "Your Reviss account has been deleted",
+    "fr": "Votre compte Reviss a été supprimé"
+  },
+  "email.account_deleted.greeting_named": {
+    "ro": "Bună, {first_name}.",
+    "en": "Hi {first_name}.",
+    "fr": "Bonjour {first_name}."
+  },
+  "email.account_deleted.greeting": {
+    "ro": "Bună.",
+    "en": "Hi.",
+    "fr": "Bonjour."
+  },
+  "email.account_deleted.text": {
+    "ro": "{greeting}\n\nUn administrator a șters contul tău {app_name}. Nu te mai poți autentifica, iar proiectele, rezumatele, flashcard-urile și quiz-urile din cont nu mai pot fi accesate.\n\nSesiunile deschise au fost închise, iar din datele tale rămân doar informațiile pe care legea ne obligă să le arhivăm.\n\nDacă ai întrebări despre această decizie, scrie-ne prin formularul de contact: {url}",
+    "en": "{greeting}\n\nAn administrator deleted your {app_name} account. You can no longer sign in, and the projects, summaries, flashcards and quizzes in the account can no longer be accessed.\n\nOpen sessions were signed out, and of your data only the information the law requires us to archive remains.\n\nIf you have questions about this decision, write to us through the contact form: {url}",
+    "fr": "{greeting}\n\nUn administrateur a supprimé votre compte {app_name}. Vous ne pouvez plus vous connecter, et les projets, résumés, flashcards et quiz du compte ne sont plus accessibles.\n\nLes sessions ouvertes ont été fermées, et de vos données ne restent que les informations que la loi nous oblige à archiver.\n\nSi vous avez des questions sur cette décision, écrivez-nous via le formulaire de contact : {url}"
+  },
+  "email.account_deleted.eyebrow": {
+    "ro": "Cont șters",
+    "en": "Account deleted",
+    "fr": "Compte supprimé"
+  },
+  "email.account_deleted.title": {
+    "ro": "Contul tău a fost șters",
+    "en": "Your account has been deleted",
+    "fr": "Votre compte a été supprimé"
+  },
+  "email.account_deleted.intro": {
+    "ro": "{greeting} Un administrator a șters contul tău {app_name}, așa că autentificarea nu mai este posibilă și materialele din cont nu mai pot fi accesate.",
+    "en": "{greeting} An administrator deleted your {app_name} account, so signing in is no longer possible and the materials in the account can no longer be accessed.",
+    "fr": "{greeting} Un administrateur a supprimé votre compte {app_name} : la connexion n'est plus possible et les supports du compte ne sont plus accessibles."
+  },
+  "email.account_deleted.preheader": {
+    "ro": "Autentificarea în cont nu mai este posibilă.",
+    "en": "Signing in to the account is no longer possible.",
+    "fr": "La connexion au compte n'est plus possible."
+  },
+  "email.account_deleted.cta": {
+    "ro": "Contactează-ne",
+    "en": "Contact us",
+    "fr": "Contactez-nous"
+  },
+  "email.account_deleted.details_title": {
+    "ro": "Ce s-a întâmplat cu datele tale",
+    "en": "What happened to your data",
+    "fr": "Ce qu'il est advenu de vos données"
+  },
+  "email.account_deleted.detail_access": {
+    "ro": "Acces: nu te mai poți autentifica, iar sesiunile deschise au fost închise.",
+    "en": "Access: you can no longer sign in, and open sessions were signed out.",
+    "fr": "Accès : vous ne pouvez plus vous connecter, et les sessions ouvertes ont été fermées."
+  },
+  "email.account_deleted.detail_materials": {
+    "ro": "Materiale: proiectele, rezumatele, flashcard-urile și quiz-urile nu mai sunt disponibile.",
+    "en": "Materials: projects, summaries, flashcards and quizzes are no longer available.",
+    "fr": "Supports : les projets, résumés, flashcards et quiz ne sont plus disponibles."
+  },
+  "email.account_deleted.detail_retained": {
+    "ro": "Date păstrate: rămân doar informațiile pe care legea ne obligă să le arhivăm.",
+    "en": "Retained data: only the information the law requires us to archive remains.",
+    "fr": "Données conservées : ne restent que les informations que la loi nous oblige à archiver."
+  },
+  "email.account_deleted.note_title": {
+    "ro": "Ai întrebări despre această decizie?",
+    "en": "Questions about this decision?",
+    "fr": "Des questions sur cette décision ?"
+  },
+  "email.account_deleted.note": {
+    "ro": "Scrie-ne prin formularul de contact de pe site și îți explicăm motivul ștergerii.",
+    "en": "Write to us through the contact form on the site and we will explain the reason for the deletion.",
+    "fr": "Écrivez-nous via le formulaire de contact du site et nous vous expliquerons la raison de la suppression."
+  },
+  "email.account_deleted.footer": {
+    "ro": "Acest email a fost trimis automat de {app_name} ca să te informeze despre ștergerea contului.",
+    "en": "This email was sent automatically by {app_name} to inform you about the account deletion.",
+    "fr": "Cet email a été envoyé automatiquement par {app_name} pour vous informer de la suppression du compte."
+  },
+
+  "email.invoice_paid.subject": {
+    "ro": "Factura Reviss {number}",
+    "en": "Reviss invoice {number}",
+    "fr": "Facture Reviss {number}"
+  },
+  "email.invoice_paid.plan_fallback": {
+    "ro": "abonamentul {app_name}",
+    "en": "your {app_name} subscription",
+    "fr": "l'abonnement {app_name}"
+  },
+  "email.invoice_paid.paid_today": {
+    "ro": "astăzi",
+    "en": "today",
+    "fr": "aujourd'hui"
+  },
+  "email.invoice_paid.pdf_line": {
+    "ro": "Descarcă PDF-ul: {url}\n",
+    "en": "Download the PDF: {url}\n",
+    "fr": "Télécharger le PDF : {url}\n"
+  },
+  "email.invoice_paid.text": {
+    "ro": "Plata pentru {plan} a fost confirmată.\n\nPlan: {plan}\nTotal plătit: {amount}\nData plății: {paid_at}\nNumăr factură: {number}\n\nVezi factura: {url}\n{pdf_line}\nAbonamentul rămâne activ, nu trebuie să faci nimic.\n\nMulțumim că folosești {app_name}.",
+    "en": "The payment for {plan} has been confirmed.\n\nPlan: {plan}\nTotal paid: {amount}\nPayment date: {paid_at}\nInvoice number: {number}\n\nView the invoice: {url}\n{pdf_line}\nYour subscription stays active, there is nothing you need to do.\n\nThank you for using {app_name}.",
+    "fr": "Le paiement pour {plan} a été confirmé.\n\nForfait : {plan}\nTotal payé : {amount}\nDate du paiement : {paid_at}\nNuméro de facture : {number}\n\nVoir la facture : {url}\n{pdf_line}\nVotre abonnement reste actif, vous n'avez rien à faire.\n\nMerci d'utiliser {app_name}."
+  },
+  "email.invoice_paid.label_plan": {
+    "ro": "Plan",
+    "en": "Plan",
+    "fr": "Forfait"
+  },
+  "email.invoice_paid.label_total": {
+    "ro": "Total plătit",
+    "en": "Total paid",
+    "fr": "Total payé"
+  },
+  "email.invoice_paid.label_date": {
+    "ro": "Data plății",
+    "en": "Payment date",
+    "fr": "Date du paiement"
+  },
+  "email.invoice_paid.label_number": {
+    "ro": "Număr factură",
+    "en": "Invoice number",
+    "fr": "Numéro de facture"
+  },
+  "email.invoice_paid.pdf_detail": {
+    "ro": "Factură PDF: descarcă documentul",
+    "en": "PDF invoice: download the document",
+    "fr": "Facture PDF : télécharger le document"
+  },
+  "email.invoice_paid.eyebrow": {
+    "ro": "Factură abonament",
+    "en": "Subscription invoice",
+    "fr": "Facture d'abonnement"
+  },
+  "email.invoice_paid.title": {
+    "ro": "Plata ta a fost confirmată",
+    "en": "Your payment has been confirmed",
+    "fr": "Votre paiement a été confirmé"
+  },
+  "email.invoice_paid.intro": {
+    "ro": "Am înregistrat plata de {amount} pentru {plan}. Abonamentul rămâne activ, nu trebuie să faci nimic.",
+    "en": "We recorded the payment of {amount} for {plan}. Your subscription stays active, there is nothing you need to do.",
+    "fr": "Nous avons enregistré le paiement de {amount} pour {plan}. Votre abonnement reste actif, vous n'avez rien à faire."
+  },
+  "email.invoice_paid.preheader": {
+    "ro": "{amount} pentru {plan} — plată confirmată.",
+    "en": "{amount} for {plan} — payment confirmed.",
+    "fr": "{amount} pour {plan} — paiement confirmé."
+  },
+  "email.invoice_paid.cta": {
+    "ro": "Vezi factura",
+    "en": "View invoice",
+    "fr": "Voir la facture"
+  },
+  "email.invoice_paid.details_title": {
+    "ro": "Detaliile plății",
+    "en": "Payment details",
+    "fr": "Détails du paiement"
+  },
+  "email.invoice_paid.note_title": {
+    "ro": "Despre factură",
+    "en": "About the invoice",
+    "fr": "À propos de la facture"
+  },
+  "email.invoice_paid.note": {
+    "ro": "Factura este găzduită securizat de Stripe, procesatorul nostru de plăți, de unde o poți vedea și descărca oricând.",
+    "en": "The invoice is hosted securely by Stripe, our payment processor, where you can view and download it at any time.",
+    "fr": "La facture est hébergée de manière sécurisée par Stripe, notre prestataire de paiement, où vous pouvez la consulter et la télécharger à tout moment."
+  },
+  "email.invoice_paid.footer": {
+    "ro": "Acest email a fost trimis automat de {app_name} după încasarea plății pentru abonamentul tău.",
+    "en": "This email was sent automatically by {app_name} after the payment for your subscription was received.",
+    "fr": "Cet email a été envoyé automatiquement par {app_name} après l'encaissement du paiement de votre abonnement."
+  },
+
+  "notification.project_ready.title": {
+    "ro": "Proiectul tău e gata",
+    "en": "Your project is ready",
+    "fr": "Votre projet est prêt"
+  },
+  "notification.project_ready.body": {
+    "ro": "Rezumatul și materialele pentru \"{project}\" sunt gata de studiat.",
+    "en": "The summary and materials for \"{project}\" are ready to study.",
+    "fr": "Le résumé et les supports de « {project} » sont prêts à être étudiés."
+  },
+  "notification.quiz_ready.title": {
+    "ro": "Quizul e gata",
+    "en": "Your quiz is ready",
+    "fr": "Votre quiz est prêt"
+  },
+  "notification.quiz_ready.body": {
+    "ro": "Quizul nou pentru \"{project}\" a fost generat.",
+    "en": "The new quiz for \"{project}\" has been generated.",
+    "fr": "Le nouveau quiz pour « {project} » a été généré."
+  },
+  "notification.weak_concepts.title": {
+    "ro": "Concept de repetat: {category}",
+    "en": "Concept to review: {category}",
+    "fr": "Concept à revoir : {category}"
+  },
+  "notification.weak_concepts.body": {
+    "ro": "Ai acumulat {count} greșeli la \"{category}\" în proiectul \"{project}\". Merită o recapitulare.",
+    "en": "You have made {count} mistakes on \"{category}\" in the project \"{project}\". It is worth a review.",
+    "fr": "Vous avez accumulé {count} erreurs sur « {category} » dans le projet « {project} ». Une révision s'impose."
+  },
+  "notification.daily_review.title": {
+    "ro": "Recapitulare zilnică",
+    "en": "Daily review",
+    "fr": "Révision quotidienne"
+  },
+  "notification.daily_review.body": {
+    "ro": "Ai {count} flashcard-uri marcate de revizuit. E un moment bun să le recapitulezi.",
+    "en": "You have {count} flashcards marked for review. Now is a good time to go over them.",
+    "fr": "Vous avez {count} flashcards marquées à revoir. C'est le bon moment pour les réviser."
+  },
+  "notification.weekly_progress.title": {
+    "ro": "Rezumatul tău săptămânal",
+    "en": "Your weekly summary",
+    "fr": "Votre bilan hebdomadaire"
+  },
+  "notification.weekly_progress.body_quizzes": {
+    "ro": "Săptămâna asta ai terminat {quizzes} (scor mediu {score}%) și ai studiat {days}. {closing}",
+    "en": "This week you completed {quizzes} (average score {score}%) and studied on {days}. {closing}",
+    "fr": "Cette semaine vous avez terminé {quizzes} (score moyen {score} %) et étudié {days}. {closing}"
+  },
+  "notification.weekly_progress.body_days": {
+    "ro": "Săptămâna asta ai studiat {days}. Continuă tot așa!",
+    "en": "This week you studied on {days}. Keep it up!",
+    "fr": "Cette semaine vous avez étudié {days}. Continuez comme ça !"
+  },
+  "notification.weekly_progress.quizzes.one": {
+    "ro": "1 quiz",
+    "en": "1 quiz",
+    "fr": "1 quiz"
+  },
+  "notification.weekly_progress.quizzes.other": {
+    "ro": "{count} quiz-uri",
+    "en": "{count} quizzes",
+    "fr": "{count} quiz"
+  },
+  "notification.weekly_progress.days.one": {
+    "ro": "1 zi",
+    "en": "1 day",
+    "fr": "1 jour"
+  },
+  "notification.weekly_progress.days.other": {
+    "ro": "{count} zile",
+    "en": "{count} days",
+    "fr": "{count} jours"
+  },
+  "notification.weekly_progress.closing_high": {
+    "ro": "Scor excelent — continuă tot așa!",
+    "en": "Excellent score — keep it up!",
+    "fr": "Excellent score — continuez comme ça !"
+  },
+  "notification.weekly_progress.closing_mid": {
+    "ro": "Ești pe drumul cel bun — mai exersează puțin la conceptele slabe.",
+    "en": "You are on the right track — practise the weaker concepts a little more.",
+    "fr": "Vous êtes sur la bonne voie — entraînez-vous encore un peu sur les concepts fragiles."
+  },
+  "notification.weekly_progress.closing_low": {
+    "ro": "Sunt încă lucruri de clarificat — o recapitulare țintită te-ar ajuta să crești scorul.",
+    "en": "There are still things to clarify — a targeted review would help you raise your score.",
+    "fr": "Il reste des points à clarifier — une révision ciblée vous aiderait à améliorer votre score."
+  },
+  "notification.inactivity.title": {
+    "ro": "Ne e dor de tine!",
+    "en": "We miss you!",
+    "fr": "Vous nous manquez !"
+  },
+  "notification.inactivity.body": {
+    "ro": "Nu ai mai studiat de {days} zile. Revino pentru o recapitulare rapidă.",
+    "en": "You have not studied for {days} days. Come back for a quick review.",
+    "fr": "Vous n'avez pas étudié depuis {days} jours. Revenez pour une révision rapide."
+  },
+  "notification.streak.title": {
+    "ro": "Streak de {days} zile!",
+    "en": "{days}-day streak!",
+    "fr": "Série de {days} jours !"
+  },
+  "notification.streak.body": {
+    "ro": "Ai studiat {days} zile consecutive. Așa se construiește performanța.",
+    "en": "You have studied {days} days in a row. That is how performance is built.",
+    "fr": "Vous avez étudié {days} jours d'affilée. C'est ainsi que se construit la performance."
+  },
+
+  "validation.missing": {
+    "ro": "Câmpul este obligatoriu.",
+    "en": "This field is required.",
+    "fr": "Ce champ est obligatoire."
+  },
+  "validation.string_too_short": {
+    "ro": "Textul trebuie să aibă cel puțin {min_length} caractere.",
+    "en": "Must be at least {min_length} characters long.",
+    "fr": "Doit contenir au moins {min_length} caractères."
+  },
+  "validation.string_too_long": {
+    "ro": "Textul poate avea cel mult {max_length} caractere.",
+    "en": "Must be at most {max_length} characters long.",
+    "fr": "Doit contenir au plus {max_length} caractères."
+  },
+  "validation.too_short": {
+    "ro": "Lista trebuie să aibă cel puțin {min_length} elemente.",
+    "en": "Must contain at least {min_length} items.",
+    "fr": "Doit contenir au moins {min_length} éléments."
+  },
+  "validation.too_long": {
+    "ro": "Lista poate avea cel mult {max_length} elemente.",
+    "en": "Must contain at most {max_length} items.",
+    "fr": "Doit contenir au plus {max_length} éléments."
+  },
+  "validation.email": {
+    "ro": "Adresa de email nu este validă.",
+    "en": "The email address is not valid.",
+    "fr": "L'adresse email n'est pas valide."
+  },
+  "validation.int_parsing": {
+    "ro": "Valoarea trebuie să fie un număr întreg.",
+    "en": "Must be a whole number.",
+    "fr": "Doit être un nombre entier."
+  },
+  "validation.bool_parsing": {
+    "ro": "Valoarea trebuie să fie da sau nu.",
+    "en": "Must be true or false.",
+    "fr": "Doit être vrai ou faux."
+  },
+  "validation.uuid_parsing": {
+    "ro": "Identificatorul nu este valid.",
+    "en": "The identifier is not valid.",
+    "fr": "L'identifiant n'est pas valide."
+  },
+  "validation.literal_error": {
+    "ro": "Valoarea nu este una dintre opțiunile permise.",
+    "en": "The value is not one of the allowed options.",
+    "fr": "La valeur ne fait pas partie des options autorisées."
+  },
+  "validation.enum": {
+    "ro": "Valoarea nu este una dintre opțiunile permise.",
+    "en": "The value is not one of the allowed options.",
+    "fr": "La valeur ne fait pas partie des options autorisées."
+  },
+  "validation.greater_than_equal": {
+    "ro": "Valoarea trebuie să fie cel puțin {ge}.",
+    "en": "Must be at least {ge}.",
+    "fr": "Doit être au moins {ge}."
+  },
+  "validation.less_than_equal": {
+    "ro": "Valoarea poate fi cel mult {le}.",
+    "en": "Must be at most {le}.",
+    "fr": "Doit être au plus {le}."
+  },
+  "validation.json_invalid": {
+    "ro": "Conținutul trimis nu este JSON valid.",
+    "en": "The submitted content is not valid JSON.",
+    "fr": "Le contenu envoyé n'est pas du JSON valide."
+  },
+  "validation.default": {
+    "ro": "Valoarea nu este validă.",
+    "en": "The value is not valid.",
+    "fr": "La valeur n'est pas valide."
+  }
+}

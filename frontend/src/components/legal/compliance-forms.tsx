@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CompanyData } from "@/lib/legal-api";
@@ -15,6 +16,9 @@ type FormState =
 type FormFieldErrors = Partial<Record<string, string>>;
 
 const initialState: FormState = { status: "idle", message: null };
+
+type ComplianceTranslator = ReturnType<typeof useTranslations<"compliance">>;
+type ComplianceKey = Parameters<ComplianceTranslator>[0];
 
 const contactFieldInputClassName =
   "h-11 w-full rounded-lg border border-subtle bg-app px-3 text-sm font-semibold text-content outline-none transition placeholder:text-muted/45 focus:border-action focus:ring-4 focus:ring-action-soft";
@@ -69,7 +73,11 @@ declare global {
   }
 }
 
-async function postComplianceForm(endpoint: string, payload: object) {
+async function postComplianceForm(
+  t: ComplianceTranslator,
+  endpoint: string,
+  payload: object,
+) {
   const response = await fetch(`/api/compliance/${endpoint}`, {
     method: "POST",
     headers: {
@@ -88,15 +96,19 @@ async function postComplianceForm(endpoint: string, payload: object) {
 
   if (!response.ok) {
     throw new ComplianceRequestError(
-      readApiError(body.detail, response.status),
-      readApiFieldErrors(body.detail),
+      readApiError(t, body.detail, response.status),
+      readApiFieldErrors(t, body.detail),
     );
   }
 
   return body;
 }
 
-async function postComplianceMultipart(endpoint: string, payload: FormData) {
+async function postComplianceMultipart(
+  t: ComplianceTranslator,
+  endpoint: string,
+  payload: FormData,
+) {
   const response = await fetch(`/api/compliance/${endpoint}`, {
     method: "POST",
     headers: {
@@ -114,8 +126,8 @@ async function postComplianceMultipart(endpoint: string, payload: FormData) {
 
   if (!response.ok) {
     throw new ComplianceRequestError(
-      readApiError(body.detail, response.status),
-      readApiFieldErrors(body.detail),
+      readApiError(t, body.detail, response.status),
+      readApiFieldErrors(t, body.detail),
     );
   }
 
@@ -129,24 +141,24 @@ type ApiValidationError = {
   ctx?: unknown;
 };
 
-const apiErrorFieldLabels: Record<string, string> = {
-  attachments: "Documente",
-  category: "Categorie",
-  content_reference: "Conținut",
-  declaration: "Declarație",
-  description: "Descriere",
-  email: "E-mail",
-  full_name: "Nume complet",
-  form: "Formular",
-  message: "Mesaj",
-  name: "Nume",
-  order_number: "Numărul comenzii",
-  recaptcha_token: "Verificare anti-spam",
-  reason: "Motiv",
-  report_type: "Tip",
-  rights_evidence: "Dovezi",
-  subject: "Subiect",
-  subscription_or_order: "Abonament sau comandă",
+const apiErrorFieldLabelKeys: Record<string, ComplianceKey> = {
+  attachments: "documente",
+  category: "categorie",
+  content_reference: "continut",
+  declaration: "declaratie",
+  description: "descriere",
+  email: "eMail",
+  full_name: "numeComplet",
+  form: "formular",
+  message: "mesaj",
+  name: "nume",
+  order_number: "numarulComenzii",
+  recaptcha_token: "verificareAntiSpam",
+  reason: "motiv",
+  report_type: "tip",
+  rights_evidence: "dovezi",
+  subject: "subiect",
+  subscription_or_order: "abonamentSauComanda",
 };
 
 const apiErrorFieldNames: Record<string, string> = {
@@ -167,14 +179,18 @@ const apiErrorFieldNames: Record<string, string> = {
   subscription_or_order: "subscription",
 };
 
-function readApiError(detail: unknown, statusCode?: number) {
+function readApiError(
+  t: ComplianceTranslator,
+  detail: unknown,
+  statusCode?: number,
+) {
   if (typeof detail === "string" && detail.trim()) {
     return detail;
   }
 
   if (Array.isArray(detail)) {
     const messages = detail
-      .map(readValidationErrorItem)
+      .map((item) => readValidationErrorItem(t, item))
       .filter(Boolean);
 
     if (messages.length > 0) {
@@ -183,30 +199,33 @@ function readApiError(detail: unknown, statusCode?: number) {
   }
 
   if (detail && typeof detail === "object") {
-    const message = readValidationErrorItem(detail);
+    const message = readValidationErrorItem(t, detail);
     if (message) return message;
   }
 
   if (statusCode === 400) {
-    return "Verifică formularul și încearcă din nou.";
+    return t("verificaFormularulSiIncearcaDin");
   }
   if (statusCode === 403) {
-    return "Solicitarea a fost blocată din motive de securitate. Reîncarcă pagina și încearcă din nou.";
+    return t("solicitareaAFostBlocataDin");
   }
   if (statusCode === 422) {
-    return "Verifică datele din formular. Unele câmpuri nu sunt completate corect.";
+    return t("verificaDateleDinFormularUnele");
   }
   if (statusCode === 429) {
-    return "Ai trimis prea multe solicitări într-un timp scurt. Încearcă din nou mai târziu.";
+    return t("aiTrimisPreaMulteSolicitari");
   }
   if (statusCode && statusCode >= 500) {
-    return "Serverul nu poate procesa solicitarea momentan. Încearcă din nou după câteva minute.";
+    return t("serverulNuPoateProcesaSolicitarea");
   }
 
-  return "Solicitarea nu a putut fi trimisă.";
+  return t("solicitareaNuAPututFi");
 }
 
-function readApiFieldErrors(detail: unknown): FormFieldErrors {
+function readApiFieldErrors(
+  t: ComplianceTranslator,
+  detail: unknown,
+): FormFieldErrors {
   if (!Array.isArray(detail)) {
     return {};
   }
@@ -218,7 +237,7 @@ function readApiFieldErrors(detail: unknown): FormFieldErrors {
 
     const error = item as ApiValidationError;
     const fieldName = readValidationFieldName(error.loc);
-    const message = readValidationErrorItem(error);
+    const message = readValidationErrorItem(t, error);
     if (fieldName && message) {
       fieldErrors[fieldName] = message;
     }
@@ -226,7 +245,7 @@ function readApiFieldErrors(detail: unknown): FormFieldErrors {
   }, {});
 }
 
-function readValidationErrorItem(item: unknown) {
+function readValidationErrorItem(t: ComplianceTranslator, item: unknown) {
   if (typeof item === "string" && item.trim()) {
     return item.trim();
   }
@@ -237,9 +256,10 @@ function readValidationErrorItem(item: unknown) {
   const error = item as ApiValidationError;
   const rawType = typeof error.type === "string" ? error.type : "";
   const rawMessage =
-    typeof error.msg === "string" ? error.msg : "Valoare invalidă.";
+    typeof error.msg === "string" ? error.msg : t("valoareInvalida");
   const message = normalizeApiErrorMessage(rawMessage);
-  const fieldLabel = readValidationFieldLabel(error.loc);
+  const fieldLabel = readValidationFieldLabel(t, error.loc);
+  const fieldName = readValidationFieldName(error.loc);
   const prefix = fieldLabel ? `${fieldLabel}: ` : "";
   const context =
     error.ctx && typeof error.ctx === "object"
@@ -248,21 +268,21 @@ function readValidationErrorItem(item: unknown) {
   const lowerMessage = message.toLowerCase();
 
   if (rawType === "missing") {
-    return `${prefix}câmp obligatoriu lipsă.`;
+    return t("prefixCampObligatoriuLipsa", { prefix });
   }
 
   if (rawType === "string_too_short") {
     const minLength = Number(context.min_length);
     return Number.isFinite(minLength)
-      ? `${prefix}trebuie să aibă cel puțin ${minLength} caractere.`
-      : `${prefix}textul este prea scurt.`;
+      ? t("prefixTrebuieSaAibaCel", { prefix, minLength })
+      : t("prefixTextulEstePreaScurt", { prefix });
   }
 
   if (rawType === "string_too_long") {
     const maxLength = Number(context.max_length);
     return Number.isFinite(maxLength)
-      ? `${prefix}trebuie să aibă cel mult ${maxLength} caractere.`
-      : `${prefix}textul este prea lung.`;
+      ? t("prefixTrebuieSaAibaCel2", { prefix, maxLength })
+      : t("prefixTextulEstePreaLung", { prefix });
   }
 
   if (
@@ -270,28 +290,29 @@ function readValidationErrorItem(item: unknown) {
     lowerMessage.includes("email address") ||
     lowerMessage.includes("valid email")
   ) {
-    return `${prefix || "E-mail: "}adresa de e-mail nu este validă.`;
+    return t("valueAdresaDeEMail", { value: prefix || "E-mail: " });
   }
 
   if (rawType === "literal_error") {
-    return `${prefix}alege o opțiune validă.`;
+    return t("prefixAlegeOOptiuneValida", { prefix });
   }
 
-  if (rawType.includes("bool") && fieldLabel === "Declarație") {
-    return "Declarație: confirmarea este obligatorie.";
+  if (rawType.includes("bool") && fieldName === "declaration") {
+    return t("declaratieConfirmareaEsteObligatorie");
   }
 
   return `${prefix}${message}`;
 }
 
-function readValidationFieldLabel(loc: unknown) {
+function readValidationFieldLabel(t: ComplianceTranslator, loc: unknown) {
   if (!Array.isArray(loc)) return null;
 
   for (let index = loc.length - 1; index >= 0; index -= 1) {
     const segment = loc[index];
     if (typeof segment !== "string") continue;
     if (["body", "query", "path"].includes(segment)) continue;
-    return apiErrorFieldLabels[segment] ?? segment.replace(/_/g, " ");
+    const labelKey = apiErrorFieldLabelKeys[segment];
+    return labelKey ? t(labelKey) : segment.replace(/_/g, " ");
   }
 
   return null;
@@ -344,6 +365,7 @@ function fieldClassName(baseClassName: string, error?: string) {
 }
 
 function validateRequiredText(
+  t: ComplianceTranslator,
   value: string,
   {
     empty,
@@ -361,10 +383,10 @@ function validateRequiredText(
 ) {
   if (!value) return empty;
   if (minLength !== undefined && value.length < minLength) {
-    return min ?? `Introdu cel puțin ${minLength} caractere.`;
+    return min ?? t("introduCelPutinMinlengthCaractere", { minLength });
   }
   if (maxLength !== undefined && value.length > maxLength) {
-    return max ?? `Introdu cel mult ${maxLength} caractere.`;
+    return max ?? t("introduCelMultMaxlengthCaractere", { maxLength });
   }
   return null;
 }
@@ -377,15 +399,18 @@ function validateOptionalText(
   return null;
 }
 
-function validateEmail(value: string) {
-  if (!value) return "Introdu adresa de e-mail.";
+function validateEmail(t: ComplianceTranslator, value: string) {
+  if (!value) return t("introduAdresaDeEMail");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value)) {
-    return "Introdu o adresă de e-mail validă.";
+    return t("introduOAdresaDeE");
   }
   return null;
 }
 
-function validateContactFields(formData: FormData): FormFieldErrors {
+function validateContactFields(
+  t: ComplianceTranslator,
+  formData: FormData,
+): FormFieldErrors {
   const errors: FormFieldErrors = {};
   const name = formValue(formData, "name");
   const email = formValue(formData, "email");
@@ -394,36 +419,39 @@ function validateContactFields(formData: FormData): FormFieldErrors {
   const message = formValue(formData, "message");
 
   errors.name =
-    validateRequiredText(name, {
-      empty: "Introdu numele tău.",
+    validateRequiredText(t, name, {
+      empty: t("introduNumeleTau"),
       minLength: 2,
-      min: "Numele trebuie să aibă cel puțin 2 caractere.",
+      min: t("numeleTrebuieSaAibaCel"),
       maxLength: 120,
-      max: "Numele poate avea cel mult 120 de caractere.",
+      max: t("numelePoateAveaCelMult"),
     }) ?? undefined;
-  errors.email = validateEmail(email) ?? undefined;
-  errors.category = category ? undefined : "Alege categoria mesajului.";
+  errors.email = validateEmail(t, email) ?? undefined;
+  errors.category = category ? undefined : t("alegeCategoriaMesajului");
   errors.subject =
-    validateRequiredText(subject, {
-      empty: "Introdu subiectul mesajului.",
+    validateRequiredText(t, subject, {
+      empty: t("introduSubiectulMesajului"),
       minLength: 3,
-      min: "Subiectul trebuie să aibă cel puțin 3 caractere.",
+      min: t("subiectulTrebuieSaAibaCel"),
       maxLength: 160,
-      max: "Subiectul poate avea cel mult 160 de caractere.",
+      max: t("subiectulPoateAveaCelMult"),
     }) ?? undefined;
   errors.message =
-    validateRequiredText(message, {
-      empty: "Scrie mesajul.",
+    validateRequiredText(t, message, {
+      empty: t("scrieMesajul"),
       minLength: 10,
-      min: "Mesajul trebuie să aibă cel puțin 10 caractere.",
+      min: t("mesajulTrebuieSaAibaCel"),
       maxLength: 5000,
-      max: "Mesajul poate avea cel mult 5000 de caractere.",
+      max: t("mesajulPoateAveaCelMult"),
     }) ?? undefined;
 
   return errors;
 }
 
-function validateWithdrawalFields(formData: FormData): FormFieldErrors {
+function validateWithdrawalFields(
+  t: ComplianceTranslator,
+  formData: FormData,
+): FormFieldErrors {
   const errors: FormFieldErrors = {};
   const fullName = formValue(formData, "fullName");
   const email = formValue(formData, "email");
@@ -432,41 +460,42 @@ function validateWithdrawalFields(formData: FormData): FormFieldErrors {
   const reason = formValue(formData, "reason");
 
   errors.fullName =
-    validateRequiredText(fullName, {
-      empty: "Introdu numele complet.",
+    validateRequiredText(t, fullName, {
+      empty: t("introduNumeleComplet"),
       minLength: 2,
-      min: "Numele complet trebuie să aibă cel puțin 2 caractere.",
+      min: t("numeleCompletTrebuieSaAiba"),
       maxLength: 120,
-      max: "Numele complet poate avea cel mult 120 de caractere.",
+      max: t("numeleCompletPoateAveaCel"),
     }) ?? undefined;
-  errors.email = validateEmail(email) ?? undefined;
+  errors.email = validateEmail(t, email) ?? undefined;
   errors.subscription =
-    validateRequiredText(subscription, {
-      empty: "Introdu abonamentul sau comanda vizată.",
+    validateRequiredText(t, subscription, {
+      empty: t("introduAbonamentulSauComandaVizata"),
       minLength: 2,
-      min: "Abonamentul sau comanda trebuie să aibă cel puțin 2 caractere.",
+      min: t("abonamentulSauComandaTrebuieSa"),
       maxLength: 160,
-      max: "Abonamentul sau comanda poate avea cel mult 160 de caractere.",
+      max: t("abonamentulSauComandaPoateAvea"),
     }) ?? undefined;
   errors.orderNumber =
     validateOptionalText(orderNumber, {
       maxLength: 80,
-      max: "Numărul comenzii poate avea cel mult 80 de caractere.",
+      max: t("numarulComenziiPoateAveaCel"),
     }) ?? undefined;
   errors.reason =
     validateOptionalText(reason, {
       maxLength: 5000,
-      max: "Motivul poate avea cel mult 5000 de caractere.",
+      max: t("motivulPoateAveaCelMult"),
     }) ?? undefined;
   errors.confirmation =
     formData.get("confirmation") === "on"
       ? undefined
-      : "Confirmă solicitarea de retragere înainte de trimitere.";
+      : t("confirmaSolicitareaDeRetragereInainte");
 
   return errors;
 }
 
 function validateContentReportFields(
+  t: ComplianceTranslator,
   formData: FormData,
   attachmentFiles: File[],
 ): FormFieldErrors {
@@ -479,42 +508,42 @@ function validateContentReportFields(
   const rightsEvidence = formValue(formData, "rightsEvidence");
 
   errors.name =
-    validateRequiredText(name, {
-      empty: "Introdu numele tău.",
+    validateRequiredText(t, name, {
+      empty: t("introduNumeleTau"),
       minLength: 2,
-      min: "Numele trebuie să aibă cel puțin 2 caractere.",
+      min: t("numeleTrebuieSaAibaCel"),
       maxLength: 120,
-      max: "Numele poate avea cel mult 120 de caractere.",
+      max: t("numelePoateAveaCelMult"),
     }) ?? undefined;
-  errors.email = validateEmail(email) ?? undefined;
-  errors.reportType = reportType ? undefined : "Alege tipul sesizării.";
+  errors.email = validateEmail(t, email) ?? undefined;
+  errors.reportType = reportType ? undefined : t("alegeTipulSesizarii");
   errors.contentReference =
-    validateRequiredText(contentReference, {
-      empty: "Adaugă linkul sau identificatorul conținutului.",
+    validateRequiredText(t, contentReference, {
+      empty: t("adaugaLinkulSauIdentificatorulContinutul"),
       minLength: 3,
-      min: "Conținutul trebuie să aibă cel puțin 3 caractere.",
+      min: t("continutulTrebuieSaAibaCel"),
       maxLength: 400,
-      max: "Conținutul poate avea cel mult 400 de caractere.",
+      max: t("continutulPoateAveaCelMult"),
     }) ?? undefined;
   errors.description =
-    validateRequiredText(description, {
-      empty: "Descrie problema raportată.",
+    validateRequiredText(t, description, {
+      empty: t("descrieProblemaRaportata"),
       minLength: 10,
-      min: "Descrierea trebuie să aibă cel puțin 10 caractere.",
+      min: t("descriereaTrebuieSaAibaCel"),
       maxLength: 5000,
-      max: "Descrierea poate avea cel mult 5000 de caractere.",
+      max: t("descriereaPoateAveaCelMult"),
     }) ?? undefined;
   errors.rightsEvidence =
     validateOptionalText(rightsEvidence, {
       maxLength: 5000,
-      max: "Dovezile pot avea cel mult 5000 de caractere.",
+      max: t("dovezilePotAveaCelMult"),
     }) ?? undefined;
   errors.declaration =
     formData.get("declaration") === "on"
       ? undefined
-      : "Confirmă declarația privind corectitudinea informațiilor.";
+      : t("confirmaDeclaratiaPrivindCorectitudineaI");
   errors.attachments =
-    validateContentReportAttachments(attachmentFiles) ?? undefined;
+    validateContentReportAttachments(t, attachmentFiles) ?? undefined;
 
   return errors;
 }
@@ -541,12 +570,13 @@ function FieldError({ id, message }: { id: string; message?: string }) {
  * stacking a duplicate.
  */
 function useFormStateToast(state: FormState) {
+  const t = useTranslations("compliance");
   useEffect(() => {
     if (state.status === "success") {
       toast.success(
         state.message,
         state.registrationNumber
-          ? `Număr de înregistrare: ${state.registrationNumber}`
+          ? t("numarDeInregistrareRegistrationnumber", { registrationNumber: state.registrationNumber })
           : undefined,
       );
       return;
@@ -555,7 +585,7 @@ function useFormStateToast(state: FormState) {
     if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [state]);
+  }, [state, t]);
 }
 
 function ContactFormRow({
@@ -605,12 +635,13 @@ function ContactRecaptcha({
   onScriptLoad: () => void;
   onScriptError: () => void;
 }) {
+  const t = useTranslations("compliance");
   if (!siteKey) {
     return (
       <div className="rounded-xl border border-warning-border bg-warning-soft px-4 py-3 text-sm font-semibold leading-6 text-warning">
         {isResolvingConfig
-          ? "Se verifică setările reCAPTCHA..."
-          : "reCAPTCHA nu este configurat pe frontend."}
+          ? t("seVerificaSetarileRecaptcha")
+          : t("recaptchaNuEsteConfiguratPe")}
       </div>
     );
   }
@@ -620,10 +651,10 @@ function ContactRecaptcha({
       <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
         <span className="min-w-0">
           <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-muted">
-            Verificare
+            {t("verificare")}
           </span>
           <span className="mt-1 hidden text-xs text-muted md:block">
-            Protecție anti-spam.
+            {t("protectieAntiSpam")}
           </span>
         </span>
         <div className="min-w-0">
@@ -644,7 +675,7 @@ function ContactRecaptcha({
                 error ? "text-danger" : "text-muted"
               }`}
             >
-              {error ?? "Se încarcă verificarea anti-spam..."}
+              {error ?? t("seIncarcaVerificareaAntiSpam")}
             </span>
           ) : null}
         </div>
@@ -653,9 +684,12 @@ function ContactRecaptcha({
   );
 }
 
-function validateContentReportAttachments(files: File[]) {
+function validateContentReportAttachments(
+  t: ComplianceTranslator,
+  files: File[],
+) {
   if (files.length > contentReportMaxAttachmentFiles) {
-    return `Poți atașa cel mult ${contentReportMaxAttachmentFiles} documente.`;
+    return t("potiAtasaCelMultContentreportmaxattachme", { contentReportMaxAttachmentFiles });
   }
 
   for (const file of files) {
@@ -664,14 +698,30 @@ function validateContentReportAttachments(files: File[]) {
       (extension) => lowerName.endsWith(extension),
     );
     if (!isAllowedExtension) {
-      return "Atașează doar PDF, DOC, DOCX, TXT, RTF, JPG, PNG sau WEBP.";
+      return t("ataseazaDoarPdfDocDocx");
     }
     if (file.size > contentReportMaxAttachmentBytes) {
-      return `Documentul ${file.name} depășește limita de 10MB.`;
+      return t("documentulNameDepasesteLimitaDe", { name: file.name });
     }
   }
 
   return null;
+}
+
+/**
+ * Whether an error message is about the uploaded documents.
+ *
+ * Both this form and the backend word attachment errors around the same
+ * few terms, so the catalogue carries the per-language tokens instead of
+ * this file hard-coding the Romanian ones.
+ */
+function isAttachmentErrorMessage(t: ComplianceTranslator, message: string) {
+  const normalizedMessage = message.toLowerCase();
+  return t("attachmentErrorTokens")
+    .split(",")
+    .map((token) => token.trim().toLowerCase())
+    .filter(Boolean)
+    .some((token) => normalizedMessage.includes(token));
 }
 
 function formatContentReportFileSize(sizeBytes: number) {
@@ -682,6 +732,7 @@ function formatContentReportFileSize(sizeBytes: number) {
 }
 
 function useRecaptcha(configuredSiteKey: string) {
+  const t = useTranslations("compliance");
   const initialRecaptchaSiteKey =
     configuredSiteKey.trim() || clientRecaptchaSiteKey;
   const [runtimeRecaptchaSiteKey, setRuntimeRecaptchaSiteKey] = useState("");
@@ -771,7 +822,7 @@ function useRecaptcha(configuredSiteKey: string) {
       } catch {
         setIsRecaptchaReady(false);
         setRecaptchaError(
-          "reCAPTCHA nu s-a putut încărca. Verifică domeniul și cheia site.",
+          t("recaptchaNuSAPutut"),
         );
       }
     };
@@ -781,7 +832,7 @@ function useRecaptcha(configuredSiteKey: string) {
     } else {
       renderWidget();
     }
-  }, [effectiveRecaptchaSiteKey]);
+  }, [effectiveRecaptchaSiteKey, t]);
 
   useEffect(() => {
     if (!effectiveRecaptchaSiteKey) {
@@ -822,10 +873,8 @@ function useRecaptcha(configuredSiteKey: string) {
 
   const markScriptError = useCallback(() => {
     setIsRecaptchaReady(false);
-    setRecaptchaError(
-      "Scriptul reCAPTCHA nu s-a putut încărca. Încearcă din nou.",
-    );
-  }, []);
+    setRecaptchaError(t("scriptulRecaptchaNuSA"));
+  }, [t]);
 
   return {
     siteKey: effectiveRecaptchaSiteKey,
@@ -846,6 +895,7 @@ type ContactFormProps = {
 };
 
 export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
+  const t = useTranslations("compliance");
   const recaptcha = useRecaptcha(recaptchaSiteKey);
   const [state, setState] = useState<FormState>(initialState);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
@@ -870,12 +920,12 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const nextFieldErrors = validateContactFields(formData);
+    const nextFieldErrors = validateContactFields(t, formData);
     if (hasFieldErrors(nextFieldErrors)) {
       setFieldErrors(nextFieldErrors);
       setState({
         status: "error",
-        message: "Corectează câmpurile marcate înainte de trimitere.",
+        message: t("corecteazaCampurileMarcateInainteDe"),
       });
       return;
     }
@@ -885,7 +935,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
       setState({
         status: "error",
         message:
-          "reCAPTCHA nu este configurat pe frontend. Adaugă cheia publică și repornește aplicația.",
+          t("recaptchaNuEsteConfiguratPe2"),
       });
       return;
     }
@@ -901,7 +951,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
     if (!recaptcha.isReady) {
       setState({
         status: "error",
-        message: "Protecția anti-spam încă se încarcă. Încearcă din nou.",
+        message: t("protectiaAntiSpamIncaSe"),
       });
       return;
     }
@@ -911,7 +961,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
     if (recaptcha.siteKey && !recaptchaToken) {
       setState({
         status: "error",
-        message: "Confirmă verificarea anti-spam înainte de trimitere.",
+        message: t("confirmaVerificareaAntiSpamInainte"),
       });
       return;
     }
@@ -919,7 +969,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
     setIsContactSubmitting(true);
     setState({ status: "submitting", message: null });
     try {
-      const response = await postComplianceForm("contact", {
+      const response = await postComplianceForm(t, "contact", {
         name: String(formData.get("name") ?? ""),
         email: String(formData.get("email") ?? ""),
         subject: String(formData.get("subject") ?? ""),
@@ -934,7 +984,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
         status: "success",
         message:
           response.message ||
-          "Mesajul a fost trimis. Îți vom răspunde pe e-mail.",
+          t("mesajulAFostTrimisIti"),
         registrationNumber: response.registration_number,
       });
     } catch (error) {
@@ -947,10 +997,10 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
         status: "error",
         message:
           hasFieldErrors(serverFieldErrors)
-            ? "Corectează câmpurile marcate înainte de trimitere."
+            ? t("corecteazaCampurileMarcateInainteDe")
             : error instanceof Error
               ? error.message
-              : "Mesajul nu a putut fi trimis.",
+              : t("mesajulNuAPututFi"),
       });
       recaptcha.reset();
     } finally {
@@ -962,15 +1012,15 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
     <form onSubmit={handleSubmit} className="grid gap-5" noValidate>
       <div className="rounded-xl border border-subtle bg-surface">
         <ContactFormRow
-          label="Nume"
-          description="Cum te putem identifica."
+          label={t("nume")}
+          description={t("cumTePutemIdentifica")}
         >
           <input
             name="name"
             required
             minLength={2}
             maxLength={120}
-            placeholder="Numele tău"
+            placeholder={t("numeleTau")}
             aria-invalid={Boolean(fieldErrors.name)}
             aria-describedby={fieldErrors.name ? "contact-name-error" : undefined}
             onInput={() => clearFieldError(setFieldErrors, "name")}
@@ -983,7 +1033,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
         </ContactFormRow>
         <ContactFormRow
           label="E-mail"
-          description="Aici îți trimitem răspunsul."
+          description={t("aiciItiTrimitemRaspunsul")}
         >
           <input
             name="email"
@@ -1003,8 +1053,8 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
           <FieldError id="contact-email-error" message={fieldErrors.email} />
         </ContactFormRow>
         <ContactFormRow
-          label="Categorie"
-          description="Direcționăm mesajul corect."
+          label={t("categorie")}
+          description={t("directionamMesajulCorect")}
         >
           <select
             name="category"
@@ -1019,11 +1069,11 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
               fieldErrors.category,
             )}
           >
-            <option value="">Alege categoria</option>
-            <option value="suport">Suport</option>
-            <option value="facturare">Facturare</option>
-            <option value="confidentialitate">Confidențialitate</option>
-            <option value="raportare_continut">Raportare conținut</option>
+            <option value="">{t("alegeCategoria")}</option>
+            <option value="suport">{t("suport")}</option>
+            <option value="facturare">{t("facturare")}</option>
+            <option value="confidentialitate">{t("confidentialitate")}</option>
+            <option value="raportare_continut">{t("raportareContinut")}</option>
           </select>
           <FieldError
             id="contact-category-error"
@@ -1031,8 +1081,8 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Subiect"
-          description="Pe scurt, despre ce este vorba."
+          label={t("subiect")}
+          description={t("peScurtDespreCeEste")}
         >
           <input
             name="subject"
@@ -1056,8 +1106,8 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Mesaj"
-          description="Include detaliile utile."
+          label={t("mesaj")}
+          description={t("includeDetaliileUtile")}
           isLast
         >
           <textarea
@@ -1065,7 +1115,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
             required
             minLength={10}
             maxLength={5000}
-            placeholder="Scrie mesajul aici..."
+            placeholder={t("scrieMesajulAici")}
             aria-invalid={Boolean(fieldErrors.message)}
             aria-describedby={
               fieldErrors.message ? "contact-message-error" : undefined
@@ -1095,7 +1145,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
           onClick={handleAnotherMessage}
           className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover sm:w-fit"
         >
-          Trimite alt mesaj
+          {t("trimiteAltMesaj")}
         </button>
       ) : (
         <button
@@ -1104,7 +1154,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
           disabled={isSubmitButtonDisabled}
           className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60 sm:w-fit"
         >
-          {isContactSubmitting ? "Se trimite..." : "Trimite mesajul"}
+          {isContactSubmitting ? t("seTrimite") : t("trimiteMesajul")}
         </button>
       )}
     </form>
@@ -1116,6 +1166,7 @@ type WithdrawalFormProps = {
 };
 
 export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
+  const t = useTranslations("compliance");
   const recaptcha = useRecaptcha(recaptchaSiteKey);
   const [state, setState] = useState<FormState>(initialState);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
@@ -1140,12 +1191,12 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const nextFieldErrors = validateWithdrawalFields(formData);
+    const nextFieldErrors = validateWithdrawalFields(t, formData);
     if (hasFieldErrors(nextFieldErrors)) {
       setFieldErrors(nextFieldErrors);
       setState({
         status: "error",
-        message: "Corectează câmpurile marcate înainte de trimitere.",
+        message: t("corecteazaCampurileMarcateInainteDe"),
       });
       return;
     }
@@ -1155,7 +1206,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
       setState({
         status: "error",
         message:
-          "reCAPTCHA nu este configurat pe frontend. Adaugă cheia publică și repornește aplicația.",
+          t("recaptchaNuEsteConfiguratPe2"),
       });
       return;
     }
@@ -1171,7 +1222,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
     if (!recaptcha.isReady) {
       setState({
         status: "error",
-        message: "Protecția anti-spam încă se încarcă. Încearcă din nou.",
+        message: t("protectiaAntiSpamIncaSe"),
       });
       return;
     }
@@ -1181,7 +1232,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
     if (recaptcha.siteKey && !recaptchaToken) {
       setState({
         status: "error",
-        message: "Confirmă verificarea anti-spam înainte de trimitere.",
+        message: t("confirmaVerificareaAntiSpamInainte"),
       });
       return;
     }
@@ -1189,7 +1240,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
     setIsWithdrawalSubmitting(true);
     setState({ status: "submitting", message: null });
     try {
-      const response = await postComplianceForm("withdrawal", {
+      const response = await postComplianceForm(t, "withdrawal", {
         full_name: String(formData.get("fullName") ?? ""),
         email: String(formData.get("email") ?? ""),
         subscription_or_order: String(formData.get("subscription") ?? ""),
@@ -1205,7 +1256,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
         status: "success",
         message:
           response.message ||
-          "Solicitarea de retragere a fost înregistrată și confirmarea a fost pusă în coada de e-mail.",
+          t("solicitareaDeRetragereAFost"),
         registrationNumber: response.registration_number,
       });
     } catch (error) {
@@ -1218,10 +1269,10 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
         status: "error",
         message:
           hasFieldErrors(serverFieldErrors)
-            ? "Corectează câmpurile marcate înainte de trimitere."
+            ? t("corecteazaCampurileMarcateInainteDe")
             : error instanceof Error
               ? error.message
-              : "Solicitarea nu a putut fi trimisă.",
+              : t("solicitareaNuAPututFi"),
       });
       recaptcha.reset();
     } finally {
@@ -1233,15 +1284,15 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
     <form onSubmit={handleSubmit} className="grid gap-5" noValidate>
       <div className="rounded-xl border border-subtle bg-surface">
         <ContactFormRow
-          label="Nume complet"
-          description="Cum apare în cont sau comandă."
+          label={t("numeComplet")}
+          description={t("cumApareInContSau")}
         >
           <input
             name="fullName"
             required
             minLength={2}
             maxLength={120}
-            placeholder="Numele tău complet"
+            placeholder={t("numeleTauComplet")}
             aria-invalid={Boolean(fieldErrors.fullName)}
             aria-describedby={
               fieldErrors.fullName ? "withdrawal-full-name-error" : undefined
@@ -1259,7 +1310,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
         </ContactFormRow>
         <ContactFormRow
           label="E-mail"
-          description="Adresa asociată contului."
+          description={t("adresaAsociataContului")}
         >
           <input
             name="email"
@@ -1279,8 +1330,8 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
           <FieldError id="withdrawal-email-error" message={fieldErrors.email} />
         </ContactFormRow>
         <ContactFormRow
-          label="Abonament"
-          description="Planul sau comanda vizată."
+          label={t("abonament")}
+          description={t("planulSauComandaVizata")}
         >
           <input
             name="subscription"
@@ -1306,13 +1357,13 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Comandă"
-          description="Opțional, dacă există."
+          label={t("comanda")}
+          description={t("optionalDacaExista")}
         >
           <input
             name="orderNumber"
             maxLength={80}
-            placeholder="Număr comandă sau factură"
+            placeholder={t("numarComandaSauFactura")}
             aria-invalid={Boolean(fieldErrors.orderNumber)}
             aria-describedby={
               fieldErrors.orderNumber ? "withdrawal-order-error" : undefined
@@ -1329,13 +1380,13 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Motiv"
-          description="Opțional, context util."
+          label={t("motiv")}
+          description={t("optionalContextUtil")}
         >
           <textarea
             name="reason"
             maxLength={5000}
-            placeholder="Poți adăuga detalii despre solicitare..."
+            placeholder={t("potiAdaugaDetaliiDespreSolicitare")}
             aria-invalid={Boolean(fieldErrors.reason)}
             aria-describedby={
               fieldErrors.reason ? "withdrawal-reason-error" : undefined
@@ -1353,7 +1404,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
         </ContactFormRow>
         <ContactFormRow
           label="Confirmare"
-          description="Confirmare obligatorie."
+          description={t("confirmareObligatorie")}
           isLast
         >
           <span className="flex min-w-0 items-start gap-3 rounded-lg border border-subtle bg-app px-3 py-3 text-xs leading-5 text-muted">
@@ -1371,8 +1422,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
               className="mt-0.5 h-4 w-4 shrink-0 accent-action"
             />
             <span className="min-w-0 break-words">
-              Confirm că doresc retragerea din contract pentru abonamentul sau
-              comanda indicată.
+              {t("confirmCaDorescRetragereaDin")}
             </span>
           </span>
           <FieldError
@@ -1397,7 +1447,7 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
           onClick={handleAnotherWithdrawal}
           className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover sm:w-fit"
         >
-          Trimite altă solicitare
+          {t("trimiteAltaSolicitare")}
         </button>
       ) : (
         <button
@@ -1407,8 +1457,8 @@ export function WithdrawalForm({ recaptchaSiteKey }: WithdrawalFormProps) {
           className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60 sm:w-fit"
         >
           {isWithdrawalSubmitting
-            ? "Se înregistrează..."
-            : "Confirmă retragerea"}
+            ? t("seInregistreaza")
+            : t("confirmaRetragerea")}
         </button>
       )}
     </form>
@@ -1422,6 +1472,7 @@ type ContentReportFormProps = {
 export function ContentReportForm({
   recaptchaSiteKey,
 }: ContentReportFormProps) {
+  const t = useTranslations("compliance");
   const recaptcha = useRecaptcha(recaptchaSiteKey);
   const [state, setState] = useState<FormState>(initialState);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
@@ -1466,10 +1517,10 @@ export function ContentReportForm({
     }
 
     const firstInvalidFileMessage = incomingFiles
-      .map((file) => validateContentReportAttachments([file]))
+      .map((file) => validateContentReportAttachments(t, [file]))
       .find((message): message is string => Boolean(message));
     const validIncomingFiles = incomingFiles.filter(
-      (file) => !validateContentReportAttachments([file]),
+      (file) => !validateContentReportAttachments(t, [file]),
     );
     const remainingSlots =
       contentReportMaxAttachmentFiles - selectedAttachments.length;
@@ -1487,8 +1538,8 @@ export function ContentReportForm({
       setState({ status: "error", message: firstInvalidFileMessage });
     } else if (hasExceededLimit) {
       const message =
-        `Poți atașa cel mult ${contentReportMaxAttachmentFiles} documente. ` +
-        `Am adăugat ${acceptedFiles.length} din selecția curentă.`;
+        t("potiAtasaCelMultContentreportmaxattachme", { contentReportMaxAttachmentFiles }) +
+        t("amAdaugatLengthDinSelectia", { length: acceptedFiles.length });
       setFieldErrors((currentErrors) => ({
         ...currentErrors,
         attachments: message,
@@ -1538,6 +1589,7 @@ export function ContentReportForm({
       (attachment) => attachment.file,
     );
     const nextFieldErrors = validateContentReportFields(
+      t,
       formData,
       attachmentFiles,
     );
@@ -1545,7 +1597,7 @@ export function ContentReportForm({
       setFieldErrors(nextFieldErrors);
       setState({
         status: "error",
-        message: "Corectează câmpurile marcate înainte de trimitere.",
+        message: t("corecteazaCampurileMarcateInainteDe"),
       });
       return;
     }
@@ -1555,7 +1607,7 @@ export function ContentReportForm({
       setState({
         status: "error",
         message:
-          "reCAPTCHA nu este configurat pe frontend. Adaugă cheia publică și repornește aplicația.",
+          t("recaptchaNuEsteConfiguratPe2"),
       });
       return;
     }
@@ -1571,7 +1623,7 @@ export function ContentReportForm({
     if (!recaptcha.isReady) {
       setState({
         status: "error",
-        message: "Protecția anti-spam încă se încarcă. Încearcă din nou.",
+        message: t("protectiaAntiSpamIncaSe"),
       });
       return;
     }
@@ -1581,7 +1633,7 @@ export function ContentReportForm({
     if (recaptcha.siteKey && !recaptchaToken) {
       setState({
         status: "error",
-        message: "Confirmă verificarea anti-spam înainte de trimitere.",
+        message: t("confirmaVerificareaAntiSpamInainte"),
       });
       return;
     }
@@ -1608,7 +1660,7 @@ export function ContentReportForm({
         payload.append("attachments", file, file.name);
       }
 
-      const response = await postComplianceMultipart("content-report", payload);
+      const response = await postComplianceMultipart(t, "content-report", payload);
       form.reset();
       setSelectedAttachments([]);
       clearAttachmentInput();
@@ -1618,7 +1670,7 @@ export function ContentReportForm({
         status: "success",
         message:
           response.message ||
-          "Sesizarea a fost înregistrată și va fi analizată.",
+          t("sesizareaAFostInregistrataSi"),
         registrationNumber: response.registration_number,
       });
     } catch (error) {
@@ -1627,14 +1679,10 @@ export function ContentReportForm({
       const message =
         error instanceof Error
           ? error.message
-          : "Sesizarea nu a putut fi trimisă.";
+          : t("sesizareaNuAPututFi");
       if (hasFieldErrors(serverFieldErrors)) {
         setFieldErrors(serverFieldErrors);
-      } else if (
-        message.includes("Documentul") ||
-        message.includes("documente") ||
-        message.includes("Atașează")
-      ) {
+      } else if (isAttachmentErrorMessage(t, message)) {
         setFieldErrors((currentErrors) => ({
           ...currentErrors,
           attachments: message,
@@ -1644,10 +1692,8 @@ export function ContentReportForm({
         status: "error",
         message:
           hasFieldErrors(serverFieldErrors) ||
-          message.includes("Documentul") ||
-          message.includes("documente") ||
-          message.includes("Atașează")
-            ? "Corectează câmpurile marcate înainte de trimitere."
+          isAttachmentErrorMessage(t, message)
+            ? t("corecteazaCampurileMarcateInainteDe")
             : message,
       });
       recaptcha.reset();
@@ -1660,15 +1706,15 @@ export function ContentReportForm({
     <form onSubmit={handleSubmit} className="grid gap-5" noValidate>
       <div className="rounded-xl border border-subtle bg-surface">
         <ContactFormRow
-          label="Nume"
-          description="Cum te putem identifica."
+          label={t("nume")}
+          description={t("cumTePutemIdentifica")}
         >
           <input
             name="name"
             required
             minLength={2}
             maxLength={120}
-            placeholder="Numele tău"
+            placeholder={t("numeleTau")}
             aria-invalid={Boolean(fieldErrors.name)}
             aria-describedby={
               fieldErrors.name ? "content-report-name-error" : undefined
@@ -1686,7 +1732,7 @@ export function ContentReportForm({
         </ContactFormRow>
         <ContactFormRow
           label="E-mail"
-          description="Aici îți trimitem confirmarea."
+          description={t("aiciItiTrimitemConfirmarea")}
         >
           <input
             name="email"
@@ -1709,8 +1755,8 @@ export function ContentReportForm({
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Tip"
-          description="Alegem fluxul potrivit."
+          label={t("tip")}
+          description={t("alegemFluxulPotrivit")}
         >
           <select
             name="reportType"
@@ -1725,11 +1771,11 @@ export function ContentReportForm({
               fieldErrors.reportType,
             )}
           >
-            <option value="">Alege tipul</option>
-            <option value="drepturi_autor">Drepturi de autor</option>
-            <option value="date_personale">Date personale</option>
-            <option value="continut_incorect">Conținut incorect</option>
-            <option value="altul">Alt motiv</option>
+            <option value="">{t("alegeTipul")}</option>
+            <option value="drepturi_autor">{t("drepturiDeAutor")}</option>
+            <option value="date_personale">{t("datePersonale")}</option>
+            <option value="continut_incorect">{t("continutIncorect")}</option>
+            <option value="altul">{t("altMotiv")}</option>
           </select>
           <FieldError
             id="content-report-type-error"
@@ -1737,15 +1783,15 @@ export function ContentReportForm({
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Conținut"
-          description="Link sau identificator."
+          label={t("continut")}
+          description={t("linkSauIdentificator")}
         >
           <input
             name="contentReference"
             required
             minLength={3}
             maxLength={400}
-            placeholder="URL, titlu proiect sau identificator"
+            placeholder={t("urlTitluProiectSauIdentificator")}
             aria-invalid={Boolean(fieldErrors.contentReference)}
             aria-describedby={
               fieldErrors.contentReference
@@ -1764,15 +1810,15 @@ export function ContentReportForm({
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Descriere"
-          description="Explică problema."
+          label={t("descriere")}
+          description={t("explicaProblema")}
         >
           <textarea
             name="description"
             required
             minLength={10}
             maxLength={5000}
-            placeholder="Descrie ce trebuie analizat..."
+            placeholder={t("descrieCeTrebuieAnalizat")}
             aria-invalid={Boolean(fieldErrors.description)}
             aria-describedby={
               fieldErrors.description
@@ -1791,14 +1837,14 @@ export function ContentReportForm({
           />
         </ContactFormRow>
         <ContactFormRow
-          label="Dovezi"
-          description="Linkuri, explicații și documente."
+          label={t("dovezi")}
+          description={t("linkuriExplicatiiSiDocumente")}
         >
           <div className="grid min-w-0 gap-3">
             <textarea
               name="rightsEvidence"
               maxLength={5000}
-              placeholder="Linkuri sau explicații suplimentare..."
+              placeholder={t("linkuriSauExplicatiiSuplimentare")}
               aria-invalid={Boolean(fieldErrors.rightsEvidence)}
               aria-describedby={
                 fieldErrors.rightsEvidence
@@ -1825,7 +1871,7 @@ export function ContentReportForm({
                 disabled={
                   selectedAttachments.length >= contentReportMaxAttachmentFiles
                 }
-                aria-label="Adaugă documente"
+                aria-label={t("adaugaDocumente")}
                 aria-invalid={Boolean(fieldErrors.attachments)}
                 aria-describedby={
                   fieldErrors.attachments
@@ -1843,7 +1889,7 @@ export function ContentReportForm({
                   }
                   className="inline-flex w-fit items-center justify-center rounded-md bg-action px-4 py-2 text-xs font-black text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Adaugă documente
+                  {t("adaugaDocumente")}
                 </button>
                 <span className="text-xs font-bold text-muted">
                   {selectedAttachments.length}/{contentReportMaxAttachmentFiles}{" "}
@@ -1851,7 +1897,7 @@ export function ContentReportForm({
                 </span>
               </div>
               <span className="mt-3 block text-xs leading-5 text-muted">
-                PDF, DOC, DOCX, TXT, RTF, JPG, PNG sau WEBP. 10MB fiecare.
+                {t("pdfDocDocxTxtRtf")}
               </span>
               <FieldError
                 id="content-report-attachments-error"
@@ -1877,7 +1923,7 @@ export function ContentReportForm({
                         onClick={() => removeAttachment(attachment.id)}
                         className="shrink-0 rounded-md border border-subtle px-3 py-1.5 text-xs font-black text-muted transition hover:bg-surface-hover hover:text-content"
                       >
-                        Șterge
+                        {t("sterge")}
                       </button>
                     </li>
                   ))}
@@ -1887,8 +1933,8 @@ export function ContentReportForm({
           </div>
         </ContactFormRow>
         <ContactFormRow
-          label="Declarație"
-          description="Confirmare obligatorie."
+          label={t("declaratie")}
+          description={t("confirmareObligatorie")}
           isLast
         >
           <span className="flex min-w-0 items-start gap-3 rounded-lg border border-subtle bg-app px-3 py-3 text-xs leading-5 text-muted">
@@ -1906,8 +1952,7 @@ export function ContentReportForm({
               className="mt-0.5 h-4 w-4 shrink-0 accent-action"
             />
             <span className="min-w-0 break-words">
-              Declar că informațiile furnizate sunt corecte și că solicitarea
-              este făcută cu bună-credință.
+              {t("declarCaInformatiileFurnizateSunt")}
             </span>
           </span>
           <FieldError
@@ -1932,7 +1977,7 @@ export function ContentReportForm({
           onClick={handleAnotherReport}
           className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover sm:w-fit"
         >
-          Trimite altă sesizare
+          {t("trimiteAltaSesizare")}
         </button>
       ) : (
         <button
@@ -1941,7 +1986,7 @@ export function ContentReportForm({
           disabled={isSubmitButtonDisabled}
           className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60 sm:w-fit"
         >
-          {isContentReportSubmitting ? "Se trimite..." : "Trimite sesizarea"}
+          {isContentReportSubmitting ? t("seTrimite") : t("trimiteSesizarea")}
         </button>
       )}
     </form>
@@ -1961,22 +2006,23 @@ function displayCompanyValue(value: string) {
 }
 
 export function CompanyDetailsCard({ companyData }: CompanyDetailsCardProps) {
+  const t = useTranslations("compliance");
   const rows = [
-    ["Operator", displayCompanyValue(companyData.name)],
-    ["Sediu social", displayCompanyValue(companyData.social_location)],
+    [t("operator"), displayCompanyValue(companyData.name)],
+    [t("sediuSocial"), displayCompanyValue(companyData.social_location)],
     ["CUI", displayCompanyValue(companyData.cui)],
     [
-      "Nr. Registrul Comerțului",
+      t("nrRegistrulComertului"),
       displayCompanyValue(companyData.register_number),
     ],
     ["E-mail", displayCompanyValue(companyData.email)],
-    ["Telefon", displayCompanyValue(companyData.phone)],
+    [t("telefon"), displayCompanyValue(companyData.phone)],
   ];
 
   return (
     <aside className="h-fit rounded-[2rem] border border-subtle bg-surface p-5 sm:p-6">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-        Date firmă
+        {t("dateFirma")}
       </p>
       <dl className="mt-4 grid min-w-0 gap-4 text-sm leading-6">
         {rows.map(([label, value]) => (
@@ -2012,6 +2058,7 @@ function ExternalLinkIcon() {
 }
 
 export function SocialLinksCard({ companyData }: SocialLinksCardProps) {
+  const t = useTranslations("compliance");
   const links = socialPlatforms.filter(({ key }) => companyData[key]?.trim());
 
   if (links.length === 0) {
@@ -2021,7 +2068,7 @@ export function SocialLinksCard({ companyData }: SocialLinksCardProps) {
   return (
     <aside className="h-fit rounded-[2rem] border border-subtle bg-surface p-5 sm:p-6">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-        Urmărește-ne
+        {t("urmaresteNe")}
       </p>
       <ul className="mt-4 flex flex-col gap-2">
         {links.map(({ key, label, Icon }) => (

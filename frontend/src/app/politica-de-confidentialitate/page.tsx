@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { LegalDocument } from "@/components/legal/legal-document";
 import { readLegalDocument } from "@/lib/legal-content";
 import { getServerLegalDocument } from "@/lib/server-legal";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Politica de confidențialitate | Reviss",
-  description:
-    "Politica de confidențialitate Reviss privind datele personale și modul în care acestea sunt prelucrate.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.privacy");
+  return { title: t("title"), description: t("description") };
+}
 
 export default async function PrivacyPolicyPage() {
+  const t = await getTranslations("legal.privacy");
   const document = await getServerLegalDocument("privacy_policy");
   const contentHtml =
     document?.rendered_content_html ?? (await readLegalDocument("privacy.html"));
@@ -19,8 +20,8 @@ export default async function PrivacyPolicyPage() {
   return (
     <LegalDocument
       contentHtml={contentHtml}
-      eyebrow="Confidențialitate"
-      summary="Detalii despre datele personale prelucrate în Reviss, scopurile utilizării lor, drepturile utilizatorilor și măsurile de protecție aplicate."
+      eyebrow={t("eyebrow")}
+      summary={t("summary")}
     />
   );
 }

@@ -1,3 +1,4 @@
+import { genericErrorFallback } from "@/lib/client-locale";
 export type ThemePreference = "light" | "dark" | "system";
 export type LanguagePreference = "ro" | "en" | "fr";
 export type UserRole = "admin" | "user";
@@ -69,7 +70,7 @@ function extractErrorMessage(payload: ApiErrorPayload): string {
     if (firstMessage) return firstMessage;
   }
 
-  return "A apărut o eroare. Te rugăm să încerci din nou.";
+  return genericErrorFallback();
 }
 
 async function authRequest<T>(

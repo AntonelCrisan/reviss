@@ -19,6 +19,7 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 from app.api.dependencies import AppSettings, CurrentUser, DbSession
 from app.api.security import client_ip
 from app.core.config import Settings
+from app.core.i18n import get_request_language, t
 from app.core.rate_limit import _memory_rate_limit_buckets, consume_rate_limit
 from app.models import (
     CompanyData,
@@ -614,12 +615,14 @@ async def _send_contact_emails(
 ) -> bool:
     category_label = CONTACT_CATEGORY_LABELS.get(payload.category, payload.category)
     logo_html = email_logo_html(settings.email_logo_url, app_name="Reviss")
+    language = get_request_language()
     html, text = contact_confirmation_email(
         app_url=settings.public_app_url,
         reference=reference,
         category_label=category_label,
         subject=payload.subject,
         logo_html=logo_html,
+        language=language,
     )
     confirmation_sent = await _send_contact_email(
         session=session,
@@ -628,7 +631,9 @@ async def _send_contact_emails(
         email_type="confirmation",
         message=EmailMessage(
             to=str(payload.email),
-            subject=f"Am primit mesajul tău Reviss ({reference})",
+            subject=t(
+                "email.contact_confirmation.subject", language, reference=reference
+            ),
             html=html,
             text=text,
         ),
@@ -692,12 +697,14 @@ async def _send_withdrawal_emails(
     user_agent: str | None,
 ) -> bool:
     logo_html = email_logo_html(settings.email_logo_url, app_name="Reviss")
+    language = get_request_language()
     html, text = withdrawal_confirmation_email(
         app_url=settings.public_app_url,
         reference=reference,
         subscription_or_order=payload.subscription_or_order,
         order_number=payload.order_number,
         logo_html=logo_html,
+        language=language,
     )
     confirmation_sent = await _send_withdrawal_email(
         session=session,
@@ -706,7 +713,11 @@ async def _send_withdrawal_emails(
         email_type="confirmation",
         message=EmailMessage(
             to=str(payload.email),
-            subject=f"Am primit retragerea ta Reviss ({reference})",
+            subject=t(
+                "email.withdrawal_confirmation.subject",
+                language,
+                reference=reference,
+            ),
             html=html,
             text=text,
         ),
@@ -775,6 +786,7 @@ async def _send_content_report_emails(
         payload.report_type,
     )
     logo_html = email_logo_html(settings.email_logo_url, app_name="Reviss")
+    language = get_request_language()
     html, text = content_report_confirmation_email(
         app_url=settings.public_app_url,
         reference=reference,
@@ -784,6 +796,7 @@ async def _send_content_report_emails(
             attachment.original_filename for attachment in attachments
         ],
         logo_html=logo_html,
+        language=language,
     )
     confirmation_sent = await _send_content_report_email(
         session=session,
@@ -792,7 +805,11 @@ async def _send_content_report_emails(
         email_type="confirmation",
         message=EmailMessage(
             to=str(payload.email),
-            subject=f"Am primit raportarea ta Reviss ({reference})",
+            subject=t(
+                "email.content_report_confirmation.subject",
+                language,
+                reference=reference,
+            ),
             html=html,
             text=text,
         ),

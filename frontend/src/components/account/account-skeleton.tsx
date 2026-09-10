@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   ProjectTabSkeleton,
   type SkeletonTabId,
@@ -12,6 +13,7 @@ function SkeletonBlock({ className = "" }: { className?: string }) {
 }
 
 export function AccountSkeleton({ tab }: { tab?: SkeletonTabId }) {
+  const t = useTranslations("common");
   return (
     <main className="min-h-svh bg-app px-3 pb-6 pt-20 text-content sm:px-5 lg:flex lg:px-0 lg:pt-0">
       <aside
@@ -48,7 +50,7 @@ export function AccountSkeleton({ tab }: { tab?: SkeletonTabId }) {
         </div>
 
         <div
-          aria-label="Se încarcă tabul proiectului"
+          aria-label={t("loadingProjectTab")}
           // Lets a browser check assert which tab the placeholder stands for.
           data-skeleton-tab={tab ?? "none"}
         >

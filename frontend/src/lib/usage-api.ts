@@ -1,3 +1,4 @@
+import { genericErrorFallback } from "@/lib/client-locale";
 export type Usage = {
   projects_used: number;
   projects_limit: number;
@@ -36,7 +37,7 @@ function extractErrorMessage(payload: ApiErrorPayload): string {
     if (firstMessage) return firstMessage;
   }
 
-  return "A apărut o eroare. Te rugăm să încerci din nou.";
+  return genericErrorFallback();
 }
 
 export async function getUsage(): Promise<Usage> {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -38,6 +39,9 @@ type UpgradePlan = {
   features: string[];
 };
 
+type UpgradeTranslator = ReturnType<typeof useTranslations<"upgrade">>;
+type UpgradeKey = Parameters<UpgradeTranslator>[0];
+
 const CHECKOUT_SYNC_ATTEMPTS = 12;
 const CHECKOUT_SYNC_INTERVAL_MS = 1500;
 
@@ -64,22 +68,23 @@ function formatPlanPrice(value: SubscriptionPlanPublic["price_ron"]) {
     : numericValue.toFixed(2).replace(".", ",");
 }
 
-function billingSuffix(interval: string) {
+function billingSuffix(t: UpgradeTranslator, interval: string) {
   const normalized = interval.trim().toLowerCase();
-  if (normalized.includes("lun")) return "RON / lună";
-  if (normalized.includes("an")) return "RON / an";
+  if (normalized.includes("lun")) return t("ronLuna");
+  if (normalized.includes("an")) return t("ronAn");
   return `RON / ${interval}`;
 }
 
-const PLAN_TITLES: Record<string, string> = {
-  start: "Pentru început",
-  focus: "Studiu Activ",
-  pro: "Sesiune Pro",
+const PLAN_TITLE_KEYS: Record<string, UpgradeKey> = {
+  start: "pentruInceput",
+  focus: "studiuActiv",
+  pro: "sesiunePro",
 };
 
-function planTitle(plan: SubscriptionPlanPublic) {
-  if (Number(plan.price_ron) === 0) return "Pentru început";
-  return PLAN_TITLES[plan.slug] ?? plan.name;
+function planTitle(t: UpgradeTranslator, plan: SubscriptionPlanPublic) {
+  if (Number(plan.price_ron) === 0) return t("pentruInceput");
+  const titleKey = PLAN_TITLE_KEYS[plan.slug];
+  return titleKey ? t(titleKey) : plan.name;
 }
 
 function uniqueFeatures(features: string[]) {
@@ -92,7 +97,10 @@ function uniqueFeatures(features: string[]) {
   });
 }
 
-function toUpgradePlans(plans: SubscriptionPlanPublic[]): UpgradePlan[] {
+function toUpgradePlans(
+  t: UpgradeTranslator,
+  plans: SubscriptionPlanPublic[],
+): UpgradePlan[] {
   return [...plans]
     .filter((plan) => plan.is_visible)
     .sort((first, second) => first.sort_order - second.sort_order)
@@ -105,10 +113,10 @@ function toUpgradePlans(plans: SubscriptionPlanPublic[]): UpgradePlan[] {
       return {
         slug: plan.slug,
         name: plan.name,
-        title: planTitle(plan),
+        title: planTitle(t, plan),
         price: formatPlanPrice(plan.price_ron),
         oldPrice: plan.old_price_ron ? formatPlanPrice(plan.old_price_ron) : "",
-        note: isFree ? "RON / permanent" : billingSuffix(plan.billing_interval),
+        note: isFree ? t("ronPermanent") : billingSuffix(t, plan.billing_interval),
         description: plan.description,
         discount: plan.discount_label ?? "",
         paid: !isFree,
@@ -127,12 +135,16 @@ function wait(milliseconds: number) {
   });
 }
 
-function formatSubscriptionDate(value?: string | null) {
-  if (!value) return "finalul perioadei plătite";
+function formatSubscriptionDate(
+  t: UpgradeTranslator,
+  locale: string,
+  value?: string | null,
+) {
+  if (!value) return t("finalulPerioadeiPlatite");
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "finalul perioadei plătite";
+  if (Number.isNaN(date.getTime())) return t("finalulPerioadeiPlatite");
 
-  return new Intl.DateTimeFormat("ro-RO", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -162,17 +174,17 @@ function daysUntil(value?: string | null) {
   return days >= 0 ? days : null;
 }
 
-function renewalCountdownLabel(days: number | null) {
+function renewalCountdownLabel(t: UpgradeTranslator, days: number | null) {
   if (days === null) return "";
-  if (days === 0) return "astăzi";
-  if (days === 1) return "mâine";
-  return `${days} zile`;
+  if (days === 0) return t("astazi");
+  if (days === 1) return t("maine");
+  return t("nZile", { days });
 }
 
-function subscriptionActionError(error: unknown) {
+function subscriptionActionError(t: UpgradeTranslator, error: unknown) {
   if (error instanceof PaymentsApiError) return error.message;
   if (error instanceof Error) return error.message;
-  return "Abonamentul nu a putut fi actualizat momentan.";
+  return t("abonamentulNuAPututFi");
 }
 
 export function UpgradePage({
@@ -180,6 +192,8 @@ export function UpgradePage({
   checkoutSessionId,
   checkoutStatus,
 }: UpgradePageProps) {
+  const t = useTranslations("upgrade");
+  const locale = useLocale();
   const router = useRouter();
   const { user, isLoading, setUser } = useAuth();
   const syncedCheckoutSessionRef = useRef<string | null>(null);
@@ -190,7 +204,7 @@ export function UpgradePage({
   const currentUserId = user?.id ?? null;
   const userPlanSlug = user?.current_plan?.slug ?? "start";
   const userPlanIsPaid = Number(user?.current_plan?.price_ron ?? 0) > 0;
-  const upgradePlans = toUpgradePlans(plans);
+  const upgradePlans = toUpgradePlans(t, plans);
   const activeSubscription = currentSubscription;
   const currentPlanSlug = activeSubscription?.plan_slug ?? userPlanSlug;
   const currentPlanName =
@@ -198,10 +212,12 @@ export function UpgradePage({
   const currentPlanIsPaid = Boolean(activeSubscription) || userPlanIsPaid;
   const cancellationPending = Boolean(activeSubscription?.cancel_at_period_end);
   const accessUntilLabel = formatSubscriptionDate(
+    t,
+    locale,
     activeSubscription?.current_period_end,
   );
   const daysToRenewal = daysUntil(activeSubscription?.current_period_end);
-  const renewalCountdown = renewalCountdownLabel(daysToRenewal);
+  const renewalCountdown = renewalCountdownLabel(t, daysToRenewal);
   const hasPeriodEnd =
     Boolean(activeSubscription) &&
     currentPlanIsPaid &&
@@ -215,19 +231,19 @@ export function UpgradePage({
     : cancellationPending
       ? {
           tone: "warning" as const,
-          title: `Abonamentul ${currentPlanName} expiră pe ${accessUntilLabel}`,
+          title: t("abonamentulCurrentplannameExpiraPeAccess", { currentPlanName, accessUntilLabel }),
           detail:
             daysToRenewal !== null
-              ? `Mai ai acces ${renewalCountdown}. După această dată contul trece automat pe planul gratuit.`
-              : "După această dată contul trece automat pe planul gratuit.",
+              ? t("maiAiAccesRenewalcountdownDupa", { renewalCountdown })
+              : t("dupaAceastaDataContulTrece"),
         }
       : {
           tone: "neutral" as const,
-          title: `Abonamentul ${currentPlanName} se reînnoiește pe ${accessUntilLabel}`,
+          title: t("abonamentulCurrentplannameSeReinnoiesteP", { currentPlanName, accessUntilLabel }),
           detail:
             daysToRenewal !== null
-              ? `Următoarea plată are loc ${renewalCountdown}. Poți opri reînnoirea oricând până atunci.`
-              : "Poți opri reînnoirea oricând până atunci.",
+              ? t("urmatoareaPlataAreLocRenewalcountdown", { renewalCountdown })
+              : t("potiOpriReinnoireaOricandPana"),
         };
 
   useEffect(() => {
@@ -315,14 +331,16 @@ export function UpgradePage({
       setUser(response.user);
       setCurrentSubscription(response.subscription);
       toast.success(
-        `Reînnoirea este anulată. Ai acces până la ${formatSubscriptionDate(
+        t("reinnoireaEsteAnulataAiAcces", { value: formatSubscriptionDate(
+          t,
+          locale,
           response.subscription?.current_period_end,
-        )}.`,
+        ) }),
       );
       setIsCancelModalOpen(false);
       router.refresh();
     } catch (error) {
-      toast.error(subscriptionActionError(error));
+      toast.error(subscriptionActionError(t, error));
     } finally {
       setIsUpdatingSubscription(false);
     }
@@ -337,10 +355,10 @@ export function UpgradePage({
       const response = await resumeCurrentSubscription();
       setUser(response.user);
       setCurrentSubscription(response.subscription);
-      toast.success("Reînnoirea abonamentului este activă din nou.");
+      toast.success(t("reinnoireaAbonamentuluiEsteActivaDin"));
       router.refresh();
     } catch (error) {
-      toast.error(subscriptionActionError(error));
+      toast.error(subscriptionActionError(t, error));
     } finally {
       setIsUpdatingSubscription(false);
     }
@@ -354,13 +372,13 @@ export function UpgradePage({
         <div className="flex flex-col gap-5 border-b border-subtle pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Abonament
+              {t("abonament")}
             </p>
             <h1 className="mt-3 max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-              Alege planul potrivit.
+              {t("alegePlanulPotrivit")}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
-              Planuri simple, transparente, cu reînnoire lunară.
+              {t("planuriSimpleTransparenteCuReinnoire")}
             </p>
           </div>
 
@@ -370,16 +388,16 @@ export function UpgradePage({
               <span className="text-content">
                 {currentPlanName}
               </span>
-              activ
+              {t("activ")}
             </span>
             {cancellationPending ? (
               <span className="inline-flex items-center rounded-md border border-warning-border bg-warning-soft px-4 py-2 text-xs font-bold text-warning">
-                se oprește la {accessUntilLabel}
+                {t("seOpresteLa")} {accessUntilLabel}
               </span>
             ) : null}
             {showRenewalInfo ? (
               <span className="inline-flex items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-bold text-muted">
-                se reînnoiește
+                {t("seReinnoieste")}
                 <span className="text-content">{accessUntilLabel}</span>
               </span>
             ) : null}
@@ -387,7 +405,7 @@ export function UpgradePage({
               href="/upgrade/facturi"
               className="inline-flex cursor-pointer items-center rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-bold text-muted transition hover:bg-surface-hover hover:text-content"
             >
-              Facturi
+              {t("facturi")}
             </Link>
           </div>
         </div>
@@ -444,12 +462,12 @@ export function UpgradePage({
                             : "bg-success-soft text-success"
                         }`}
                       >
-                        Activ
+                        {t("activ2")}
                       </span>
                     ) : null}
                     {plan.highlighted ? (
                       <span className="rounded-md bg-on-action px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-action">
-                        Recomandat
+                        {t("recomandat")}
                       </span>
                     ) : null}
                   </div>
@@ -530,8 +548,8 @@ export function UpgradePage({
                         }`}
                       >
                         {cancellationPending
-                          ? `Activ până la ${accessUntilLabel}`
-                          : "Plan actual"}
+                          ? t("activPanaLaAccessuntillabel", { accessUntilLabel })
+                          : t("planActual")}
                       </button>
                       {plan.paid ? (
                         cancellationPending ? (
@@ -546,8 +564,8 @@ export function UpgradePage({
                             }`}
                           >
                             {isUpdatingSubscription
-                              ? "Se actualizează..."
-                              : "Reactivează reînnoirea"}
+                              ? t("seActualizeaza")
+                              : t("reactiveazaReinnoirea")}
                           </button>
                         ) : (
                           <button
@@ -560,7 +578,7 @@ export function UpgradePage({
                                 : "border-danger-border text-danger hover:bg-danger-soft"
                             }`}
                           >
-                            Anulează reînnoirea
+                            {t("anuleazaReinnoirea")}
                           </button>
                         )
                       ) : null}
@@ -572,7 +590,7 @@ export function UpgradePage({
                         disabled
                         className="w-full cursor-default rounded-md border border-subtle bg-surface-hover px-5 py-3 text-sm font-black text-muted"
                       >
-                        Programat pe {accessUntilLabel}
+                        {t("programatPe")} {accessUntilLabel}
                       </button>
                     ) : (
                       <button
@@ -581,7 +599,7 @@ export function UpgradePage({
                         disabled={isUpdatingSubscription}
                         className="w-full cursor-pointer rounded-md border border-subtle bg-surface px-5 py-3 text-sm font-black text-content transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        Trece pe planul gratuit
+                        {t("trecePePlanulGratuit")}
                       </button>
                     )
                   ) : (
@@ -593,7 +611,7 @@ export function UpgradePage({
                           : "bg-action text-on-action hover:bg-action-hover"
                       }`}
                     >
-                      Vezi detaliile planului
+                      {t("veziDetaliilePlanului")}
                       <span aria-hidden="true">→</span>
                     </Link>
                   )}
@@ -631,18 +649,18 @@ function CancelRenewalModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const t = useTranslations("upgrade");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8">
       <section className="w-full max-w-xl rounded-xl border border-subtle bg-surface p-6 text-content shadow-2xl shadow-black/20">
         <p className="inline-flex rounded-md border border-danger-border bg-danger-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-danger">
-          Anulare reînnoire
+          {t("anulareReinnoire")}
         </p>
         <h2 className="mt-4 font-serif text-4xl font-semibold leading-tight">
-          Oprești plata lunară pentru {planName}?
+          {t("oprestiPlataLunaraPentru")} {planName}?
         </h2>
         <p className="mt-4 text-sm leading-7 text-muted">
-          Nu vei mai fi taxat la următoarea reînnoire. Planul rămâne activ până
-          la {accessUntilLabel}, apoi contul trece automat pe planul gratuit.
+          {t("nuVeiMaiFiTaxat")} {accessUntilLabel}{t("apoiContulTreceAutomatPe")}
         </p>
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -652,7 +670,7 @@ function CancelRenewalModal({
             disabled={isSubmitting}
             className="cursor-pointer rounded-md border border-subtle px-5 py-3 text-sm font-black transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Renunță
+            {t("renunta")}
           </button>
           <button
             type="button"
@@ -660,7 +678,7 @@ function CancelRenewalModal({
             disabled={isSubmitting}
             className="cursor-pointer rounded-md bg-danger px-5 py-3 text-sm font-black text-on-action transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Se anulează..." : "Anulează reînnoirea"}
+            {isSubmitting ? t("seAnuleaza") : t("anuleazaReinnoirea")}
           </button>
         </div>
       </section>

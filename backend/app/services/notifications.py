@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.config import Settings
+from app.core.i18n import normalize_language, plural_key, t
 from app.models import (
     Notification,
     StudyProject,
@@ -53,15 +54,12 @@ def _project_url(app_url: str, project_id: uuid.UUID | None) -> str | None:
     return f"{app_url.rstrip('/')}/myaccount/rezumat?project={project_id}"
 
 
-def _weekly_progress_closing_line(avg_score: int) -> str:
+def _weekly_progress_closing_line(avg_score: int, language: str) -> str:
     if avg_score >= 80:
-        return "Scor excelent — continuă tot așa!"
+        return t("notification.weekly_progress.closing_high", language)
     if avg_score >= 50:
-        return "Ești pe drumul cel bun — mai exersează puțin la conceptele slabe."
-    return (
-        "Sunt încă lucruri de clarificat — o recapitulare țintită te-ar ajuta "
-        "să crești scorul."
-    )
+        return t("notification.weekly_progress.closing_mid", language)
+    return t("notification.weekly_progress.closing_low", language)
 
 
 class NotificationNotFoundError(Exception):
@@ -200,6 +198,7 @@ class NotificationService:
             ],
             app_url=self._settings.public_app_url,
             logo_html=email_logo_html(self._settings.email_logo_url, app_name="Reviss"),
+            language=normalize_language(user.language_preference),
         )
         try:
             await EmailService(self._settings).send(
@@ -249,14 +248,12 @@ class NotificationService:
         if review_count == 0:
             return None
 
+        language = normalize_language(user.language_preference)
         notification = Notification(
             user_id=user.id,
             type="daily_review",
-            title="Recapitulare zilnică",
-            body=(
-                f"Ai {review_count} flashcard-uri marcate de revizuit. "
-                "E un moment bun să le recapitulezi."
-            ),
+            title=t("notification.daily_review.title", language),
+            body=t("notification.daily_review.body", language, count=review_count),
         )
         self._session.add(notification)
         await self._session.flush()
@@ -324,25 +321,37 @@ class NotificationService:
         if quiz_count == 0 and active_days == 0:
             return None
 
+        language = normalize_language(user.language_preference)
+        days_label = t(
+            plural_key("notification.weekly_progress.days", active_days),
+            language,
+            count=active_days,
+        )
         if quiz_count > 0:
             score = round(float(avg_score or 0))
             body = (
-                f"Săptămâna asta ai terminat {quiz_count} "
-                f"{'quiz' if quiz_count == 1 else 'quiz-uri'} (scor mediu "
-                f"{score}%) și ai studiat {active_days} "
-                f"{'zi' if active_days == 1 else 'zile'}. "
-                f"{_weekly_progress_closing_line(score)}"
+                t(
+                    "notification.weekly_progress.body_quizzes",
+                    language,
+                    quizzes=t(
+                        plural_key("notification.weekly_progress.quizzes", quiz_count),
+                        language,
+                        count=quiz_count,
+                    ),
+                    score=score,
+                    days=days_label,
+                    closing=_weekly_progress_closing_line(score, language),
+                )
             )
         else:
-            body = (
-                f"Săptămâna asta ai studiat {active_days} "
-                f"{'zi' if active_days == 1 else 'zile'}. Continuă tot așa!"
+            body = t(
+                "notification.weekly_progress.body_days", language, days=days_label
             )
 
         notification = Notification(
             user_id=user.id,
             type="weekly_progress",
-            title="Rezumatul tău săptămânal",
+            title=t("notification.weekly_progress.title", language),
             body=body,
         )
         self._session.add(notification)
@@ -377,14 +386,12 @@ class NotificationService:
         if existing is not None:
             return None
 
+        language = normalize_language(user.language_preference)
         notification = Notification(
             user_id=user.id,
             type="inactivity_reminder",
-            title="Ne e dor de tine!",
-            body=(
-                f"Nu ai mai studiat de {days_inactive} zile. "
-                "Revino pentru o recapitulare rapidă."
-            ),
+            title=t("notification.inactivity.title", language),
+            body=t("notification.inactivity.body", language, days=days_inactive),
         )
         self._session.add(notification)
         await self._session.flush()
@@ -414,14 +421,12 @@ class NotificationService:
         if existing is not None:
             return None
 
+        language = normalize_language(user.language_preference)
         notification = Notification(
             user_id=user.id,
             type="streak_milestone",
-            title=f"Streak de {streak} zile!",
-            body=(
-                f"Ai studiat {streak} zile consecutive. "
-                "Așa se construiește performanța."
-            ),
+            title=t("notification.streak.title", language, days=streak),
+            body=t("notification.streak.body", language, days=streak),
         )
         self._session.add(notification)
         await self._session.flush()
@@ -529,15 +534,21 @@ class NotificationService:
                     )
                     for item in notifications
                 ]
+                language = normalize_language(user.language_preference)
                 html, text = notification_digest_email(
                     items=items,
                     app_url=settings.public_app_url,
                     logo_html=logo_html,
+                    language=language,
                 )
                 subject = (
                     notifications[0].title
                     if len(notifications) == 1
-                    else f"Rezumatul tău zilnic Reviss ({len(notifications)} noutăți)"
+                    else t(
+                        "email.digest.subject_many",
+                        language,
+                        count=len(notifications),
+                    )
                 )
                 try:
                     await email_service.send(

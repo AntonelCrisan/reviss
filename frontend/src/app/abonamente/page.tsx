@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import {
@@ -25,28 +26,34 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const pageTitle = "Abonamente și prețuri";
-const pageDescription =
-  "Compară planurile Reviss: preț, materiale procesate lunar, limite și beneficii. Începi gratuit și treci la un plan plătit când ai nevoie de mai mult.";
+const localeTags = { ro: "ro-RO", en: "en-US", fr: "fr-FR" } as const;
+const openGraphLocales = { ro: "ro_RO", en: "en_US", fr: "fr_FR" } as const;
 
-export const metadata: Metadata = {
-  title: pageTitle,
-  description: pageDescription,
-  alternates: { canonical: absoluteUrl(plansIndexPath) },
-  openGraph: {
-    type: "website",
-    url: absoluteUrl(plansIndexPath),
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("marketing.plans");
+  const locale = (await getLocale()) as keyof typeof openGraphLocales;
+  const pageTitle = t("pageTitle");
+  const pageDescription = t("pageDescription");
+
+  return {
     title: pageTitle,
     description: pageDescription,
-    siteName,
-    locale: "ro_RO",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: pageTitle,
-    description: pageDescription,
-  },
-};
+    alternates: { canonical: absoluteUrl(plansIndexPath) },
+    openGraph: {
+      type: "website",
+      url: absoluteUrl(plansIndexPath),
+      title: pageTitle,
+      description: pageDescription,
+      siteName,
+      locale: openGraphLocales[locale] ?? openGraphLocales.ro,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: pageTitle,
+      description: pageDescription,
+    },
+  };
+}
 
 function CheckIcon() {
   return (
@@ -64,6 +71,9 @@ function CheckIcon() {
 }
 
 export default async function PlansIndexRoute() {
+  const t = await getTranslations("marketing.plans");
+  const tPricing = await getTranslations("marketing.pricing");
+  const locale = (await getLocale()) as keyof typeof localeTags;
   const allPlans = (await getServerPublicPlans()) ?? fallbackSubscriptionPlans;
   const plans = allPlans
     .filter((plan) => plan.is_visible)
@@ -74,10 +84,10 @@ export default async function PlansIndexRoute() {
     "@graph": [
       {
         "@type": "CollectionPage",
-        name: pageTitle,
-        description: pageDescription,
+        name: t("pageTitle"),
+        description: t("pageDescription"),
         url: absoluteUrl(plansIndexPath),
-        inLanguage: "ro-RO",
+        inLanguage: localeTags[locale] ?? localeTags.ro,
         isPartOf: { "@type": "WebSite", name: siteName, url: siteUrl },
       },
       {
@@ -92,11 +102,16 @@ export default async function PlansIndexRoute() {
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Acasă", item: siteUrl },
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: t("breadcrumbHome"),
+            item: siteUrl,
+          },
           {
             "@type": "ListItem",
             position: 2,
-            name: "Abonamente",
+            name: t("breadcrumbPlans"),
             item: absoluteUrl(plansIndexPath),
           },
         ],
@@ -115,14 +130,13 @@ export default async function PlansIndexRoute() {
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-            Abonamente simple, fără surprize
+            {tPricing("eyebrow")}
           </p>
           <h1 className="mt-4 text-balance font-serif text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-            Alege cât de intens vrei să înveți.
+            {tPricing("title")}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-muted">
-            Începi gratuit, iar când cursurile se adună poți trece la un plan cu
-            mai mult spațiu, repetiție inteligentă și analiză de progres.
+            {tPricing("description")}
           </p>
         </div>
 
@@ -142,7 +156,7 @@ export default async function PlansIndexRoute() {
               >
                 {plan.is_featured ? (
                   <div className="absolute right-5 top-5 rounded-md bg-on-action px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-action">
-                    Recomandat
+                    {t("recommended")}
                   </div>
                 ) : null}
 
@@ -179,7 +193,7 @@ export default async function PlansIndexRoute() {
                       plan.is_featured ? "text-on-action/65" : "text-muted"
                     }`}
                   >
-                    {isFree ? "RON gratuit" : billingSuffix(plan.billing_interval)}
+                    {isFree ? t("freeSuffix") : billingSuffix(t, plan.billing_interval)}
                   </span>
                 </div>
 
@@ -229,7 +243,7 @@ export default async function PlansIndexRoute() {
                       : "border border-subtle bg-app hover:bg-surface-hover"
                   }`}
                 >
-                  Vezi detaliile planului
+                  {t("viewPlan")}
                   <span aria-hidden="true">→</span>
                 </Link>
               </article>
@@ -238,7 +252,7 @@ export default async function PlansIndexRoute() {
         </div>
 
         <p className="mt-8 text-center text-xs leading-6 text-muted">
-          Plata se face lunar, fără perioadă contractuală.
+          {t("monthlyNote")}
         </p>
       </div>
 

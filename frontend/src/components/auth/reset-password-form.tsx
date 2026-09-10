@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { AuthApiError, confirmPasswordReset } from "@/lib/auth-api";
 import { toast } from "@/lib/toast-store";
@@ -28,6 +29,8 @@ function ArrowIcon() {
 }
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+  const t = useTranslations("auth.reset");
+  const tForm = useTranslations("auth.form");
   const formRef = useRef<HTMLFormElement | null>(null);
   const submitLockRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,9 +40,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   // rather than waiting for the visitor to fill the form and submit it.
   useEffect(() => {
     if (!token) {
-      toast.error("Linkul de resetare lipsește sau este incomplet.");
+      toast.error(t("missingToken"));
     }
-  }, [token]);
+  }, [t, token]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,7 +53,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
     if (password !== confirmPassword) {
-      toast.error("Parolele introduse nu coincid.");
+      toast.error(tForm("errors.passwordsMismatch"));
       return;
     }
 
@@ -68,9 +71,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       submitLockRef.current = false;
       setIsSuccess(false);
       toast.error(
-        error instanceof AuthApiError
-          ? error.message
-          : "Parola nu a putut fi actualizată momentan.",
+        error instanceof AuthApiError ? error.message : t("updateFailed"),
       );
     } finally {
       if (!completed) {
@@ -84,7 +85,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="password" className="text-sm font-bold text-content">
-          Parolă nouă
+          {t("newPassword")}
         </label>
         <input
           id="password"
@@ -94,7 +95,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           required
           minLength={10}
           disabled={!token || isSuccess}
-          placeholder="Minimum 10 caractere"
+          placeholder={tForm("passwordPlaceholderRegister")}
           className={inputClassName}
         />
       </div>
@@ -104,7 +105,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           htmlFor="confirmPassword"
           className="text-sm font-bold text-content"
         >
-          Confirmă parola nouă
+          {t("confirmNewPassword")}
         </label>
         <input
           id="confirmPassword"
@@ -114,7 +115,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           required
           minLength={10}
           disabled={!token || isSuccess}
-          placeholder="Repetă parola"
+          placeholder={tForm("confirmPasswordPlaceholder")}
           className={inputClassName}
         />
       </div>
@@ -124,7 +125,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           href="/login"
           className="theme-shadow-action flex h-11 w-full items-center justify-center gap-3 rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover"
         >
-          Intră în cont
+          {tForm("submit.login")}
           <ArrowIcon />
         </Link>
       ) : (
@@ -133,7 +134,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           disabled={!token || isSubmitting || isSuccess}
           className="theme-shadow-action flex h-11 w-full items-center justify-center gap-3 rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-wait disabled:opacity-65 disabled:hover:translate-y-0"
         >
-          {isSubmitting ? "Se actualizează..." : "Setează parola nouă"}
+          {isSubmitting ? t("submitting") : t("submit")}
           <ArrowIcon />
         </button>
       )}

@@ -1,0 +1,1110 @@
+{
+  "Autentificarea este necesară.": {
+    "en": "You need to be signed in.",
+    "fr": "Vous devez être connecté."
+  },
+  "Accesul administrativ este necesar.": {
+    "en": "Administrator access is required.",
+    "fr": "Un accès administrateur est requis."
+  },
+  "Sesiunea nu mai este validă.": {
+    "en": "Your session is no longer valid.",
+    "fr": "Votre session n'est plus valide."
+  },
+  "Solicitarea de ștergere nu există.": {
+    "en": "The deletion request does not exist.",
+    "fr": "La demande de suppression n'existe pas."
+  },
+  "Nu poți șterge ultimul administrator activ.": {
+    "en": "You cannot delete the last active administrator.",
+    "fr": "Vous ne pouvez pas supprimer le dernier administrateur actif."
+  },
+  "Solicitarea de ștergere a fost deja rezolvată.": {
+    "en": "The deletion request has already been handled.",
+    "fr": "La demande de suppression a déjà été traitée."
+  },
+  "Nu îți poți șterge propriul cont de administrator.": {
+    "en": "You cannot delete your own administrator account.",
+    "fr": "Vous ne pouvez pas supprimer votre propre compte administrateur."
+  },
+  "Solicitările de ștergere nu pot fi încărcate momentan.": {
+    "en": "Deletion requests cannot be loaded right now.",
+    "fr": "Les demandes de suppression ne peuvent pas être chargées pour le moment."
+  },
+  "Contul nu a fost șters deoarece emailul de confirmare nu a putut fi trimis.": {
+    "en": "The account was not deleted because the confirmation email could not be sent.",
+    "fr": "Le compte n'a pas été supprimé car l'email de confirmation n'a pas pu être envoyé."
+  },
+  "Documentul nu există.": {
+    "en": "The document does not exist.",
+    "fr": "Le document n'existe pas."
+  },
+  "Raportările de conținut nu pot fi încărcate momentan. Baza de date trebuie actualizată pentru documentele atașate.": {
+    "en": "Content reports cannot be loaded right now. The database needs to be updated for attachments.",
+    "fr": "Les signalements de contenu ne peuvent pas être chargés pour le moment. La base de données doit être mise à jour pour les pièces jointes."
+  },
+  "Documentul nu poate fi descărcat momentan. Baza de date trebuie actualizată pentru documentele atașate.": {
+    "en": "The document cannot be downloaded right now. The database needs to be updated for attachments.",
+    "fr": "Le document ne peut pas être téléchargé pour le moment. La base de données doit être mise à jour pour les pièces jointes."
+  },
+  "Utilizatorul nu exista.": {
+    "en": "The user does not exist.",
+    "fr": "L'utilisateur n'existe pas."
+  },
+  "Nu poti elimina ultimul administrator activ.": {
+    "en": "You cannot remove the last active administrator.",
+    "fr": "Vous ne pouvez pas retirer le dernier administrateur actif."
+  },
+  "Contul este deja activ.": {
+    "en": "The account is already active.",
+    "fr": "Le compte est déjà actif."
+  },
+  "Nu iti poti sterge propriul cont de administrator.": {
+    "en": "You cannot delete your own administrator account.",
+    "fr": "Vous ne pouvez pas supprimer votre propre compte administrateur."
+  },
+  "Nu iti poti elimina propriul rol de administrator.": {
+    "en": "You cannot remove your own administrator role.",
+    "fr": "Vous ne pouvez pas retirer votre propre rôle d'administrateur."
+  },
+  "Nu iti poti dezactiva propriul cont.": {
+    "en": "You cannot deactivate your own account.",
+    "fr": "Vous ne pouvez pas désactiver votre propre compte."
+  },
+  "Emailul de verificare nu a putut fi trimis momentan.": {
+    "en": "The verification email could not be sent right now.",
+    "fr": "L'email de vérification n'a pas pu être envoyé pour le moment."
+  },
+  "Utilizatorul nu a fost șters deoarece emailul de confirmare nu a putut fi trimis.": {
+    "en": "The user was not deleted because the confirmation email could not be sent.",
+    "fr": "L'utilisateur n'a pas été supprimé car l'email de confirmation n'a pas pu être envoyé."
+  },
+  "Cererile de retragere nu pot fi încărcate momentan.": {
+    "en": "Withdrawal requests cannot be loaded right now.",
+    "fr": "Les demandes de rétractation ne peuvent pas être chargées pour le moment."
+  },
+  "Combinatia feature={item.feature}/size_tier={item.size_tier} nu exista.": {
+    "en": "The combination feature={item.feature}/size_tier={item.size_tier} does not exist.",
+    "fr": "La combinaison feature={item.feature}/size_tier={item.size_tier} n'existe pas."
+  },
+  "Ți-am trimis un email de confirmare. Contul va fi creat după validarea adresei de email.": {
+    "en": "We sent you a confirmation email. Your account will be created once the email address is verified.",
+    "fr": "Nous vous avons envoyé un email de confirmation. Le compte sera créé après validation de l'adresse email."
+  },
+  "Dacă adresa există în platformă, vei primi în scurt timp un link pentru resetarea parolei.": {
+    "en": "If the address exists on the platform, you will shortly receive a password reset link.",
+    "fr": "Si l'adresse existe sur la plateforme, vous recevrez sous peu un lien de réinitialisation du mot de passe."
+  },
+  "Parola a fost actualizată. Te poți autentifica.": {
+    "en": "Your password has been updated. You can sign in now.",
+    "fr": "Votre mot de passe a été mis à jour. Vous pouvez vous connecter."
+  },
+  "Sesiunea a fost închisă.": {
+    "en": "You have been signed out.",
+    "fr": "La session a été fermée."
+  },
+  "Parola a fost actualizată. Celelalte sesiuni au fost revocate.": {
+    "en": "Your password has been updated. Other sessions have been signed out.",
+    "fr": "Votre mot de passe a été mis à jour. Les autres sessions ont été déconnectées."
+  },
+  "Ți-am trimis un email de confirmare la {payload.new_email}. Adresa se schimbă după confirmare.": {
+    "en": "We sent a confirmation email to {payload.new_email}. The address changes once you confirm.",
+    "fr": "Nous avons envoyé un email de confirmation à {payload.new_email}. L'adresse changera après confirmation."
+  },
+  "Adresa de email a fost schimbată.": {
+    "en": "Your email address has been changed.",
+    "fr": "L'adresse email a été modifiée."
+  },
+  "Consimțământul pentru newsletter a fost retras.": {
+    "en": "Your newsletter consent has been withdrawn.",
+    "fr": "Le consentement à la newsletter a été retiré."
+  },
+  "Solicitarea de ștergere a contului a fost înregistrată. Un administrator o va procesa.": {
+    "en": "Your account deletion request has been recorded. An administrator will process it.",
+    "fr": "Votre demande de suppression de compte a été enregistrée. Un administrateur la traitera."
+  },
+  "Cererea nu a putut fi verificata.": {
+    "en": "The request could not be verified.",
+    "fr": "La demande n'a pas pu être vérifiée."
+  },
+  "Există deja un cont asociat acestei adrese de email.": {
+    "en": "An account already exists for this email address.",
+    "fr": "Un compte existe déjà pour cette adresse email."
+  },
+  "Emailul de confirmare nu a putut fi trimis momentan. Te rugăm să încerci din nou.": {
+    "en": "The confirmation email could not be sent right now. Please try again.",
+    "fr": "L'email de confirmation n'a pas pu être envoyé pour le moment. Veuillez réessayer."
+  },
+  "Linkul de confirmare este invalid sau a expirat.": {
+    "en": "The confirmation link is invalid or has expired.",
+    "fr": "Le lien de confirmation est invalide ou a expiré."
+  },
+  "Emailul sau parola sunt incorecte.": {
+    "en": "The email or password is incorrect.",
+    "fr": "L'email ou le mot de passe est incorrect."
+  },
+  "Contul este in asteptarea confirmarii. Verifica emailul primit si confirma adresa inainte sa te autentifici.": {
+    "en": "Your account is awaiting confirmation. Check your inbox and confirm the address before signing in.",
+    "fr": "Votre compte est en attente de confirmation. Consultez l'email reçu et confirmez l'adresse avant de vous connecter."
+  },
+  "Autentificarea prin Google a eșuat. Încearcă din nou.": {
+    "en": "Google sign-in failed. Please try again.",
+    "fr": "La connexion via Google a échoué. Veuillez réessayer."
+  },
+  "Emailul de resetare nu a putut fi trimis momentan. Te rugăm să încerci din nou.": {
+    "en": "The reset email could not be sent right now. Please try again.",
+    "fr": "L'email de réinitialisation n'a pas pu être envoyé pour le moment. Veuillez réessayer."
+  },
+  "Linkul de resetare este invalid sau a expirat.": {
+    "en": "The reset link is invalid or has expired.",
+    "fr": "Le lien de réinitialisation est invalide ou a expiré."
+  },
+  "Parola curentă este incorectă.": {
+    "en": "The current password is incorrect.",
+    "fr": "Le mot de passe actuel est incorrect."
+  },
+  "Adresa introdusă este identică cu cea curentă.": {
+    "en": "The address you entered is the same as the current one.",
+    "fr": "L'adresse saisie est identique à l'adresse actuelle."
+  },
+  "Ai deja o solicitare de ștergere înregistrată. Un administrator o va procesa.": {
+    "en": "You already have a deletion request on file. An administrator will process it.",
+    "fr": "Vous avez déjà une demande de suppression enregistrée. Un administrateur la traitera."
+  },
+  "Documentul {safe_filename} nu este acceptat. Folosește: {allowed}.": {
+    "en": "The document {safe_filename} is not accepted. Use: {allowed}.",
+    "fr": "Le document {safe_filename} n'est pas accepté. Utilisez : {allowed}."
+  },
+  "Imaginea WEBP nu pare validă.": {
+    "en": "The WEBP image does not look valid.",
+    "fr": "L'image WEBP ne semble pas valide."
+  },
+  "Documentele nu pot fi salvate în afara directorului configurat.": {
+    "en": "Documents cannot be saved outside the configured directory.",
+    "fr": "Les documents ne peuvent pas être enregistrés en dehors du répertoire configuré."
+  },
+  "Poți atașa cel mult {settings.content_report_attachment_max_files} documente.": {
+    "en": "You can attach at most {settings.content_report_attachment_max_files} documents.",
+    "fr": "Vous pouvez joindre au maximum {settings.content_report_attachment_max_files} documents."
+  },
+  "Confirmă verificarea anti-spam înainte de trimitere.": {
+    "en": "Complete the anti-spam check before sending.",
+    "fr": "Validez la vérification anti-spam avant l'envoi."
+  },
+  "Verificarea anti-spam a eșuat. Reîncarcă pagina și încearcă din nou.": {
+    "en": "The anti-spam check failed. Reload the page and try again.",
+    "fr": "La vérification anti-spam a échoué. Rechargez la page et réessayez."
+  },
+  "Originea solicitării nu este permisă.": {
+    "en": "The request origin is not allowed.",
+    "fr": "L'origine de la demande n'est pas autorisée."
+  },
+  "Referer-ul solicitării nu este permis.": {
+    "en": "The request referer is not allowed.",
+    "fr": "Le referer de la demande n'est pas autorisé."
+  },
+  "Solicitarea nu a putut fi verificată.": {
+    "en": "The request could not be verified.",
+    "fr": "La demande n'a pas pu être vérifiée."
+  },
+  "Corpul solicitării trebuie să fie JSON sau multipart valid.": {
+    "en": "The request body must be valid JSON or multipart data.",
+    "fr": "Le corps de la demande doit être du JSON ou du multipart valide."
+  },
+  "Documentul {safe_name} este gol.": {
+    "en": "The document {safe_name} is empty.",
+    "fr": "Le document {safe_name} est vide."
+  },
+  "Documentul {safe_name} nu a putut fi salvat.": {
+    "en": "The document {safe_name} could not be saved.",
+    "fr": "Le document {safe_name} n'a pas pu être enregistré."
+  },
+  "Protecția anti-spam nu este configurată.": {
+    "en": "Anti-spam protection is not configured.",
+    "fr": "La protection anti-spam n'est pas configurée."
+  },
+  "Verificarea anti-spam nu este disponibilă momentan.": {
+    "en": "The anti-spam check is unavailable right now.",
+    "fr": "La vérification anti-spam est indisponible pour le moment."
+  },
+  "Sesizarea nu a putut fi salvată momentan. Baza de date trebuie actualizată pentru documentele atașate.": {
+    "en": "The report could not be saved right now. The database needs to be updated for attachments.",
+    "fr": "Le signalement n'a pas pu être enregistré pour le moment. La base de données doit être mise à jour pour les pièces jointes."
+  },
+  "Documentul {safe_name} depășește limita de {settings.content_report_attachment_max_mb}MB.": {
+    "en": "The document {safe_name} exceeds the {settings.content_report_attachment_max_mb}MB limit.",
+    "fr": "Le document {safe_name} dépasse la limite de {settings.content_report_attachment_max_mb} Mo."
+  },
+  "Baza de date nu este disponibilă.": {
+    "en": "The database is unavailable.",
+    "fr": "La base de données est indisponible."
+  },
+  "Redis nu este disponibil pentru rate limiting.": {
+    "en": "Redis is unavailable for rate limiting.",
+    "fr": "Redis est indisponible pour la limitation de débit."
+  },
+  "Cron-ul de notificari nu este configurat.": {
+    "en": "The notification cron is not configured.",
+    "fr": "Le cron des notifications n'est pas configuré."
+  },
+  "Secret cron invalid.": {
+    "en": "Invalid cron secret.",
+    "fr": "Secret cron invalide."
+  },
+  "Documentul legal nu exista.": {
+    "en": "The legal document does not exist.",
+    "fr": "Le document légal n'existe pas."
+  },
+  "Documentul legal nu a putut fi initializat.": {
+    "en": "The legal document could not be initialised.",
+    "fr": "Le document légal n'a pas pu être initialisé."
+  },
+  "Sectiunea legala nu exista.": {
+    "en": "The legal section does not exist.",
+    "fr": "La section légale n'existe pas."
+  },
+  "Documentul trebuie sa pastreze cel putin o sectiune.": {
+    "en": "The document must keep at least one section.",
+    "fr": "Le document doit conserver au moins une section."
+  },
+  "Notificarea nu a fost gasita.": {
+    "en": "The notification was not found.",
+    "fr": "La notification est introuvable."
+  },
+  "Stripe nu este configurat complet.": {
+    "en": "Stripe is not fully configured.",
+    "fr": "Stripe n'est pas entièrement configuré."
+  },
+  "Stripe nu a putut crea sesiunea de plata.": {
+    "en": "Stripe could not create the payment session.",
+    "fr": "Stripe n'a pas pu créer la session de paiement."
+  },
+  "Stripe nu a putut actualiza abonamentul.": {
+    "en": "Stripe could not update the subscription.",
+    "fr": "Stripe n'a pas pu mettre à jour l'abonnement."
+  },
+  "Stripe nu a putut confirma sesiunea de plata.": {
+    "en": "Stripe could not confirm the payment session.",
+    "fr": "Stripe n'a pas pu confirmer la session de paiement."
+  },
+  "Stripe Price ID trebuie sa fie unic pentru fiecare plan. Sterge duplicatele sau lasa campul gol pana creezi preturile reale.": {
+    "en": "The Stripe Price ID must be unique for each plan. Remove the duplicates or leave the field empty until you create the real prices.",
+    "fr": "Le Stripe Price ID doit être unique pour chaque forfait. Supprimez les doublons ou laissez le champ vide jusqu'à la création des prix réels."
+  },
+  "Generarea proiectului a fost anulată.": {
+    "en": "Project generation was cancelled.",
+    "fr": "La génération du projet a été annulée."
+  },
+  "Fisierele proiectului nu au putut fi pregatite.": {
+    "en": "The project files could not be prepared.",
+    "fr": "Les fichiers du projet n'ont pas pu être préparés."
+  },
+  "Proiectul nu a putut fi pregatit momentan.": {
+    "en": "The project could not be prepared right now.",
+    "fr": "Le projet n'a pas pu être préparé pour le moment."
+  },
+  "Proiectul nu a fost gasit.": {
+    "en": "The project was not found.",
+    "fr": "Le projet est introuvable."
+  },
+  "Explicatia nu a putut fi generata momentan.": {
+    "en": "The explanation could not be generated right now.",
+    "fr": "L'explication n'a pas pu être générée pour le moment."
+  },
+  "Raspunsul nu a putut fi generat momentan.": {
+    "en": "The answer could not be generated right now.",
+    "fr": "La réponse n'a pas pu être générée pour le moment."
+  },
+  "Flashcardul nu a fost gasit.": {
+    "en": "The flashcard was not found.",
+    "fr": "La flashcard est introuvable."
+  },
+  "Proiectul arhivat nu a fost gasit.": {
+    "en": "The archived project was not found.",
+    "fr": "Le projet archivé est introuvable."
+  },
+  "Intrebarea nu a fost gasita.": {
+    "en": "The question was not found.",
+    "fr": "La question est introuvable."
+  },
+  "Quiz-ul nu a fost gasit.": {
+    "en": "The quiz was not found.",
+    "fr": "Le quiz est introuvable."
+  },
+  "Imaginea nu a fost gasita.": {
+    "en": "The image was not found.",
+    "fr": "L'image est introuvable."
+  },
+  "Highlight-ul nu a fost gasit.": {
+    "en": "The highlight was not found.",
+    "fr": "Le surlignage est introuvable."
+  },
+  "Notita nu a fost gasita.": {
+    "en": "The note was not found.",
+    "fr": "La note est introuvable."
+  },
+  "Fisierul nu a fost gasit.": {
+    "en": "The file was not found.",
+    "fr": "Le fichier est introuvable."
+  },
+  "Redis rate limiter is not active.": {
+    "en": "Redis rate limiter is not active.",
+    "fr": "Le limiteur de débit Redis n'est pas actif."
+  },
+  "Redis rate limiter is unavailable.": {
+    "en": "Redis rate limiter is unavailable.",
+    "fr": "Le limiteur de débit Redis est indisponible."
+  },
+  "Limitarea solicitarilor nu este disponibila momentan.": {
+    "en": "Rate limiting is unavailable right now.",
+    "fr": "La limitation des demandes est indisponible pour le moment."
+  },
+  "Trimite cel putin un camp de actualizat.": {
+    "en": "Send at least one field to update.",
+    "fr": "Envoyez au moins un champ à mettre à jour."
+  },
+  "Parola nu poate incepe sau termina cu spatii.": {
+    "en": "The password cannot start or end with spaces.",
+    "fr": "Le mot de passe ne peut pas commencer ou finir par des espaces."
+  },
+  "Alege o parola mai greu de ghicit.": {
+    "en": "Choose a password that is harder to guess.",
+    "fr": "Choisissez un mot de passe plus difficile à deviner."
+  },
+  "Parola trebuie sa contina cel putin o litera.": {
+    "en": "The password must contain at least one letter.",
+    "fr": "Le mot de passe doit contenir au moins une lettre."
+  },
+  "Parola trebuie sa contina cel putin o cifra.": {
+    "en": "The password must contain at least one digit.",
+    "fr": "Le mot de passe doit contenir au moins un chiffre."
+  },
+  "Numele complet este obligatoriu.": {
+    "en": "Your full name is required.",
+    "fr": "Le nom complet est obligatoire."
+  },
+  "Trebuie să accepți termenii platformei.": {
+    "en": "You must accept the platform terms.",
+    "fr": "Vous devez accepter les conditions de la plateforme."
+  },
+  "Parola nouă trebuie să fie diferită de parola curentă.": {
+    "en": "The new password must be different from the current one.",
+    "fr": "Le nouveau mot de passe doit être différent du mot de passe actuel."
+  },
+  "Confirmarea retragerii este obligatorie.": {
+    "en": "Confirming the withdrawal is required.",
+    "fr": "La confirmation de la rétractation est obligatoire."
+  },
+  "Declarația este obligatorie.": {
+    "en": "The declaration is required.",
+    "fr": "La déclaration est obligatoire."
+  },
+  "Conținutul secțiunii conține HTML nesigur.": {
+    "en": "The section content contains unsafe HTML.",
+    "fr": "Le contenu de la section contient du HTML non sécurisé."
+  },
+  "Linkul trebuie sa inceapa cu http:// sau https://.": {
+    "en": "The link must start with http:// or https://.",
+    "fr": "Le lien doit commencer par http:// ou https://."
+  },
+  "Slugul poate contine litere mici, cifre si cratime.": {
+    "en": "The slug may contain lowercase letters, digits and hyphens.",
+    "fr": "Le slug peut contenir des lettres minuscules, des chiffres et des tirets."
+  },
+  "Limita totala a proiectului trebuie sa fie cel putin egala cu limita unui fisier.": {
+    "en": "The total project limit must be at least the limit of a single file.",
+    "fr": "La limite totale du projet doit être au moins égale à la limite d'un fichier."
+  },
+  "Slugurile planurilor trebuie sa fie unice.": {
+    "en": "Plan slugs must be unique.",
+    "fr": "Les slugs des forfaits doivent être uniques."
+  },
+  "Stripe Price ID trebuie sa fie unic pentru fiecare plan.": {
+    "en": "The Stripe Price ID must be unique for each plan.",
+    "fr": "Le Stripe Price ID doit être unique pour chaque forfait."
+  },
+  "Trimite cel putin o preferinta de actualizat.": {
+    "en": "Send at least one preference to update.",
+    "fr": "Envoyez au moins une préférence à mettre à jour."
+  },
+  "Plafonul intern de cost AI pentru acest ciclu a fost atins.": {
+    "en": "The internal AI cost ceiling for this cycle has been reached.",
+    "fr": "Le plafond interne de coût IA pour ce cycle a été atteint."
+  },
+  "Functionalitatea AI nu este disponibila pe planul curent. Treci la un plan superior pentru acces.": {
+    "en": "This AI feature is not available on your current plan. Upgrade to a higher plan for access.",
+    "fr": "Cette fonctionnalité IA n'est pas disponible sur votre forfait actuel. Passez à un forfait supérieur pour y accéder."
+  },
+  "Ai folosit {used}/{monthly_credits} AI Credits din planul curent. Poti face upgrade la un plan superior sau poti astepta resetarea din ciclul viitor.": {
+    "en": "You have used {used}/{monthly_credits} AI Credits of your current plan. Upgrade to a higher plan or wait for the reset in the next cycle.",
+    "fr": "Vous avez utilisé {used}/{monthly_credits} AI Credits de votre forfait actuel. Passez à un forfait supérieur ou attendez la réinitialisation du prochain cycle."
+  },
+  "Ai folosit deja {used}/{monthly_pages} pagini OCR din planul curent in acest ciclu de facturare. Poti face upgrade la un plan superior sau poti astepta resetarea din ciclul viitor.": {
+    "en": "You have already used {used}/{monthly_pages} OCR pages of your current plan in this billing cycle. Upgrade to a higher plan or wait for the reset in the next cycle.",
+    "fr": "Vous avez déjà utilisé {used}/{monthly_pages} pages OCR de votre forfait actuel pour ce cycle de facturation. Passez à un forfait supérieur ou attendez la réinitialisation du prochain cycle."
+  },
+  "MISTRAL_API_KEY nu este configurat.": {
+    "en": "MISTRAL_API_KEY is not configured.",
+    "fr": "MISTRAL_API_KEY n'est pas configuré."
+  },
+  "Mistral OCR nu a returnat paginile documentului.": {
+    "en": "Mistral OCR did not return the document pages.",
+    "fr": "Mistral OCR n'a pas renvoyé les pages du document."
+  },
+  "Mistral OCR nu a extras text din document.": {
+    "en": "Mistral OCR did not extract any text from the document.",
+    "fr": "Mistral OCR n'a extrait aucun texte du document."
+  },
+  "Mistral OCR a refuzat procesarea: {detail}": {
+    "en": "Mistral OCR refused to process the document: {detail}",
+    "fr": "Mistral OCR a refusé le traitement : {detail}"
+  },
+  "Mistral OCR nu a putut fi contactat.": {
+    "en": "Mistral OCR could not be reached.",
+    "fr": "Mistral OCR n'a pas pu être contacté."
+  },
+  "Mistral OCR nu a raspuns in timp util.": {
+    "en": "Mistral OCR did not respond in time.",
+    "fr": "Mistral OCR n'a pas répondu à temps."
+  },
+  "Mistral OCR a returnat un raspuns invalid.": {
+    "en": "Mistral OCR returned an invalid response.",
+    "fr": "Mistral OCR a renvoyé une réponse invalide."
+  },
+  "NotificationService are nevoie de settings pentru digest-ul zilnic.": {
+    "en": "NotificationService needs settings for the daily digest.",
+    "fr": "NotificationService a besoin des paramètres pour le récapitulatif quotidien."
+  },
+  "Serviciul de generare nu este configurat.": {
+    "en": "The generation service is not configured.",
+    "fr": "Le service de génération n'est pas configuré."
+  },
+  "Serviciul AI nu a putut finaliza generarea pentru acest material.": {
+    "en": "The AI service could not finish generating content for this material.",
+    "fr": "Le service IA n'a pas pu terminer la génération pour ce support."
+  },
+  "Serviciul AI nu a finalizat generarea. Incearca din nou.": {
+    "en": "The AI service did not finish generating. Please try again.",
+    "fr": "Le service IA n'a pas terminé la génération. Veuillez réessayer."
+  },
+  "Pachetul generat are o structura invalida.": {
+    "en": "The generated pack has an invalid structure.",
+    "fr": "Le pack généré a une structure invalide."
+  },
+  "Serviciul de generare nu a raspuns la timp. Incearca din nou.": {
+    "en": "The generation service did not respond in time. Please try again.",
+    "fr": "Le service de génération n'a pas répondu à temps. Veuillez réessayer."
+  },
+  "Serviciul de generare este aglomerat momentan. Incearca din nou.": {
+    "en": "The generation service is busy right now. Please try again.",
+    "fr": "Le service de génération est saturé pour le moment. Veuillez réessayer."
+  },
+  "Pachetul nu a putut fi generat momentan. Incearca din nou.": {
+    "en": "The pack could not be generated right now. Please try again.",
+    "fr": "Le pack n'a pas pu être généré pour le moment. Veuillez réessayer."
+  },
+  "Raspunsul AI a fost intrerupt la limita de generare.": {
+    "en": "The AI response was cut off at the generation limit.",
+    "fr": "La réponse IA a été interrompue à la limite de génération."
+  },
+  "Pachetul generat nu a putut fi citit corect.": {
+    "en": "The generated pack could not be read correctly.",
+    "fr": "Le pack généré n'a pas pu être lu correctement."
+  },
+  "Generarea nu este disponibila momentan. Incearca din nou in cateva minute.": {
+    "en": "Generation is unavailable right now. Please try again in a few minutes.",
+    "fr": "La génération est indisponible pour le moment. Réessayez dans quelques minutes."
+  },
+  "Serviciul AI nu a putut genera continut pentru acest material.": {
+    "en": "The AI service could not generate content for this material.",
+    "fr": "Le service IA n'a pas pu générer de contenu pour ce support."
+  },
+  "Identificatorul cererii de pregatire nu este valid.": {
+    "en": "The preparation request identifier is not valid.",
+    "fr": "L'identifiant de la demande de préparation n'est pas valide."
+  },
+  "Limitele planului nu sunt configurate corect. Contacteaza suportul.": {
+    "en": "The plan limits are not configured correctly. Please contact support.",
+    "fr": "Les limites du forfait ne sont pas configurées correctement. Contactez le support."
+  },
+  "Alege un plan activ pentru a continua.": {
+    "en": "Choose an active plan to continue.",
+    "fr": "Choisissez un forfait actif pour continuer."
+  },
+  "Fisierul incarcat nu este o imagine valida.": {
+    "en": "The uploaded file is not a valid image.",
+    "fr": "Le fichier envoyé n'est pas une image valide."
+  },
+  "Fisierul PDF incarcat nu pare valid.": {
+    "en": "The uploaded PDF file does not look valid.",
+    "fr": "Le fichier PDF envoyé ne semble pas valide."
+  },
+  "Fisierul Office incarcat nu pare valid.": {
+    "en": "The uploaded Office file does not look valid.",
+    "fr": "Le fichier Office envoyé ne semble pas valide."
+  },
+  "Fisierul text incarcat nu pare valid.": {
+    "en": "The uploaded text file does not look valid.",
+    "fr": "Le fichier texte envoyé ne semble pas valide."
+  },
+  "Campul pentru {label} trebuie sa fie o lista.": {
+    "en": "The {label} field must be a list.",
+    "fr": "Le champ {label} doit être une liste."
+  },
+  "JSON-ul contine prea multe elemente pentru {label}.": {
+    "en": "The JSON contains too many items for {label}.",
+    "fr": "Le JSON contient trop d'éléments pour {label}."
+  },
+  "JSON-ul nu contine un pachet de studiu sau quizuri valide.": {
+    "en": "The JSON does not contain a valid study pack or quizzes.",
+    "fr": "Le JSON ne contient pas de pack d'étude ou de quiz valides."
+  },
+  "Alege cel putin un tip de intrebare pentru quiz.": {
+    "en": "Choose at least one question type for the quiz.",
+    "fr": "Choisissez au moins un type de question pour le quiz."
+  },
+  "Numarul de intrebari trebuie sa fie cel putin egal cu numarul de tipuri alese ({len(seen)}).": {
+    "en": "The number of questions must be at least the number of chosen types ({len(seen)}).",
+    "fr": "Le nombre de questions doit être au moins égal au nombre de types choisis ({len(seen)})."
+  },
+  "Planul tau permite maximum {cap} intrebari intr-un quiz.": {
+    "en": "Your plan allows at most {cap} questions per quiz.",
+    "fr": "Votre forfait autorise au maximum {cap} questions par quiz."
+  },
+  "Ai atins limita de {cap} {'quiz' if cap == 1 else 'quizuri'} pentru acest proiect. Treci la un plan superior pentru mai multe.": {
+    "en": "You have reached the limit of {cap} quizzes for this project. Upgrade to a higher plan for more.",
+    "fr": "Vous avez atteint la limite de {cap} quiz pour ce projet. Passez à un forfait supérieur pour en créer davantage."
+  },
+  "Intrebarea {question_index} are o optiune fara text.": {
+    "en": "Question {question_index} has an option without text.",
+    "fr": "La question {question_index} a une option sans texte."
+  },
+  "Raspunsul nu contine un quiz valid.": {
+    "en": "The response does not contain a valid quiz.",
+    "fr": "La réponse ne contient pas de quiz valide."
+  },
+  "Quizul generat nu are titlu.": {
+    "en": "The generated quiz has no title.",
+    "fr": "Le quiz généré n'a pas de titre."
+  },
+  "Quizul generat nu contine intrebari.": {
+    "en": "The generated quiz contains no questions.",
+    "fr": "Le quiz généré ne contient aucune question."
+  },
+  "Dificultatea quizului nu respecta configurarea.": {
+    "en": "The quiz difficulty does not match the configuration.",
+    "fr": "La difficulté du quiz ne respecte pas la configuration."
+  },
+  "Quizul trebuie sa contina exact {question_count} intrebari.": {
+    "en": "The quiz must contain exactly {question_count} questions.",
+    "fr": "Le quiz doit contenir exactement {question_count} questions."
+  },
+  "Tipar de lungime: raspunsurile corecte sunt cele mai lungi in peste 60% din intrebarile cu variante (minimum 3 cazuri). Variaza lungimea raspunsurilor corecte si construieste distractori plauzibili comparabili.": {
+    "en": "Length pattern: the correct answers are the longest in more than 60% of the multiple-choice questions (at least 3 cases). Vary the length of the correct answers and build comparable, plausible distractors.",
+    "fr": "Schéma de longueur : les bonnes réponses sont les plus longues dans plus de 60 % des questions à choix (au moins 3 cas). Variez la longueur des bonnes réponses et construisez des distracteurs plausibles comparables."
+  },
+  "Rezumatul proiectului nu este disponibil.": {
+    "en": "The project summary is not available.",
+    "fr": "Le résumé du projet n'est pas disponible."
+  },
+  "Fragmentul selectat nu mai este valid.": {
+    "en": "The selected passage is no longer valid.",
+    "fr": "Le passage sélectionné n'est plus valide."
+  },
+  "Fragmentul selectat nu apartine paragrafului ales.": {
+    "en": "The selected passage does not belong to the chosen paragraph.",
+    "fr": "Le passage sélectionné n'appartient pas au paragraphe choisi."
+  },
+  "Tipul de fisier {extension or '(fara extensie)'} nu este acceptat.": {
+    "en": "The file type {extension or '(fara extensie)'} is not accepted.",
+    "fr": "Le type de fichier {extension or '(fara extensie)'} n'est pas accepté."
+  },
+  "Fisierul {extension} este un format Office vechi. Salveaza-l ca {target_suffix} si incarca-l din nou.": {
+    "en": "The {extension} file is an old Office format. Save it as {target_suffix} and upload it again.",
+    "fr": "Le fichier {extension} est un ancien format Office. Enregistrez-le en {target_suffix} et envoyez-le à nouveau."
+  },
+  "Fisierul {path.suffix.lower()} este un format Office vechi. Salveaza-l ca {target_suffix} si incarca-l din nou.": {
+    "en": "The {path.suffix.lower()} file is an old Office format. Save it as {target_suffix} and upload it again.",
+    "fr": "Le fichier {path.suffix.lower()} est un ancien format Office. Enregistrez-le en {target_suffix} et envoyez-le à nouveau."
+  },
+  "Fisierul {path.name} nu a putut fi convertit automat.": {
+    "en": "The file {path.name} could not be converted automatically.",
+    "fr": "Le fichier {path.name} n'a pas pu être converti automatiquement."
+  },
+  "Materialul markdown nu exista. Reincarca materialele si creeaza proiectul din nou.": {
+    "en": "The markdown material does not exist. Upload the materials again and recreate the project.",
+    "fr": "Le support markdown n'existe pas. Renvoyez les supports et recréez le projet."
+  },
+  "Fisierul cerut nu exista.": {
+    "en": "The requested file does not exist.",
+    "fr": "Le fichier demandé n'existe pas."
+  },
+  "question_types trebuie sa contina cel putin un tip.": {
+    "en": "question_types must contain at least one type.",
+    "fr": "question_types doit contenir au moins un type."
+  },
+  "question_count trebuie sa fie cel putin egal cu numarul de tipuri.": {
+    "en": "question_count must be at least the number of types.",
+    "fr": "question_count doit être au moins égal au nombre de types."
+  },
+  "complexity necunoscuta: {complexity}": {
+    "en": "unknown complexity: {complexity}",
+    "fr": "complexité inconnue : {complexity}"
+  },
+  "Rezumatul din JSON este prea mare.": {
+    "en": "The summary in the JSON is too large.",
+    "fr": "Le résumé du JSON est trop volumineux."
+  },
+  "Tipul de intrebare '{raw_type}' nu este suportat.": {
+    "en": "The question type '{raw_type}' is not supported.",
+    "fr": "Le type de question '{raw_type}' n'est pas pris en charge."
+  },
+  "Intrebarea {question_index} are optiuni duplicate.": {
+    "en": "Question {question_index} has duplicate options.",
+    "fr": "La question {question_index} a des options en double."
+  },
+  "Intrebarea {question_index} de tip single_choice trebuie sa aiba exact un raspuns corect.": {
+    "en": "Single-choice question {question_index} must have exactly one correct answer.",
+    "fr": "La question à choix unique {question_index} doit avoir exactement une bonne réponse."
+  },
+  "Intrebarea {question_index} de tip multiple_choice trebuie sa aiba cel putin doua raspunsuri corecte.": {
+    "en": "Multiple-choice question {question_index} must have at least two correct answers.",
+    "fr": "La question à choix multiples {question_index} doit avoir au moins deux bonnes réponses."
+  },
+  "Intrebarea {question_index} nu poate avea toate optiunile corecte.": {
+    "en": "Question {question_index} cannot have every option correct.",
+    "fr": "La question {question_index} ne peut pas avoir toutes ses options correctes."
+  },
+  "Intrebarea {question_index} de tip matching are o pereche incompleta.": {
+    "en": "Matching question {question_index} has an incomplete pair.",
+    "fr": "La question d'association {question_index} a une paire incomplète."
+  },
+  "Intrebarea {question_index} de tip matching are perechi duplicate, deci asocierea ar fi ambigua.": {
+    "en": "Matching question {question_index} has duplicate pairs, so the matching would be ambiguous.",
+    "fr": "La question d'association {question_index} a des paires en double, l'association serait donc ambiguë."
+  },
+  "Intrebarea {question_index} de tip cloze are optiuni duplicate, deci raspunsul ar fi ambiguu.": {
+    "en": "Cloze question {question_index} has duplicate options, so the answer would be ambiguous.",
+    "fr": "La question à trous {question_index} a des options en double, la réponse serait donc ambiguë."
+  },
+  "Intrebarea {question_index} de tip cloze nu are niciun gol marcat in prompt.": {
+    "en": "Cloze question {question_index} has no gap marked in the prompt.",
+    "fr": "La question à trous {question_index} n'a aucun trou marqué dans l'énoncé."
+  },
+  "Intrebarea {question_index} de tip cloze are un cuvant corect fara numarul golului.": {
+    "en": "Cloze question {question_index} has a correct word without a gap number.",
+    "fr": "La question à trous {question_index} a un mot correct sans numéro de trou."
+  },
+  "Intrebarea {question_index} de tip cloze trebuie sa aiba exact un cuvant corect pentru fiecare din cele {gap_count} goluri, numerotate de la 1.": {
+    "en": "Cloze question {question_index} must have exactly one correct word for each of the {gap_count} gaps, numbered from 1.",
+    "fr": "La question à trous {question_index} doit avoir exactement un mot correct pour chacun des {gap_count} trous, numérotés à partir de 1."
+  },
+  "Intrebarea {question_index} de tip cloze are nevoie de cel putin un cuvant distractor.": {
+    "en": "Cloze question {question_index} needs at least one distractor word.",
+    "fr": "La question à trous {question_index} a besoin d'au moins un mot distracteur."
+  },
+  "Intrebarea {question_index} de tip ordering are un cuvant fara poziţie.": {
+    "en": "Ordering question {question_index} has a word without a position.",
+    "fr": "La question d'ordonnancement {question_index} a un mot sans position."
+  },
+  "Intrebarea {question_index} de tip ordering trebuie sa aiba poziţiile 1..{len(options)}, fara duplicate sau valori sarite.": {
+    "en": "Ordering question {question_index} must use positions 1..{len(options)}, without duplicates or gaps.",
+    "fr": "La question d'ordonnancement {question_index} doit utiliser les positions 1..{len(options)}, sans doublons ni valeurs manquantes."
+  },
+  "Distributia intrebarilor trebuie sa fie {expected}.": {
+    "en": "The question distribution must be {expected}.",
+    "fr": "La répartition des questions doit être {expected}."
+  },
+  "Intrebarea {question_index} nu are text.": {
+    "en": "Question {question_index} has no text.",
+    "fr": "La question {question_index} n'a pas de texte."
+  },
+  "Quizul contine intrebari duplicate.": {
+    "en": "The quiz contains duplicate questions.",
+    "fr": "Le quiz contient des questions en double."
+  },
+  "Intrebarea {question_index} are un tip necunoscut: {question_type or 'lipsa'}.": {
+    "en": "Question {question_index} has an unknown type: {question_type or 'lipsa'}.",
+    "fr": "La question {question_index} a un type inconnu : {question_type or 'lipsa'}."
+  },
+  "Intrebarea {question_index} trebuie sa aiba cel putin doua optiuni.": {
+    "en": "Question {question_index} must have at least two options.",
+    "fr": "La question {question_index} doit avoir au moins deux options."
+  },
+  "Raspunsul corect este disproportionat de lung. Rescrie toate optiunile cu lungime si granularitate comparabile, fara umplutura.": {
+    "en": "The correct answer is disproportionately long. Rewrite all options with comparable length and detail, without padding.",
+    "fr": "La bonne réponse est disproportionnément longue. Réécrivez toutes les options avec une longueur et un niveau de détail comparables, sans remplissage."
+  },
+  "Keywords trebuie sa fie termeni distincti.": {
+    "en": "Keywords must be distinct terms.",
+    "fr": "Les mots-clés doivent être des termes distincts."
+  },
+  "Keyword {term}: anchor_text trebuie sa identifice exact un paragraf de continut, nu un titlu. Copiaza un fragment unic.": {
+    "en": "Keyword {term}: anchor_text must identify exactly one body paragraph, not a heading. Copy a unique passage.",
+    "fr": "Mot-clé {term} : anchor_text doit identifier exactement un paragraphe de contenu, pas un titre. Copiez un passage unique."
+  },
+  "Planul {plan_name} permite {slots} proiecte active in acelasi timp. Dezactiveaza un proiect existent pentru a crea unul nou.": {
+    "en": "The {plan_name} plan allows {slots} active projects at a time. Deactivate an existing project to create a new one.",
+    "fr": "Le forfait {plan_name} autorise {slots} projets actifs à la fois. Désactivez un projet existant pour en créer un nouveau."
+  },
+  "Ai atins limita planului {plan_name}: poti crea maximum {project_limit_label} pe luna. Luna viitoare vei putea crea proiecte noi sau poti trece la un plan superior.": {
+    "en": "You have reached the {plan_name} plan limit: you can create at most {project_limit_label} per month. Next month you can create new projects, or you can upgrade to a higher plan.",
+    "fr": "Vous avez atteint la limite du forfait {plan_name} : vous pouvez créer au maximum {project_limit_label} par mois. Le mois prochain vous pourrez créer de nouveaux projets, ou vous pouvez passer à un forfait supérieur."
+  },
+  "Planul {plan_name} permite maximum {file_limit_label} intr-un proiect.": {
+    "en": "The {plan_name} plan allows at most {file_limit_label} per project.",
+    "fr": "Le forfait {plan_name} autorise au maximum {file_limit_label} par projet."
+  },
+  "Ai atins limita planului {plan_name}: poti incarca maximum {material_limit_label} pe luna. Incearca luna viitoare sau treci la un plan superior.": {
+    "en": "You have reached the {plan_name} plan limit: you can upload at most {material_limit_label} per month. Try again next month or upgrade to a higher plan.",
+    "fr": "Vous avez atteint la limite du forfait {plan_name} : vous pouvez envoyer au maximum {material_limit_label} par mois. Réessayez le mois prochain ou passez à un forfait supérieur."
+  },
+  "Materialele proiectului depasesc limita de {limits.total_project_mb}MB pentru planul curent.": {
+    "en": "The project materials exceed the {limits.total_project_mb}MB limit of your current plan.",
+    "fr": "Les supports du projet dépassent la limite de {limits.total_project_mb} Mo de votre forfait actuel."
+  },
+  "Ai procesat deja aproximativ {monthly_pages} pagini in acest ciclu de facturare. Planul curent permite maximum {limits.monthly_page_limit} pagini pe ciclu.": {
+    "en": "You have already processed about {monthly_pages} pages in this billing cycle. Your current plan allows at most {limits.monthly_page_limit} pages per cycle.",
+    "fr": "Vous avez déjà traité environ {monthly_pages} pages pendant ce cycle de facturation. Votre forfait actuel autorise au maximum {limits.monthly_page_limit} pages par cycle."
+  },
+  "Numele proiectului este prea scurt.": {
+    "en": "The project name is too short.",
+    "fr": "Le nom du projet est trop court."
+  },
+  "Acest proiect este dezactivat pentru planul tau curent. Activeaza-l in locul altuia sau treci la un plan superior.": {
+    "en": "This project is deactivated on your current plan. Activate it in place of another one or upgrade to a higher plan.",
+    "fr": "Ce projet est désactivé sur votre forfait actuel. Activez-le à la place d'un autre ou passez à un forfait supérieur."
+  },
+  "Planul tau permite {slots} proiecte active, iar tu ai {used}. Alege ce proiecte raman active pentru a continua.": {
+    "en": "Your plan allows {slots} active projects and you have {used}. Choose which projects stay active to continue.",
+    "fr": "Votre forfait autorise {slots} projets actifs et vous en avez {used}. Choisissez les projets qui restent actifs pour continuer."
+  },
+  "Planul tau permite {slots} proiecte active. Dezactiveaza altul inainte de a activa acesta.": {
+    "en": "Your plan allows {slots} active projects. Deactivate another one before activating this one.",
+    "fr": "Votre forfait autorise {slots} projets actifs. Désactivez-en un autre avant d'activer celui-ci."
+  },
+  "Planul tau permite {slots} proiecte active, iar ai trimis {len(unique_ids)}.": {
+    "en": "Your plan allows {slots} active projects, but you sent {len(unique_ids)}.",
+    "fr": "Votre forfait autorise {slots} projets actifs, mais vous en avez envoyé {len(unique_ids)}."
+  },
+  "Numele materiei este prea scurt.": {
+    "en": "The subject name is too short.",
+    "fr": "Le nom de la matière est trop court."
+  },
+  "Numele facultatii sau scolii este prea scurt.": {
+    "en": "The faculty or school name is too short.",
+    "fr": "Le nom de la faculté ou de l'école est trop court."
+  },
+  "Trebuie sa confirmi ca ai dreptul sa folosesti materialul.": {
+    "en": "You must confirm that you have the right to use the material.",
+    "fr": "Vous devez confirmer que vous avez le droit d'utiliser le support."
+  },
+  "Incarca cel putin un fisier.": {
+    "en": "Upload at least one file.",
+    "fr": "Envoyez au moins un fichier."
+  },
+  "Generarea nu este disponibila momentan. Incearca din nou mai tarziu.": {
+    "en": "Generation is unavailable right now. Please try again later.",
+    "fr": "La génération est indisponible pour le moment. Réessayez plus tard."
+  },
+  "Genereaza mai intai rezumatul si flashcardurile.": {
+    "en": "Generate the summary and flashcards first.",
+    "fr": "Générez d'abord le résumé et les flashcards."
+  },
+  "Genereaza mai intai pachetul de studiu.": {
+    "en": "Generate the study pack first.",
+    "fr": "Générez d'abord le pack d'étude."
+  },
+  "Selecteaza un fragment mai clar din rezumat.": {
+    "en": "Select a clearer passage from the summary.",
+    "fr": "Sélectionnez un passage plus clair du résumé."
+  },
+  "Selecteaza un fragment mai clar.": {
+    "en": "Select a clearer passage.",
+    "fr": "Sélectionnez un passage plus clair."
+  },
+  "Partea selectata nu este valida.": {
+    "en": "The selected side is not valid.",
+    "fr": "La partie sélectionnée n'est pas valide."
+  },
+  "Fragmentul selectat nu apartine flashcardului ales.": {
+    "en": "The selected passage does not belong to the chosen flashcard.",
+    "fr": "Le passage sélectionné n'appartient pas à la flashcard choisie."
+  },
+  "Scrie o intrebare mai clara.": {
+    "en": "Write a clearer question.",
+    "fr": "Écrivez une question plus claire."
+  },
+  "Intrebarea este prea lunga pentru chat. Trimite o intrebare mai scurta, legata de curs.": {
+    "en": "The question is too long for the chat. Send a shorter question related to the course.",
+    "fr": "La question est trop longue pour le chat. Envoyez une question plus courte, liée au cours."
+  },
+  "Adauga o intrebare sau o imagine.": {
+    "en": "Add a question or an image.",
+    "fr": "Ajoutez une question ou une image."
+  },
+  "Adauga raspunsul flashcardului.": {
+    "en": "Add the flashcard answer.",
+    "fr": "Ajoutez la réponse de la flashcard."
+  },
+  "Ai atins limita de flashcarduri manuale pentru acest proiect.": {
+    "en": "You have reached the manual flashcard limit for this project.",
+    "fr": "Vous avez atteint la limite de flashcards manuelles pour ce projet."
+  },
+  "Imaginea flashcardului nu exista.": {
+    "en": "The flashcard image does not exist.",
+    "fr": "L'image de la flashcard n'existe pas."
+  },
+  "Selecteaza un fragment de text pentru highlight.": {
+    "en": "Select a passage of text to highlight.",
+    "fr": "Sélectionnez un passage de texte à surligner."
+  },
+  "Selectia pentru highlight nu este valida.": {
+    "en": "The highlight selection is not valid.",
+    "fr": "La sélection à surligner n'est pas valide."
+  },
+  "Selecteaza un fragment de text pentru notita.": {
+    "en": "Select a passage of text for the note.",
+    "fr": "Sélectionnez un passage de texte pour la note."
+  },
+  "Scrie continutul notitei.": {
+    "en": "Write the note content.",
+    "fr": "Écrivez le contenu de la note."
+  },
+  "Rezultatul quizului nu este valid.": {
+    "en": "The quiz result is not valid.",
+    "fr": "Le résultat du quiz n'est pas valide."
+  },
+  "Imaginea trebuie sa fie PNG, JPG, WEBP sau GIF.": {
+    "en": "The image must be PNG, JPG, WEBP or GIF.",
+    "fr": "L'image doit être au format PNG, JPG, WEBP ou GIF."
+  },
+  "Fisierul incarcat nu pare sa fie imagine.": {
+    "en": "The uploaded file does not look like an image.",
+    "fr": "Le fichier envoyé ne semble pas être une image."
+  },
+  "Incarca un fisier JSON valid.": {
+    "en": "Upload a valid JSON file.",
+    "fr": "Envoyez un fichier JSON valide."
+  },
+  "Fisierul incarcat nu pare sa fie JSON.": {
+    "en": "The uploaded file does not look like JSON.",
+    "fr": "Le fichier envoyé ne semble pas être du JSON."
+  },
+  "Fisierul JSON este prea mare.": {
+    "en": "The JSON file is too large.",
+    "fr": "Le fichier JSON est trop volumineux."
+  },
+  "JSON-ul trebuie sa contina un obiect.": {
+    "en": "The JSON must contain an object.",
+    "fr": "Le JSON doit contenir un objet."
+  },
+  "{field_name} trebuie sa fie un sir nevid.": {
+    "en": "{field_name} must be a non-empty string.",
+    "fr": "{field_name} doit être une chaîne non vide."
+  },
+  "Quizul {quiz_index} nu contine intrebari valide.": {
+    "en": "Quiz {quiz_index} contains no valid questions.",
+    "fr": "Le quiz {quiz_index} ne contient aucune question valide."
+  },
+  "Referinta de revizuire este invalida la intrebarea {question_number}: copiaza review_section, review_paragraph_index si un review_anchor_text exact din acelasi paragraf numerotat din rezumat; titlurile nu sunt paragrafe.": {
+    "en": "The review reference is invalid at question {question_number}: copy review_section, review_paragraph_index and an exact review_anchor_text from the same numbered summary paragraph; headings are not paragraphs.",
+    "fr": "La référence de révision est invalide à la question {question_number} : copiez review_section, review_paragraph_index et un review_anchor_text exact du même paragraphe numéroté du résumé ; les titres ne sont pas des paragraphes."
+  },
+  "single_choice necesita exact 4 optiuni.": {
+    "en": "single_choice requires exactly 4 options.",
+    "fr": "single_choice nécessite exactement 4 options."
+  },
+  "multiple_choice necesita 4-6 optiuni, minimum 2 gresite.": {
+    "en": "multiple_choice requires 4-6 options, at least 2 of them wrong.",
+    "fr": "multiple_choice nécessite 4 à 6 options, dont au moins 2 fausses."
+  },
+  "Ai acumulat {mistake_count} greșeli la \"{category}\" în proiectul \"{project.name}\". Merită o recapitulare.": {
+    "en": "You have made {mistake_count} mistakes on \"{category}\" in the project \"{project.name}\". It is worth a review.",
+    "fr": "Vous avez accumulé {mistake_count} erreurs sur « {category} » dans le projet « {project.name} ». Une révision s'impose."
+  },
+  "Materialul {file.original_filename} are aproximativ {file_pages} pagini. Planul curent permite maximum {limits.estimated_pages} pagini per material.": {
+    "en": "The material {file.original_filename} has about {file_pages} pages. Your current plan allows at most {limits.estimated_pages} pages per material.",
+    "fr": "Le support {file.original_filename} compte environ {file_pages} pages. Votre forfait actuel autorise au maximum {limits.estimated_pages} pages par support."
+  },
+  "Planul tau permite {slots} proiecte active. Dezactiveaza altul inainte de a restaura acesta.": {
+    "en": "Your plan allows {slots} active projects. Deactivate another one before restoring this one.",
+    "fr": "Votre forfait autorise {slots} projets actifs. Désactivez-en un autre avant de restaurer celui-ci."
+  },
+  "Niciun fisier nu a putut fi convertit.": {
+    "en": "No file could be converted.",
+    "fr": "Aucun fichier n'a pu être converti."
+  },
+  "Ai atins limita de highlight-uri pentru acest proiect.": {
+    "en": "You have reached the highlight limit for this project.",
+    "fr": "Vous avez atteint la limite de surlignages pour ce projet."
+  },
+  "Ai atins limita de notite pentru acest proiect.": {
+    "en": "You have reached the note limit for this project.",
+    "fr": "Vous avez atteint la limite de notes pour ce projet."
+  },
+  "Rezultatele intrebarilor nu corespund scorului quizului.": {
+    "en": "The question results do not match the quiz score.",
+    "fr": "Les résultats des questions ne correspondent pas au score du quiz."
+  },
+  "Imaginea nu a putut fi salvata pe server. Incearca din nou.": {
+    "en": "The image could not be saved on the server. Please try again.",
+    "fr": "L'image n'a pas pu être enregistrée sur le serveur. Veuillez réessayer."
+  },
+  "Fisierul {safe_name} este gol.": {
+    "en": "The file {safe_name} is empty.",
+    "fr": "Le fichier {safe_name} est vide."
+  },
+  "Fisierul incarcat nu a putut fi salvat pe server. Incearca din nou.": {
+    "en": "The uploaded file could not be saved on the server. Please try again.",
+    "fr": "Le fichier envoyé n'a pas pu être enregistré sur le serveur. Veuillez réessayer."
+  },
+  "Fisierul {safe_name} nu a putut fi convertit.": {
+    "en": "The file {safe_name} could not be converted.",
+    "fr": "Le fichier {safe_name} n'a pas pu être converti."
+  },
+  "Documentul {safe_name} pare scanat sau fara text extractibil. Planul curent nu include incarcarea documentelor scanate.": {
+    "en": "The document {safe_name} looks scanned or has no extractable text. Your current plan does not include scanned documents.",
+    "fr": "Le document {safe_name} semble scanné ou sans texte extractible. Votre forfait actuel n'inclut pas les documents scannés."
+  },
+  "Fisierul JSON nu este valid.": {
+    "en": "The JSON file is not valid.",
+    "fr": "Le fichier JSON n'est pas valide."
+  },
+  "Intrebarea {question_index} nu are enunt.": {
+    "en": "Question {question_index} has no statement.",
+    "fr": "La question {question_index} n'a pas d'énoncé."
+  },
+  "Intrebarea {question_index} trebuie sa aiba cel putin un raspuns corect.": {
+    "en": "Question {question_index} must have at least one correct answer.",
+    "fr": "La question {question_index} doit avoir au moins une bonne réponse."
+  },
+  "Campul {field} lipseste sau are lungime invalida.": {
+    "en": "The field {field} is missing or has an invalid length.",
+    "fr": "Le champ {field} est manquant ou a une longueur invalide."
+  },
+  "Rezultatele intrebarilor nu apartin acestui quiz sau sunt duplicate.": {
+    "en": "The question results do not belong to this quiz or are duplicated.",
+    "fr": "Les résultats des questions n'appartiennent pas à ce quiz ou sont en double."
+  },
+  "Identificatorul incercarii nu este valid pentru acest quiz.": {
+    "en": "The attempt identifier is not valid for this quiz.",
+    "fr": "L'identifiant de la tentative n'est pas valide pour ce quiz."
+  },
+  "Aceasta incercare a fost deja salvata cu alte rezultate.": {
+    "en": "This attempt has already been saved with different results.",
+    "fr": "Cette tentative a déjà été enregistrée avec d'autres résultats."
+  },
+  "Fisierul {safe_name} nu este suportat pentru procesare. Incearca PDF, DOCX, PPTX, XLSX sau TXT.": {
+    "en": "The file {safe_name} is not supported for processing. Try PDF, DOCX, PPTX, XLSX or TXT.",
+    "fr": "Le fichier {safe_name} n'est pas pris en charge. Essayez PDF, DOCX, PPTX, XLSX ou TXT."
+  },
+  "Documentul {safe_name} pare scanat, iar procesarea OCR nu este configurata momentan. Incearca din nou mai tarziu.": {
+    "en": "The document {safe_name} looks scanned and OCR processing is not configured right now. Please try again later.",
+    "fr": "Le document {safe_name} semble scanné et le traitement OCR n'est pas configuré pour le moment. Réessayez plus tard."
+  },
+  "Documentul {safe_name} pare scanat si nu a putut fi procesat prin OCR. Incearca din nou sau incarca un PDF cu text selectabil.": {
+    "en": "The document {safe_name} looks scanned and could not be processed with OCR. Try again or upload a PDF with selectable text.",
+    "fr": "Le document {safe_name} semble scanné et n'a pas pu être traité par OCR. Réessayez ou envoyez un PDF avec du texte sélectionnable."
+  },
+  "Imaginea pentru flashcard nu poate depasi 5MB.": {
+    "en": "The flashcard image cannot exceed 5MB.",
+    "fr": "L'image de la flashcard ne peut pas dépasser 5 Mo."
+  },
+  "Fisierul {safe_name} depaseste limita de {max_upload_mb}MB pentru planul curent.": {
+    "en": "The file {safe_name} exceeds the {max_upload_mb}MB limit of your current plan.",
+    "fr": "Le fichier {safe_name} dépasse la limite de {max_upload_mb} Mo de votre forfait actuel."
+  },
+  "STRIPE_SECRET_KEY nu este configurat.": {
+    "en": "STRIPE_SECRET_KEY is not configured.",
+    "fr": "STRIPE_SECRET_KEY n'est pas configuré."
+  },
+  "Planul nu are stripe_price_id.": {
+    "en": "The plan has no stripe_price_id.",
+    "fr": "Le forfait n'a pas de stripe_price_id."
+  },
+  "Planul nu este disponibil pentru plata.": {
+    "en": "The plan is not available for purchase.",
+    "fr": "Le forfait n'est pas disponible à l'achat."
+  },
+  "Planul nu are configurat Price ID-ul Stripe.": {
+    "en": "The plan has no Stripe Price ID configured.",
+    "fr": "Le forfait n'a pas de Price ID Stripe configuré."
+  },
+  "Planul selectat este deja activ.": {
+    "en": "The selected plan is already active.",
+    "fr": "Le forfait sélectionné est déjà actif."
+  },
+  "Stripe nu a returnat URL-ul de checkout.": {
+    "en": "Stripe did not return the checkout URL.",
+    "fr": "Stripe n'a pas renvoyé l'URL de paiement."
+  },
+  "Stripe nu a returnat customer id.": {
+    "en": "Stripe did not return a customer id.",
+    "fr": "Stripe n'a pas renvoyé d'identifiant client."
+  },
+  "Eveniment Stripe invalid.": {
+    "en": "Invalid Stripe event.",
+    "fr": "Événement Stripe invalide."
+  },
+  "Sesiunea Stripe este invalida.": {
+    "en": "The Stripe session is invalid.",
+    "fr": "La session Stripe est invalide."
+  },
+  "Plata nu este finalizata in Stripe.": {
+    "en": "The payment is not completed in Stripe.",
+    "fr": "Le paiement n'est pas finalisé dans Stripe."
+  },
+  "Plata nu este confirmata in Stripe.": {
+    "en": "The payment is not confirmed in Stripe.",
+    "fr": "Le paiement n'est pas confirmé dans Stripe."
+  },
+  "Sesiunea nu apartine contului curent.": {
+    "en": "The session does not belong to the current account.",
+    "fr": "La session n'appartient pas au compte actuel."
+  },
+  "Nu există un abonament activ care poate fi anulat.": {
+    "en": "There is no active subscription to cancel.",
+    "fr": "Il n'y a aucun abonnement actif à annuler."
+  },
+  "Abonamentul nu a putut fi sincronizat.": {
+    "en": "The subscription could not be synchronised.",
+    "fr": "L'abonnement n'a pas pu être synchronisé."
+  },
+  "Nu există un abonament activ care poate fi reactivat.": {
+    "en": "There is no active subscription to resume.",
+    "fr": "Il n'y a aucun abonnement actif à réactiver."
+  },
+  "STRIPE_WEBHOOK_SECRET nu este configurat.": {
+    "en": "STRIPE_WEBHOOK_SECRET is not configured.",
+    "fr": "STRIPE_WEBHOOK_SECRET n'est pas configuré."
+  },
+  "Lipseste Stripe-Signature.": {
+    "en": "Stripe-Signature is missing.",
+    "fr": "Stripe-Signature est manquant."
+  },
+  "Semnatura Stripe este invalida.": {
+    "en": "The Stripe signature is invalid.",
+    "fr": "La signature Stripe est invalide."
+  },
+  "Semnatura Stripe a expirat.": {
+    "en": "The Stripe signature has expired.",
+    "fr": "La signature Stripe a expiré."
+  },
+  "Semnatura Stripe nu corespunde.": {
+    "en": "The Stripe signature does not match.",
+    "fr": "La signature Stripe ne correspond pas."
+  },
+  "Stripe nu a putut fi contactat.": {
+    "en": "Stripe could not be reached.",
+    "fr": "Stripe n'a pas pu être contacté."
+  },
+  "Timestamp Stripe invalid.": {
+    "en": "Invalid Stripe timestamp.",
+    "fr": "Horodatage Stripe invalide."
+  },
+  "Payload Stripe invalid.": {
+    "en": "Invalid Stripe payload.",
+    "fr": "Contenu Stripe invalide."
+  }
+}

@@ -1,3 +1,4 @@
+import { localizedFallback } from "@/lib/client-locale";
 import type { AuthUser } from "@/lib/auth-api";
 
 type ApiErrorPayload = {
@@ -153,7 +154,12 @@ export async function getCurrentSubscription(): Promise<SubscriptionStatusRespon
     }
 
     throw new PaymentsApiError(
-      payload.detail || "Abonamentul nu a putut fi încărcat.",
+      payload.detail ||
+        localizedFallback({
+          ro: "Abonamentul nu a putut fi încărcat.",
+          en: "The subscription could not be loaded.",
+          fr: "L'abonnement n'a pas pu être chargé.",
+        }),
       response.status,
     );
   }
@@ -201,7 +207,12 @@ export async function resumeCurrentSubscription(): Promise<SubscriptionActionRes
     }
 
     throw new PaymentsApiError(
-      payload.detail || "Reînnoirea abonamentului nu a putut fi reactivată.",
+      payload.detail ||
+        localizedFallback({
+          ro: "Reînnoirea abonamentului nu a putut fi reactivată.",
+          en: "The subscription renewal could not be reactivated.",
+          fr: "Le renouvellement de l'abonnement n'a pas pu être réactivé.",
+        }),
       response.status,
     );
   }

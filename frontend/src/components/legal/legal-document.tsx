@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
@@ -24,6 +25,7 @@ function ArrowLeftIcon() {
 }
 
 export function LegalDocument({ contentHtml, eyebrow, summary }: LegalDocumentProps) {
+  const t = useTranslations("legal");
   return (
     <>
       <main className="min-h-screen bg-app text-content">
@@ -44,7 +46,7 @@ export function LegalDocument({ contentHtml, eyebrow, summary }: LegalDocumentPr
             className="inline-flex items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-bold text-muted shadow-sm transition hover:border-content/20 hover:text-content"
           >
             <ArrowLeftIcon />
-            Acasă
+            {t("home")}
           </Link>
         </header>
 

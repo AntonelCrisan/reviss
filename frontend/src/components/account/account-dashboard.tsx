@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useOpenCloseTransition } from "@/components/use-open-close-transition";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -45,7 +46,6 @@ import { useLanguage } from "@/components/language-provider";
 import {
   getCurrentUser,
   type AuthUserPlan,
-  type LanguagePreference,
 } from "@/lib/auth-api";
 import { getUsage, type Usage } from "@/lib/usage-api";
 import {
@@ -169,10 +169,11 @@ type QuizPlanLimitSnapshot = QuizPlanLimits & {
 };
 
 const initialProjects: StudyProject[] = [];
-const AI_ACCESS_UNAVAILABLE_MESSAGE =
-  "Funcționalitatea AI nu este disponibilă pe planul curent.";
-const AI_ACCESS_UPGRADE_MESSAGE =
-  "Alege un plan care include Chat AI, explicații AI și întrebări pe text selectat.";
+
+// The translator for this file's namespace; helpers that build labels take
+// it as their first argument since hooks cannot run outside components.
+type DashboardTranslator = ReturnType<typeof useTranslations<"dashboard">>;
+type DashboardKey = Parameters<DashboardTranslator>[0];
 
 function hasPlanAiAccess(plan: AuthUserPlan | null | undefined) {
   return Boolean(plan?.ai_chat_enabled);
@@ -182,13 +183,13 @@ function isAdminRole(role: string | undefined) {
   return role?.trim().toLowerCase() === "admin";
 }
 
-const tabs: Array<{ id: TabId; label: string }> = [
-  { id: "rezumat", label: "Rezumat" },
-  { id: "flashcards", label: "Flashcard-uri" },
-  { id: "strategii", label: "Strategii" },
-  { id: "quiz", label: "Quiz-uri" },
-  { id: "progres", label: "Progres" },
-  { id: "chat", label: "Chat AI" },
+const tabs: Array<{ id: TabId; labelKey: DashboardKey }> = [
+  { id: "rezumat", labelKey: "rezumat" },
+  { id: "flashcards", labelKey: "flashcardUri" },
+  { id: "strategii", labelKey: "strategii" },
+  { id: "quiz", labelKey: "quizUri" },
+  { id: "progres", labelKey: "progres" },
+  { id: "chat", labelKey: "chatAi" },
 ];
 
 const tabRoutes: Record<TabId, string> = {
@@ -200,79 +201,33 @@ const tabRoutes: Record<TabId, string> = {
   chat: "/myaccount/chat-ai",
 };
 
-const sidebarSettingsItems = [
-  { href: "/settings#account", label: "Cont" },
-  { href: "/settings#study", label: "Studiu" },
-  { href: "/settings#appearance", label: "Aspect" },
-  { href: "/settings#colors", label: "Culori" },
-  { href: "/settings#notifications", label: "Notificări" },
-  { href: "/settings#security", label: "Securitate" },
-  { href: "/settings#privacy", label: "Date" },
+const sidebarSettingsItems: Array<{ href: string; labelKey: DashboardKey }> = [
+  { href: "/settings#account", labelKey: "cont" },
+  { href: "/settings#study", labelKey: "studiu" },
+  { href: "/settings#appearance", labelKey: "aspect" },
+  { href: "/settings#colors", labelKey: "culori" },
+  { href: "/settings#notifications", labelKey: "notificari" },
+  { href: "/settings#security", labelKey: "securitate" },
+  { href: "/settings#privacy", labelKey: "date" },
 ];
 
-const sidebarBillingItems = [
-  { href: "/upgrade", label: "Planuri" },
-  { href: "/upgrade/facturi", label: "Facturi" },
+const sidebarBillingItems: Array<{ href: string; labelKey: DashboardKey }> = [
+  { href: "/upgrade", labelKey: "planuri" },
+  { href: "/upgrade/facturi", labelKey: "facturi" },
 ];
 
-const generationSteps = [
-  "Încărcare materiale",
-  "Sumarizare conținut",
-  "Creare flashcarduri",
-  "Pregătire strategie învățare",
+// Message keys; the completed-steps state stores these keys, not labels.
+const generationSteps: DashboardKey[] = [
+  "incarcareMateriale",
+  "sumarizareContinut",
+  "creareFlashcarduri",
+  "pregatireStrategieInvatare",
 ];
 
 const GENERATION_POLL_INTERVAL_MS = 2000;
 const GENERATION_POLL_ATTEMPTS = 180;
 const QUIZ_GENERATION_POLL_ATTEMPTS = 450;
 const PROJECT_DETAIL_MIN_LENGTH = 2;
-const quizGenerationLoadingCopy: Record<
-  LanguagePreference,
-  {
-    buttonIdle: string;
-    buttonBusy: string;
-    title: string;
-    description: string;
-    steps: [string, string, string];
-  }
-> = {
-  ro: {
-    buttonIdle: "Generează un quiz",
-    buttonBusy: "Se generează...",
-    title: "Construiesc quizurile...",
-    description:
-      "Analizez materialul complet, echilibrez dificultățile și verific variantele corecte. Poate dura câteva minute.",
-    steps: [
-      "Citesc materialul",
-      "Compun întrebările",
-      "Verific răspunsurile",
-    ],
-  },
-  en: {
-    buttonIdle: "Generate a quiz",
-    buttonBusy: "Generating...",
-    title: "Building your quizzes...",
-    description:
-      "Analyzing the full material, balancing difficulty and checking the correct answers. This can take a few minutes.",
-    steps: [
-      "Reading the material",
-      "Writing the questions",
-      "Checking the answers",
-    ],
-  },
-  fr: {
-    buttonIdle: "Générer un quiz",
-    buttonBusy: "Génération...",
-    title: "Création des quiz...",
-    description:
-      "J'analyse tout le contenu, j'équilibre la difficulté et je vérifie les bonnes réponses. Cela peut prendre quelques minutes.",
-    steps: [
-      "Lecture du contenu",
-      "Rédaction des questions",
-      "Vérification des réponses",
-    ],
-  },
-};
 
 class ProjectGenerationFailedError extends Error {
   constructor(message: string) {
@@ -409,7 +364,7 @@ function isAbortError(error: unknown) {
   return error instanceof Error && error.name === "AbortError";
 }
 
-function toFriendlyGenerationError(message?: string | null) {
+function toFriendlyGenerationError(t: DashboardTranslator, message?: string | null) {
   const cleanMessage = message?.trim();
   if (!cleanMessage) return null;
 
@@ -418,23 +373,23 @@ function toFriendlyGenerationError(message?: string | null) {
     lowerMessage.includes("insufficient_quota") ||
     lowerMessage.includes("exceeded your current quota")
   ) {
-    return "Generarea nu este disponibilă momentan. Încearcă din nou în câteva minute.";
+    return t("generareaNuEsteDisponibilaMomentan");
   }
 
   if (
     lowerMessage.includes("a refuzat") ||
     lowerMessage.includes("nu a putut procesa")
   ) {
-    return "Pachetul nu a putut fi generat momentan. Încearcă din nou.";
+    return t("pachetulNuAPututFi");
   }
 
   return cleanMessage
-    .replaceAll("OPENAI_API_KEY", "serviciul de generare")
-    .replaceAll("OpenAI", "serviciul de generare")
-    .replaceAll("Markdown", "conținut")
-    .replaceAll("markdown", "conținut")
-    .replaceAll("JSON-ul", "pachetul generat")
-    .replaceAll("JSON", "pachet generat");
+    .replaceAll("OPENAI_API_KEY", t("serviciulDeGenerare"))
+    .replaceAll("OpenAI", t("serviciulDeGenerare"))
+    .replaceAll("Markdown", t("continutGeneric"))
+    .replaceAll("markdown", t("continutGeneric"))
+    .replaceAll("JSON-ul", t("pachetulGenerat"))
+    .replaceAll("JSON", t("pachetGenerat"));
 }
 
 function initials(name: string) {
@@ -447,13 +402,13 @@ function getProjectById(projects: StudyProject[], projectId?: string) {
   return projects.find((project) => project.id === projectId);
 }
 
-function apiProjectStatusLabel(status: ApiStudyProject["status"]) {
+function apiProjectStatusLabel(t: DashboardTranslator, status: ApiStudyProject["status"]) {
   if (status === "ready") return "";
-  if (status === "generating_study_pack") return "creează pachet";
-  if (status === "generating_quizzes") return "creează quizuri";
-  if (status === "awaiting_ai_json") return "în așteptare";
-  if (status === "processing") return "în procesare";
-  if (status === "failed") return "eroare";
+  if (status === "generating_study_pack") return t("creeazaPachet");
+  if (status === "generating_quizzes") return t("creeazaQuizuri");
+  if (status === "awaiting_ai_json") return t("inAsteptare");
+  if (status === "processing") return t("inProcesare");
+  if (status === "failed") return t("eroare");
   return status;
 }
 
@@ -494,6 +449,7 @@ function getGeneratedFlashcards(flashcards: ApiStudyProject["flashcards"]) {
 }
 
 function mapManualFlashcards(
+  t: DashboardTranslator,
   projectId: string,
   flashcards: ApiStudyProject["flashcards"],
 ): StudyFlashcardCard[] {
@@ -502,7 +458,7 @@ function mapManualFlashcards(
     .map((flashcard, index) => ({
       id: `manual-${flashcard.id || index}`,
       flashcardId: flashcard.id,
-      topic: flashcard.category || "Creat de tine",
+      topic: flashcard.category || t("creatDeTine"),
       question: flashcard.front,
       answer: flashcard.back,
       tone: "info",
@@ -563,14 +519,14 @@ function sortProjectsByActivation(projects: StudyProject[]) {
   });
 }
 
-function mapApiProject(project: ApiStudyProject): StudyProject {
+function mapApiProject(t: DashboardTranslator, project: ApiStudyProject): StudyProject {
   const generatedFlashcardCount = getGeneratedFlashcards(
     project.flashcards,
   ).length;
   const metaParts = [
     project.subject_name,
-    `${project.file_count} materiale`,
-    apiProjectStatusLabel(project.status),
+    t("countMateriale", { count: project.file_count }),
+    apiProjectStatusLabel(t, project.status),
   ].filter(Boolean);
 
   return {
@@ -579,7 +535,7 @@ function mapApiProject(project: ApiStudyProject): StudyProject {
     subjectName: project.subject_name,
     institutionName: project.institution_name,
     status: project.status,
-    errorMessage: toFriendlyGenerationError(project.error_message),
+    errorMessage: toFriendlyGenerationError(t, project.error_message),
     isArchived: project.is_archived,
     archivedAt: project.archived_at,
     isDeactivated: project.is_deactivated,
@@ -594,7 +550,7 @@ function mapApiProject(project: ApiStudyProject): StudyProject {
     flashcards: project.flashcards,
     quizzes: project.quizzes,
     quizMistakeFlashcards: mapQuizMistakeFlashcards(project.flashcards),
-    manualFlashcards: mapManualFlashcards(project.id, project.flashcards),
+    manualFlashcards: mapManualFlashcards(t, project.id, project.flashcards),
     summaryHighlights: mapSummaryHighlights(project.summary_highlights),
     summaryNotes: mapSummaryNotes(project.summary_notes),
     strategies: project.strategies.length
@@ -606,12 +562,12 @@ function mapApiProject(project: ApiStudyProject): StudyProject {
           {
             title:
               project.status === "ready"
-                ? "Continuă cu rezumatul generat"
-                : "Așteaptă generarea pachetului",
+                ? t("continuaCuRezumatulGenerat")
+                : t("asteaptaGenerareaPachetului"),
             description:
               project.status === "ready"
-                ? "Pachetul proiectului este generat și poate fi folosit pentru studiu."
-                : "Reviss convertește materialele și salvează automat conținutul generat.",
+                ? t("pachetulProiectuluiEsteGeneratSi")
+                : t("revissConvertesteMaterialeleSiSalveaza"),
           },
         ],
   };
@@ -652,6 +608,7 @@ export function AccountDashboard({
   initialView = "home",
   useTabPages = false,
 }: AccountDashboardProps = {}) {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const [isTabRoutePending, startTabRouteTransition] = useTransition();
   const { user, isLoading, logout } = useAuth();
@@ -711,7 +668,7 @@ export function AccountDashboard({
   const [isDragging, setIsDragging] = useState(false);
   const [generationState, setGenerationState] =
     useState<GenerationState>("form");
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<DashboardKey[]>([]);
   const [preparedProject, setPreparedProject] =
     useState<StudyProjectPrepareResponse | null>(null);
   const [isCancellingGeneration, setIsCancellingGeneration] = useState(false);
@@ -760,11 +717,11 @@ export function AccountDashboard({
     if (!usage) return null;
 
     if (quotaReached(usage.projects_used, usage.projects_limit)) {
-      return `Ai atins limita planului ${uploadPlanLimits.planName}: ${formatCountLabel(
+      return t("aiAtinsLimitaPlanuluiPlanname", { planName: uploadPlanLimits.planName, value: formatCountLabel(
         usage.projects_limit,
         "proiect",
         "proiecte",
-      )} pe lună.`;
+      ) });
     }
 
     if (
@@ -775,14 +732,14 @@ export function AccountDashboard({
       )
     ) {
       if (usage.materials_limit <= 0) {
-        return `Planul ${uploadPlanLimits.planName} nu include încărcări de materiale.`;
+        return t("planulPlannameNuIncludeIncarcari", { planName: uploadPlanLimits.planName });
       }
 
-      return `Selecția depășește cota lunară de materiale. Mai ai ${formatCountLabel(
+      return t("selectiaDepasesteCotaLunaraDe", { value: formatCountLabel(
         Math.max(0, usage.materials_limit - usage.materials_used),
         "material",
         "materiale",
-      )} disponibile.`;
+      ) });
     }
 
     if (
@@ -790,14 +747,14 @@ export function AccountDashboard({
       quotaReached(usage.pages_processed, usage.pages_limit)
     ) {
       if (usage.pages_limit <= 0) {
-        return `Planul ${uploadPlanLimits.planName} nu include pagini procesate.`;
+        return t("planulPlannameNuIncludePagini", { planName: uploadPlanLimits.planName });
       }
 
-      return `Ai atins limita lunară de pagini procesate: ${usage.pages_processed}/${usage.pages_limit}.`;
+      return t("aiAtinsLimitaLunaraDe", { pages_processed: usage.pages_processed, pages_limit: usage.pages_limit });
     }
 
     return null;
-  }, [usage, uploadPlanLimits.planName, uploadedFiles.length]);
+  }, [t, usage, uploadPlanLimits.planName, uploadedFiles.length]);
   const canGenerate =
     projectName.trim().length >= PROJECT_DETAIL_MIN_LENGTH &&
     subjectName.trim().length >= PROJECT_DETAIL_MIN_LENGTH &&
@@ -833,7 +790,7 @@ export function AccountDashboard({
           }
 
           didLoadInitialProject = true;
-          const mappedProject = mapApiProject(apiProject);
+          const mappedProject = mapApiProject(t, apiProject);
           setProjects((currentProjects) => [
             mappedProject,
             ...currentProjects.filter(
@@ -874,7 +831,7 @@ export function AccountDashboard({
 
         const mappedProjects = apiProjects
           .filter((project) => isVisibleStudyProjectStatus(project.status))
-          .map(mapApiProject);
+          .map((project) => mapApiProject(t, project));
         setProjects(mappedProjects);
 
         if (mappedProjects.length === 0) {
@@ -918,7 +875,7 @@ export function AccountDashboard({
       isMounted = false;
       window.cancelAnimationFrame(loadingFrame);
     };
-  }, [initialProjectId, initialTab, isLoading, user]);
+  }, [initialProjectId, initialTab, isLoading, t, user]);
 
   useEffect(() => {
     if (!useTabPages) return;
@@ -1122,7 +1079,7 @@ export function AccountDashboard({
 
   async function renameProject(projectId: string, name: string) {
     const apiProject = await renameStudyProject({ projectId, name });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1233,7 +1190,7 @@ export function AccountDashboard({
       difficulty: flashcard.difficulty,
       frontImage: flashcard.questionImageFile,
     });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1259,7 +1216,7 @@ export function AccountDashboard({
       startOffset: highlight.startOffset,
       endOffset: highlight.endOffset,
     });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1277,7 +1234,7 @@ export function AccountDashboard({
       highlightId,
       color,
     });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1287,7 +1244,7 @@ export function AccountDashboard({
 
   async function removeSummaryHighlight(projectId: string, highlightId: string) {
     const apiProject = await deleteSummaryHighlight({ projectId, highlightId });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1297,7 +1254,7 @@ export function AccountDashboard({
 
   async function resetSummaryHighlights(projectId: string) {
     const apiProject = await deleteAllSummaryHighlights({ projectId });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1315,7 +1272,7 @@ export function AccountDashboard({
       text: note.text,
       note: note.note,
     });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1329,7 +1286,7 @@ export function AccountDashboard({
     note: string,
   ) {
     const apiProject = await updateSummaryNote({ projectId, noteId, note });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1339,7 +1296,7 @@ export function AccountDashboard({
 
   async function removeSummaryNote(projectId: string, noteId: string) {
     const apiProject = await deleteSummaryNote({ projectId, noteId });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1357,7 +1314,7 @@ export function AccountDashboard({
       quizId,
       ...result,
     });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1383,8 +1340,8 @@ export function AccountDashboard({
 
       if (queuedProject.status === "failed") {
         throw new Error(
-          toFriendlyGenerationError(queuedProject.error_message) ||
-            "Quizul nu a putut fi generat.",
+          toFriendlyGenerationError(t, queuedProject.error_message) ||
+            t("quizulNuAPututFiGenerat"),
         );
       }
 
@@ -1393,14 +1350,14 @@ export function AccountDashboard({
         queuedProject.quizzes.length <= existingQuizCount
       ) {
         throw new Error(
-          toFriendlyGenerationError(queuedProject.error_message) ||
-            "Quizul nu a putut fi generat. Încearcă din nou.",
+          toFriendlyGenerationError(t, queuedProject.error_message) ||
+            t("quizulNuAPututFiGeneratIncearca"),
         );
       }
 
       if (queuedProject.status !== "generating_quizzes") {
         void refreshUsageSnapshot();
-        return mapApiProject(queuedProject);
+        return mapApiProject(t, queuedProject);
       }
 
       for (
@@ -1425,24 +1382,24 @@ export function AccountDashboard({
 
         if (apiProject.status === "ready" && apiProject.error_message) {
           throw new Error(
-            toFriendlyGenerationError(apiProject.error_message) ||
-              "Quizul nu a putut fi generat.",
+            toFriendlyGenerationError(t, apiProject.error_message) ||
+              t("quizulNuAPututFiGenerat"),
           );
         }
 
         if (apiProject.status === "ready") {
-          throw new Error("Quizul nu a putut fi generat. Încearcă din nou.");
+          throw new Error(t("quizulNuAPututFiGeneratIncearca"));
         }
 
         if (apiProject.status === "failed") {
           throw new Error(
-            toFriendlyGenerationError(apiProject.error_message) ||
-              "Quizul nu a putut fi generat.",
+            toFriendlyGenerationError(t, apiProject.error_message) ||
+              t("quizulNuAPututFiGenerat"),
           );
         }
       }
 
-      throw new Error("Generarea quizurilor durează prea mult. Reîncarcă pagina.");
+      throw new Error(t("generareaQuizurilorDureazaPreaMult"));
     } catch (error) {
       if (isAbortError(error)) {
         throw new DOMException("Aborted", "AbortError");
@@ -1475,7 +1432,7 @@ export function AccountDashboard({
       flashcardId,
       review,
     });
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
     setProjects((currentProjects) =>
       currentProjects.map((project) =>
         project.id === mappedProject.id ? mappedProject : project,
@@ -1499,7 +1456,7 @@ export function AccountDashboard({
         projectId,
         questionId,
       });
-      const mappedProject = mapApiProject(apiProject);
+      const mappedProject = mapApiProject(t, apiProject);
       setProjects((currentProjects) =>
         currentProjects.map((project) => {
           if (project.id !== mappedProject.id) {
@@ -1589,28 +1546,38 @@ export function AccountDashboard({
 
       if (remainingSlots === 0) {
         rejectedReasons.add(
-          `Planul ${uploadPlanLimits.planName} permite maximum ${uploadPlanLimits.filesPerProject} fișiere într-un proiect.`,
+          t("planulPermiteMaximumFisiere", {
+            planName: uploadPlanLimits.planName,
+            count: uploadPlanLimits.filesPerProject,
+          }),
         );
       }
 
       for (const file of selectedFiles) {
         if (acceptedFiles.length >= remainingSlots) {
           rejectedReasons.add(
-            `Au fost păstrate doar primele ${uploadPlanLimits.filesPerProject} fișiere permise de plan.`,
+            t("auFostPastrateDoarPrimele", {
+              count: uploadPlanLimits.filesPerProject,
+            }),
           );
           continue;
         }
 
         if (file.size > maxFileBytes) {
           rejectedReasons.add(
-            `Un fișier poate avea cel mult ${uploadPlanLimits.fileSizeMb} MB pe planul ${uploadPlanLimits.planName}.`,
+            t("unFisierPoateAveaCelMult", {
+              size: uploadPlanLimits.fileSizeMb,
+              planName: uploadPlanLimits.planName,
+            }),
           );
           continue;
         }
 
         if (nextTotalSize + file.size > maxProjectBytes) {
           rejectedReasons.add(
-            `Materialele proiectului pot avea cel mult ${uploadPlanLimits.projectSizeMb} MB în total.`,
+            t("materialeleProiectuluiPotAvea", {
+              size: uploadPlanLimits.projectSizeMb,
+            }),
           );
           continue;
         }
@@ -1648,7 +1615,7 @@ export function AccountDashboard({
   }
 
   function storeApiProject(apiProject: ApiStudyProject) {
-    const mappedProject = mapApiProject(apiProject);
+    const mappedProject = mapApiProject(t, apiProject);
 
     if (!isVisibleStudyProjectStatus(apiProject.status)) {
       setProjects((currentProjects) =>
@@ -1693,8 +1660,8 @@ export function AccountDashboard({
 
       if (apiProject.status === "failed") {
         throw new ProjectGenerationFailedError(
-          toFriendlyGenerationError(apiProject.error_message) ||
-            "Generarea nu a putut fi finalizată.",
+          toFriendlyGenerationError(t, apiProject.error_message) ||
+            t("generareaNuAPututFi"),
         );
       }
 
@@ -1705,13 +1672,13 @@ export function AccountDashboard({
       }
     }
 
-    throw new Error("Generarea durează prea mult. Reîncarcă pagina în câteva minute.");
+    throw new Error(t("generareaDureazaPreaMult"));
   }
 
   async function startGeneration() {
     if (!uploadedFilesAreWithinPlan) {
       toast.warning(
-        `Selecția depășește limitele planului ${uploadPlanLimits.planName}.`,
+        t("selectiaDepasesteLimitelePlanuluiPlannam", { planName: uploadPlanLimits.planName }),
       );
       return;
     }
@@ -1768,8 +1735,8 @@ export function AccountDashboard({
 
       const friendlyError =
         (error instanceof Error
-          ? toFriendlyGenerationError(error.message)
-          : null) ?? "Proiectul nu a putut fi pregătit momentan.";
+          ? toFriendlyGenerationError(t, error.message)
+          : null) ?? t("proiectulNuAPututFi");
       if (transientProjectId && error instanceof ProjectGenerationFailedError) {
         try {
           await deleteStudyProject(transientProjectId);
@@ -1894,7 +1861,7 @@ export function AccountDashboard({
       {isBackdropMounted ? (
         <button
           type="button"
-          aria-label="Închide meniul"
+          aria-label={t("inchideMeniul")}
           onClick={() => setSidebarOpen(false)}
           // Fades with the drawer instead of snapping in and out.
           className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 lg:hidden ${
@@ -1905,7 +1872,7 @@ export function AccountDashboard({
 
       <aside
         className={getAccountSidebarShellClass(sidebarOpen, isSidebarCollapsed)}
-        aria-label="Meniu principal"
+        aria-label={t("meniuPrincipal")}
       >
         <div className={getAccountSidebarHeaderClass(isSidebarCollapsed)}>
           <Logo collapsed={isSidebarCollapsed} />
@@ -1913,7 +1880,7 @@ export function AccountDashboard({
             type="button"
             onClick={() => setSidebarOpen(false)}
             className="flex h-10 w-10 items-center justify-center rounded-md text-muted transition hover:bg-surface-hover hover:text-content lg:hidden"
-            aria-label="Închide meniul"
+            aria-label={t("inchideMeniul")}
           >
             <Icon className="h-5 w-5">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -1923,8 +1890,8 @@ export function AccountDashboard({
             type="button"
             onClick={toggleSidebarCollapsed}
             className="hidden h-9 w-9 items-center justify-center rounded-md text-muted transition hover:bg-action-soft hover:text-content lg:flex"
-            aria-label={isSidebarCollapsed ? "Extinde meniul" : "Restrânge meniul"}
-            title={isSidebarCollapsed ? "Extinde meniul" : "Restrânge meniul"}
+            aria-label={isSidebarCollapsed ? t("extindeMeniul") : t("restrangeMeniul")}
+            title={isSidebarCollapsed ? t("extindeMeniul") : t("restrangeMeniul")}
           >
             <Icon className="h-4 w-4">
               {isSidebarCollapsed ? (
@@ -1946,10 +1913,10 @@ export function AccountDashboard({
               <path d="M12 5v14M5 12h14" />
             </Icon>
             <span className={getAccountSidebarActionLabelClass(isSidebarCollapsed)}>
-              Proiect nou
+              {t("proiectNou")}
             </span>
             <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-              Proiect nou
+              {t("proiectNou")}
             </AccountSidebarTooltip>
           </button>
 
@@ -1967,10 +1934,10 @@ export function AccountDashboard({
                 <path d="M5 10v10h14V10" />
               </Icon>
               <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                Acasă
+                {t("acasa")}
               </span>
               <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                Acasă
+                {t("acasa")}
               </AccountSidebarTooltip>
             </button>
 
@@ -1990,7 +1957,7 @@ export function AccountDashboard({
                   <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6l-.08.08a2 2 0 1 1-2.83-2.83l.08-.08A1.7 1.7 0 0 0 10.6 15a1.7 1.7 0 0 0-1.88-.34l-.1.04a2 2 0 1 1-1.53-3.7l.1-.04A1.7 1.7 0 0 0 7.8 9a1.7 1.7 0 0 0-.6-1l-.08-.08a2 2 0 1 1 2.83-2.83l.08.08A1.7 1.7 0 0 0 12 4.6a1.7 1.7 0 0 0 1-.6l.08-.08a2 2 0 1 1 2.83 2.83l-.08.08A1.7 1.7 0 0 0 16.4 9a1.7 1.7 0 0 0 1.88.34l.1-.04a2 2 0 1 1 1.53 3.7l-.1.04A1.7 1.7 0 0 0 19.4 15z" />
                 </Icon>
                 <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                  Setări
+                  {t("setari")}
                 </span>
                 <Icon
                   className={getAccountSidebarChevronClass(
@@ -2001,7 +1968,7 @@ export function AccountDashboard({
                   <path d="M9 18l6-6-6-6" />
                 </Icon>
                 <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                  Setări
+                  {t("setari")}
                 </AccountSidebarTooltip>
               </button>
               <div
@@ -2021,7 +1988,7 @@ export function AccountDashboard({
                       onClick={() => setSidebarOpen(false)}
                       className="flex items-center rounded-md px-2.5 py-1.5 text-sm font-semibold text-muted transition hover:bg-action-soft hover:text-content"
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   ))}
                 </div>
@@ -2039,10 +2006,10 @@ export function AccountDashboard({
                   <path d="M9 12l2 2 4-4" />
                 </Icon>
                 <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                  Setări admin
+                  {t("setariAdmin")}
                 </span>
                 <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                  Setări admin
+                  {t("setariAdmin")}
                 </AccountSidebarTooltip>
               </Link>
             ) : null}
@@ -2062,7 +2029,7 @@ export function AccountDashboard({
                   <path d="M12 3l3.2 6.5 7.1 1-5.1 5 1.2 7-6.4-3.4-6.4 3.4 1.2-7-5.1-5 7.1-1L12 3z" />
                 </Icon>
                 <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                  Abonament
+                  {t("abonament")}
                 </span>
                 <Icon
                   className={getAccountSidebarChevronClass(
@@ -2073,7 +2040,7 @@ export function AccountDashboard({
                   <path d="M9 18l6-6-6-6" />
                 </Icon>
                 <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                  Abonament
+                  {t("abonament")}
                 </AccountSidebarTooltip>
               </button>
               <div
@@ -2093,7 +2060,7 @@ export function AccountDashboard({
                       onClick={() => setSidebarOpen(false)}
                       className="flex items-center rounded-md px-2.5 py-1.5 text-sm font-semibold text-muted transition hover:bg-action-soft hover:text-content"
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   ))}
                 </div>
@@ -2106,7 +2073,7 @@ export function AccountDashboard({
               isSidebarCollapsed ? "lg:hidden" : ""
             }`}
           >
-            Proiectele tale
+            {t("proiecteleTale")}
           </p>
 
           <div className="mt-2 space-y-1">
@@ -2124,7 +2091,7 @@ export function AccountDashboard({
                       disabled={project.isDeactivated}
                       title={
                         project.isDeactivated
-                          ? "Proiect dezactivat pe planul curent"
+                          ? t("proiectDezactivatPePlanulCurent")
                           : undefined
                       }
                       onClick={() => {
@@ -2164,7 +2131,7 @@ export function AccountDashboard({
                         </span>
                         <span className="block truncate text-xs text-muted">
                           {project.isDeactivated
-                            ? "Dezactivat"
+                            ? t("dezactivat")
                             : project.subjectName}
                         </span>
                       </span>
@@ -2203,7 +2170,7 @@ export function AccountDashboard({
                               disabled={isAiTabLocked}
                               title={
                                 isAiTabLocked
-                                  ? AI_ACCESS_UNAVAILABLE_MESSAGE
+                                  ? t("functionalitateaAiNuEsteDisponibila")
                                   : undefined
                               }
                               className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] transition ${
@@ -2217,7 +2184,7 @@ export function AccountDashboard({
                               }`}
                             >
                               <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                              {tab.label}
+                              {t(tab.labelKey)}
                             </button>
                           );
                         })}
@@ -2232,7 +2199,7 @@ export function AccountDashboard({
                   isSidebarCollapsed ? "lg:hidden" : ""
                 }`}
               >
-                Nu ai proiecte încă.
+                {t("nuAiProiecteInca")}
               </p>
             )}
           </div>
@@ -2266,7 +2233,7 @@ export function AccountDashboard({
               className={`group/sidebar-item relative flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-action-soft hover:text-content disabled:cursor-wait disabled:opacity-60 ${
                 isSidebarCollapsed ? "lg:h-10 lg:w-10" : ""
               }`}
-              aria-label="Ieși din cont"
+              aria-label={t("iesiDinCont")}
             >
               <Icon>
                 <path d="M10 17l5-5-5-5" />
@@ -2274,7 +2241,7 @@ export function AccountDashboard({
                 <path d="M21 19V5" />
               </Icon>
               <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                Ieși din cont
+                {t("iesiDinCont")}
               </AccountSidebarTooltip>
             </button>
           </div>
@@ -2492,36 +2459,37 @@ function UsageMeter({
 }
 
 function UsageSection({ usage }: { usage: Usage | null }) {
+  const t = useTranslations("dashboard");
   if (!usage) return null;
 
   const meters = [
     {
       key: "projects",
-      label: "Proiecte lunare",
+      label: t("proiecteLunare"),
       used: usage.projects_used,
       limit: usage.projects_limit,
     },
     {
       key: "materials",
-      label: "Materiale",
+      label: t("materiale"),
       used: usage.materials_used,
       limit: usage.materials_limit,
     },
     {
       key: "pages",
-      label: "Pagini procesate",
+      label: t("paginiProcesate"),
       used: usage.pages_processed,
       limit: usage.pages_limit,
     },
     {
       key: "credits",
-      label: "AI Credits",
+      label: t("aiCredits"),
       used: usage.ai_credits_used,
       limit: usage.ai_credits_limit,
     },
     {
       key: "ocr",
-      label: "Pagini OCR",
+      label: t("paginiOcr"),
       used: usage.ocr_pages_used,
       limit: usage.ocr_pages_limit,
     },
@@ -2554,16 +2522,16 @@ function UsageSection({ usage }: { usage: Usage | null }) {
           }`}
         >
           {mostUsed.percent >= 100
-            ? `Ai atins limita planului curent pentru „${mostUsed.label}". Poti face upgrade la un plan superior.`
+            ? t("aiAtinsLimitaPlanuluiCurent", { label: mostUsed.label })
             : mostUsed.percent >= 90
-              ? `Te apropii de limita lunară pentru „${mostUsed.label}". Mai ai ${mostUsed.limit - mostUsed.used} disponibile.`
-              : `Ai utilizat ${mostUsed.percent}% din resursele incluse luna aceasta pentru „${mostUsed.label}".`}
+              ? t("teApropiiDeLimitaLunara", { label: mostUsed.label, value: mostUsed.limit - mostUsed.used })
+              : t("aiUtilizatPercentDinResursele", { percent: mostUsed.percent, label: mostUsed.label })}
         </div>
       ) : null}
 
       <div className="rounded-xl border border-subtle bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <SectionLabel>Utilizare luna aceasta</SectionLabel>
+          <SectionLabel>{t("utilizareLunaAceasta")}</SectionLabel>
           <p className="text-xs font-semibold text-muted">
             Resetare pe: {resetDateLabel}
           </p>
@@ -2607,6 +2575,7 @@ function HomeView({
   ) => Promise<void> | void;
   onDeleteProject: (projectId: string) => Promise<void> | void;
 }) {
+  const t = useTranslations("dashboard");
   const [openMenuProjectId, setOpenMenuProjectId] = useState<string | null>(
     null,
   );
@@ -2629,10 +2598,10 @@ function HomeView({
   );
   const projectCountLabel =
     projects.length === 0
-      ? "Nu ai încă proiecte. Încarcă primul curs și începem."
+      ? t("nuAiIncaProiecteIncarca")
       : projects.length === 1
-        ? "Ai 1 proiect pregătit pentru studiu."
-        : `Ai ${projects.length} proiecte pregătite pentru studiu.`;
+        ? t("ai1ProiectPregatitPentru")
+        : t("aiLengthProiectePregatitePentru", { length: projects.length });
 
   function startRename(project: StudyProject) {
     setOpenMenuProjectId(null);
@@ -2643,7 +2612,7 @@ function HomeView({
   async function submitRename(projectId: string) {
     const nextName = renameDraft.trim();
     if (nextName.length < 2) {
-      toast.error("Numele proiectului trebuie să aibă cel puțin 2 caractere.");
+      toast.error(t("numeleProiectuluiMinim"));
       return;
     }
 
@@ -2654,7 +2623,7 @@ function HomeView({
       setRenameDraft("");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Proiectul nu a putut fi redenumit.",
+        error instanceof Error ? error.message : t("proiectulNuAPututFiRedenumit"),
       );
     } finally {
       setBusyProjectId(null);
@@ -2668,7 +2637,7 @@ function HomeView({
       await onArchiveProject(projectId);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Proiectul nu a putut fi arhivat.",
+        error instanceof Error ? error.message : t("proiectulNuAPututFiArhivat"),
       );
     } finally {
       setBusyProjectId(null);
@@ -2682,7 +2651,7 @@ function HomeView({
       await onSetProjectActivation(projectId, isActive);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Starea proiectului nu a putut fi schimbată.",
+        error instanceof Error ? error.message : t("stareaProiectuluiNuAPututFi"),
       );
     } finally {
       setBusyProjectId(null);
@@ -2699,7 +2668,7 @@ function HomeView({
       setDeleteCandidateProject(null);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Proiectul nu a putut fi șters.",
+        error instanceof Error ? error.message : t("proiectulNuAPututFiSters"),
       );
     } finally {
       deletingProjectIdsRef.current.delete(projectId);
@@ -2712,10 +2681,10 @@ function HomeView({
       <div className="flex flex-col gap-6 border-b border-subtle pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-            Acasă
+            {t("acasa")}
           </span>
           <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-            Bună, <em className="text-success">{displayName}</em>
+            {t("buna")} <em className="text-success">{displayName}</em>
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
             {projectCountLabel}
@@ -2729,37 +2698,37 @@ function HomeView({
           <Icon>
             <path d="M12 5v14M5 12h14" />
           </Icon>
-          Proiect nou
+          {t("proiectNou")}
         </button>
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
         <AccountMetric
-          label="Proiecte active"
+          label={t("proiecteActive")}
           value={activeProjectCount.toString()}
           detail={
             deactivatedProjectCount === 0
-              ? "în spațiul tău de studiu"
+              ? t("inSpatiulTauDeStudiu")
               : deactivatedProjectCount === 1
-                ? "1 dezactivat pe planul curent"
-                : `${deactivatedProjectCount} dezactivate pe planul curent`
+                ? t("t1DezactivatPePlanulCurent")
+                : t("deactivatedprojectcountDezactivatePePlan", { deactivatedProjectCount })
           }
         />
         <AccountMetric
-          label="Pachete de studiu"
+          label={t("pacheteDeStudiu")}
           value={readyProjects.toString()}
-          detail="cu pachet generat"
+          detail={t("cuPachetGenerat")}
         />
         <AccountMetric
-          label="Flashcard-uri"
+          label={t("flashcardUri")}
           value={activeFlashcards.toString()}
-          detail="în pachetele generate"
+          detail={t("inPacheteleGenerate")}
         />
       </div>
 
       <UsageSection usage={usage} />
 
-      <SectionLabel>Proiectele tale</SectionLabel>
+      <SectionLabel>{t("proiecteleTale")}</SectionLabel>
       <div>
         {projects.length ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -2774,7 +2743,7 @@ function HomeView({
               >
                 {project.isDeactivated ? (
                   <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-md border border-warning-border bg-warning-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-warning">
-                    Dezactivat
+                    {t("dezactivat")}
                   </p>
                 ) : null}
                 <button
@@ -2785,7 +2754,7 @@ function HomeView({
                     )
                   }
                   className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-md border border-subtle bg-surface text-content transition hover:bg-surface-hover"
-                  aria-label={`Deschide meniul pentru ${project.name}`}
+                  aria-label={t("deschideMeniulPentruName", { name: project.name })}
                 >
                   <svg
                     aria-hidden="true"
@@ -2810,7 +2779,7 @@ function HomeView({
                         <path d="M12 20h9" />
                         <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
                       </Icon>
-                      Redenumire
+                      {t("redenumire")}
                     </button>
                     <button
                       type="button"
@@ -2836,7 +2805,7 @@ function HomeView({
                           </>
                         )}
                       </Icon>
-                      {project.isDeactivated ? "Activare" : "Dezactivare"}
+                      {project.isDeactivated ? t("activare") : t("dezactivare")}
                     </button>
                     <button
                       type="button"
@@ -2849,7 +2818,7 @@ function HomeView({
                         <path d="M1 3h22v5H1z" />
                         <path d="M10 12h4" />
                       </Icon>
-                      Arhivare
+                      {t("arhivare")}
                     </button>
                     <button
                       type="button"
@@ -2866,7 +2835,7 @@ function HomeView({
                         <path d="M19 6l-1 14H6L5 6" />
                         <path d="M10 11v6M14 11v6" />
                       </Icon>
-                      Ștergere
+                      {t("stergere")}
                     </button>
                   </div>
                 ) : null}
@@ -2900,10 +2869,10 @@ function HomeView({
                     }`}
                   >
                     {project.isDeactivated ? (
-                      "Indisponibil pe planul curent"
+                      t("indisponibilPePlanulCurent")
                     ) : (
                       <>
-                        Deschide proiectul
+                        {t("deschideProiectul")}
                         <Icon className="h-3.5 w-3.5">
                           <path d="M5 12h14M13 5l7 7-7 7" />
                         </Icon>
@@ -2915,7 +2884,7 @@ function HomeView({
                 {renamingProjectId === project.id ? (
                   <div className="absolute inset-x-6 bottom-6 z-20 border-t border-subtle bg-surface pt-4">
                     <label className="block text-[11px] font-black uppercase tracking-[0.12em] text-muted">
-                      Nume proiect
+                      {t("numeProiect")}
                       <input
                         value={renameDraft}
                         onChange={(event) => setRenameDraft(event.target.value)}
@@ -2938,7 +2907,7 @@ function HomeView({
                         onClick={() => setRenamingProjectId(null)}
                         className="rounded-md border border-subtle px-3 py-2 text-xs font-bold transition hover:bg-surface-hover"
                       >
-                        Renunță
+                        {t("renunta")}
                       </button>
                       <button
                         type="button"
@@ -2946,7 +2915,7 @@ function HomeView({
                         onClick={() => void submitRename(project.id)}
                         className="rounded-md bg-action px-3 py-2 text-xs font-bold text-on-action disabled:cursor-wait disabled:opacity-60"
                       >
-                        Salvează
+                        {t("salveaza")}
                       </button>
                     </div>
                   </div>
@@ -2957,11 +2926,10 @@ function HomeView({
         ) : (
           <div className="rounded-xl border border-dashed border-subtle bg-surface p-8 text-center">
             <p className="font-serif text-xl font-semibold">
-              Niciun proiect încă.
+              {t("niciunProiectInca")}
             </p>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">
-              Creează primul proiect, încarcă materialele și Reviss îți
-              pregătește rezumatul, flashcardurile și quizurile.
+              {t("creeazaPrimulProiectIncarcaMaterialele")}
             </p>
           </div>
         )}
@@ -2990,6 +2958,7 @@ function ProjectDeleteModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-content/35 px-4 py-6 backdrop-blur-sm"
@@ -3009,7 +2978,7 @@ function ProjectDeleteModal({
               </Icon>
             </span>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-danger">
-              Ștergere definitivă
+              {t("stergereDefinitiva")}
             </p>
           </div>
 
@@ -3017,19 +2986,17 @@ function ProjectDeleteModal({
             id="delete-project-title"
             className="mt-4 font-serif text-3xl font-semibold leading-tight text-content sm:text-4xl"
           >
-            Confirmă ștergerea proiectului.
+            {t("confirmaStergereaProiectului")}
           </h2>
           <p className="mt-3 max-w-lg text-sm leading-6 text-muted">
-            Această acțiune elimină proiectul, materialele convertite și
-            conținutul generat. Pentru păstrare fără afișare, folosește
-            arhivarea.
+            {t("aceastaActiuneEliminaProiectulMaterialel")}
           </p>
         </div>
 
         <div className="divide-y divide-subtle">
           <div className="grid gap-1 px-6 py-4 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-center">
             <span className="text-xs font-black uppercase tracking-[0.16em] text-muted">
-              Proiect
+              {t("proiect")}
             </span>
             <strong className="min-w-0 font-serif text-2xl font-semibold leading-tight text-content">
               {project.name}
@@ -3037,18 +3004,18 @@ function ProjectDeleteModal({
           </div>
           <div className="grid gap-1 px-6 py-4 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-center">
             <span className="text-xs font-black uppercase tracking-[0.16em] text-muted">
-              Conținut
+              {t("continut")}
             </span>
             <span className="text-sm font-semibold text-content">
-              Materiale, rezumat, flashcard-uri, quiz-uri și progres.
+              {t("materialeRezumatFlashcardUriQuiz")}
             </span>
           </div>
           <div className="grid gap-1 px-6 py-4 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-center">
             <span className="text-xs font-black uppercase tracking-[0.16em] text-muted">
-              Alternativă
+              {t("alternativa")}
             </span>
             <span className="text-sm text-muted">
-              Arhivează proiectul dacă vrei doar să îl ascunzi temporar.
+              {t("arhiveazaProiectulDacaVreiDoar")}
             </span>
           </div>
         </div>
@@ -3060,7 +3027,7 @@ function ProjectDeleteModal({
             disabled={isDeleting}
             className="rounded-md border border-subtle bg-surface px-5 py-3 text-sm font-bold transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
           >
-            Renunță
+            {t("renunta")}
           </button>
           <button
             type="button"
@@ -3068,7 +3035,7 @@ function ProjectDeleteModal({
             disabled={isDeleting}
             className="rounded-md bg-danger px-5 py-3 text-sm font-bold text-app transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
           >
-            {isDeleting ? "Se șterge..." : "Șterge definitiv"}
+            {isDeleting ? t("seSterge") : t("stergeDefinitiv")}
           </button>
         </div>
       </div>
@@ -3167,10 +3134,11 @@ function ProjectView({
   ) => Promise<void>;
   onNoteRemove: (projectId: string, noteId: string) => Promise<void>;
 }) {
+  const t = useTranslations("dashboard");
   const [areProjectTabsVisible, setAreProjectTabsVisible] = useState(true);
   const lastProjectScrollYRef = useRef(0);
   const chatBackLabel =
-    tabs.find((tab) => tab.id === chatBackTab)?.label ?? "Rezumat";
+    t(tabs.find((tab) => tab.id === chatBackTab)?.labelKey ?? "rezumat");
 
   useEffect(() => {
     if (activeTab === "chat") {
@@ -3211,7 +3179,7 @@ function ProjectView({
           <Icon>
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </Icon>
-          Înapoi la {chatBackLabel}
+          {t("inapoiLa")} {chatBackLabel}
         </button>
 
         {isTabContentLoading ? (
@@ -3241,12 +3209,12 @@ function ProjectView({
             <Icon>
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </Icon>
-            Proiectele tale
+            {t("proiecteleTale")}
           </button>
 
           <div className="mt-4 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
             <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Proiect activ
+              {t("proiectActiv")}
             </span>
             <h1 className="min-w-0 font-serif text-3xl font-semibold leading-none text-content sm:text-4xl">
               {project.name}
@@ -3273,7 +3241,7 @@ function ProjectView({
                 type="button"
                 onClick={() => onTabChange(tab.id)}
                 disabled={isAiTabLocked}
-                title={isAiTabLocked ? AI_ACCESS_UNAVAILABLE_MESSAGE : undefined}
+                title={isAiTabLocked ? t("functionalitateaAiNuEsteDisponibila") : undefined}
                 className={`relative py-4 text-sm font-black transition after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-md after:transition ${
                   isAiTabLocked
                     ? "cursor-not-allowed text-muted/45 after:bg-transparent"
@@ -3282,7 +3250,7 @@ function ProjectView({
                       : "cursor-pointer text-muted after:bg-transparent hover:text-content"
                 }`}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             );
           })}
@@ -3358,32 +3326,33 @@ const PROJECT_CHAT_HISTORY_MESSAGES = 18;
 const PROJECT_CHAT_SUMMARY_MESSAGES = 30;
 
 function ProjectAiLockedPanel() {
+  const t = useTranslations("dashboard");
   return (
     <section className="rounded-xl border border-subtle bg-surface p-6 sm:p-8">
       <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
         AI
       </span>
       <h2 className="mt-4 max-w-3xl font-serif text-3xl font-semibold leading-tight text-content sm:text-4xl">
-        Chat AI nu este disponibil pe planul curent.
+        {t("chatAiNuEsteDisponibil")}
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-        {AI_ACCESS_UPGRADE_MESSAGE}
+        {t("alegeUnPlanCareInclude")}
       </p>
       <Link
         href="/upgrade"
         className="mt-6 inline-flex h-11 cursor-pointer items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:bg-action-hover"
       >
-        Vezi planurile
+        {t("veziPlanurile")}
       </Link>
     </section>
   );
 }
 
-function createProjectChatIntro(project: StudyProject): ProjectChatMessage {
+function createProjectChatIntro(t: DashboardTranslator, project: StudyProject): ProjectChatMessage {
   return {
     id: `assistant-intro-${project.id}`,
     role: "assistant",
-    text: `Salut! Sunt AI-ul pentru proiectul „${project.name}”. Întreabă-mă orice despre materialul acesta.`,
+    text: t("salutSuntAiUlPentru", { name: project.name }),
   };
 }
 
@@ -3421,8 +3390,8 @@ function createProjectChatMessageId(
   return `${role}-${projectId}-${randomPart}`;
 }
 
-function loadProjectChatMessages(project: StudyProject): ProjectChatMessage[] {
-  const introMessage = createProjectChatIntro(project);
+function loadProjectChatMessages(t: DashboardTranslator, project: StudyProject): ProjectChatMessage[] {
+  const introMessage = createProjectChatIntro(t, project);
 
   if (typeof window === "undefined") {
     return [introMessage];
@@ -3697,12 +3666,13 @@ function ProjectChatPanel({
   project: StudyProject;
   onUsageRefresh: () => Promise<void>;
 }) {
+  const t = useTranslations("dashboard");
   const streamTimerRef = useRef<number | null>(null);
   const chatRequestIdRef = useRef(0);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [messages, setMessages] = useState<ProjectChatMessage[]>(() =>
-    loadProjectChatMessages(project),
+    loadProjectChatMessages(t, project),
   );
   const [draftMessage, setDraftMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -3750,7 +3720,7 @@ function ProjectChatPanel({
 
     chatRequestIdRef.current += 1;
     removeStoredProjectChatMessages(project.id);
-    setMessages([createProjectChatIntro(project)]);
+    setMessages([createProjectChatIntro(t, project)]);
     setDraftMessage("");
     setIsGenerating(false);
     setStreamingMessageId(null);
@@ -3763,7 +3733,7 @@ function ProjectChatPanel({
   function streamAssistantAnswer(assistantMessageId: string, answer: string) {
     const cleanAnswer =
       answer.trim() ||
-      "Nu am putut genera un răspuns util momentan. Încearcă din nou peste câteva momente.";
+      t("nuAmPututGeneraUn");
     const answerChunks = cleanAnswer.match(/\S+\s*/g) ?? [cleanAnswer];
     let chunkIndex = 0;
     let streamedAnswer = "";
@@ -3868,7 +3838,7 @@ function ProjectChatPanel({
       const fallbackAnswer =
         error instanceof Error
           ? error.message
-          : "Răspunsul nu a putut fi generat momentan. Încearcă din nou.";
+          : t("raspunsulNuAPututFi");
       streamAssistantAnswer(assistantMessageId, fallbackAnswer);
     }
   }
@@ -3882,7 +3852,7 @@ function ProjectChatPanel({
             onClick={startNewChat}
             className="inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-subtle bg-app px-3 text-xs font-bold text-content transition hover:bg-surface-hover"
           >
-            Chat nou
+            {t("chatNou")}
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 lg:px-8">
@@ -3910,7 +3880,7 @@ function ProjectChatPanel({
                     {isWaiting ? (
                       <div className="flex items-center gap-2 text-muted">
                         <span className="text-xs font-bold text-content">
-                          Reviss pregătește răspunsul
+                          {t("revissPregatesteRaspunsul")}
                         </span>
                         <span
                           aria-hidden="true"
@@ -3946,7 +3916,7 @@ function ProjectChatPanel({
             className="mx-auto flex max-w-5xl items-end gap-2 rounded-xl border border-subtle bg-app p-1.5"
           >
             <label className="sr-only" htmlFor="project-chat-message">
-              Mesaj pentru Chat AI
+              {t("mesajPentruChatAi")}
             </label>
             <textarea
               id="project-chat-message"
@@ -3959,7 +3929,7 @@ function ProjectChatPanel({
                   void sendChatMessage();
                 }
               }}
-              placeholder="Scrie un mesaj..."
+              placeholder={t("scrieUnMesaj")}
               rows={1}
               className="max-h-28 min-h-9 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-3 py-2 text-sm leading-5 text-content outline-none placeholder:text-muted"
             />
@@ -3968,7 +3938,7 @@ function ProjectChatPanel({
               disabled={!draftMessage.trim() || isGenerating}
               className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-action px-4 text-xs font-bold text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Trimite
+              {t("trimite")}
             </button>
           </form>
         </div>
@@ -4073,49 +4043,49 @@ const defaultSummaryHighlightColor: SummaryHighlightColorId = "yellow";
 
 const summaryHighlightColors: Array<{
   id: SummaryHighlightColorId;
-  label: string;
+  labelKey: DashboardKey;
   bg: string;
   text: string;
   border: string;
 }> = [
   {
     id: "yellow",
-    label: "Galben",
+    labelKey: "galben",
     bg: "#fff3bf",
     text: "#5f3e00",
     border: "#f3d36b",
   },
   {
     id: "green",
-    label: "Verde",
+    labelKey: "verde",
     bg: "#dcfce7",
     text: "#166534",
     border: "#86efac",
   },
   {
     id: "blue",
-    label: "Albastru",
+    labelKey: "albastru",
     bg: "#dbeafe",
     text: "#1d4ed8",
     border: "#93c5fd",
   },
   {
     id: "pink",
-    label: "Roz",
+    labelKey: "roz",
     bg: "#fce7f3",
     text: "#9d174d",
     border: "#f9a8d4",
   },
   {
     id: "purple",
-    label: "Mov",
+    labelKey: "mov",
     bg: "#ede9fe",
     text: "#6d28d9",
     border: "#c4b5fd",
   },
   {
     id: "orange",
-    label: "Portocaliu",
+    labelKey: "portocaliu",
     bg: "#ffedd5",
     text: "#9a3412",
     border: "#fdba74",
@@ -4251,6 +4221,7 @@ type QuizReviewLocation = {
 };
 
 function getQuizReviewLocation(
+  t: DashboardTranslator,
   question: ApiStudyProject["quizzes"][number]["questions"][number],
   paragraphs: SummaryDisplayBlock[],
 ): QuizReviewLocation | null {
@@ -4281,7 +4252,7 @@ function getQuizReviewLocation(
     }
   }
   return {
-    section: headings.map((heading) => heading.text).join(" / ") || "Rezumat",
+    section: headings.map((heading) => heading.text).join(" / ") || t("rezumat"),
     paragraphIndex: index,
     paragraphNumber,
     anchorText: anchor,
@@ -4295,10 +4266,11 @@ function QuizReviewReference({
   projectId: string;
   review: QuizReviewLocation;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div className="mt-3 rounded-md border border-subtle bg-app p-3 text-sm">
       <p className="font-semibold text-content">
-        {review.section} → paragraful {review.paragraphNumber}
+        {review.section} {t("paragraful")} {review.paragraphNumber}
       </p>
       <p className="mt-1 leading-6 text-muted">„{review.anchorText}”</p>
       <Link
@@ -4307,7 +4279,7 @@ function QuizReviewReference({
         rel="noopener noreferrer"
         className="mt-2 inline-flex font-bold text-action underline underline-offset-4"
       >
-        Deschide paragraful în rezumat ↗
+        {t("deschideParagrafulInRezumat")}
       </Link>
     </div>
   );
@@ -4722,6 +4694,7 @@ function renderSummaryInlineRange(
 }
 
 function renderSummaryText(
+  t: DashboardTranslator,
   paragraph: string,
   paragraphIndex: number,
   keywords: SummaryKeyword[],
@@ -4819,7 +4792,7 @@ function renderSummaryText(
         }
         role={isHighlightClickable ? "button" : undefined}
         tabIndex={isHighlightClickable ? 0 : undefined}
-        title={isHighlightClickable ? "Apasă pentru a șterge highlight-ul" : undefined}
+        title={isHighlightClickable ? t("apasaPentruAStergeHighlight") : undefined}
         onClick={
           isHighlightClickable && userHighlight
             ? (event) => {
@@ -4866,7 +4839,7 @@ function renderSummaryText(
             event.stopPropagation();
             onNoteBadgeClick(note);
           }}
-          title="Vezi notița"
+          title={t("veziNotita")}
           className="mr-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-info-border bg-info-soft align-middle text-info transition hover:-translate-y-0.5"
         >
           <Icon className="h-3 w-3">
@@ -4895,10 +4868,11 @@ function SummaryHighlightColorPicker({
   onResetHighlights: () => void;
   canResetHighlights: boolean;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div className="mt-3 rounded-xl border border-subtle bg-app p-3">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-        Culoare highlight
+        {t("culoareHighlight")}
       </p>
       <div className="mt-2 grid grid-cols-2 gap-2">
         {summaryHighlightColors.map((color) => {
@@ -4926,7 +4900,7 @@ function SummaryHighlightColorPicker({
                   borderColor: color.text,
                 }}
               />
-              {color.label}
+              {t(color.labelKey)}
             </button>
           );
         })}
@@ -4942,7 +4916,7 @@ function SummaryHighlightColorPicker({
           <path d="M8 6V4h8v2" />
           <path d="M19 6l-1 14H6L5 6" />
         </Icon>
-        Resetează highlight
+        {t("reseteazaHighlight")}
       </button>
     </div>
   );
@@ -5016,15 +4990,16 @@ function SummaryToolsPanel({
   onHighlightColorChange: (color: SummaryHighlightColorId) => void;
   onResetHighlights: () => void;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <>
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-        Instrumente
+        {t("instrumente")}
       </p>
 
       <div className="mt-3 divide-y divide-subtle border-y border-subtle py-1">
         <SummaryToolButton
-          label="Evidențiază"
+          label={t("evidentiaza")}
           active={activeTool === "highlight"}
           onClick={() => onToggleTool("highlight")}
         >
@@ -5045,13 +5020,13 @@ function SummaryToolsPanel({
               onClick={onApplyCurrentHighlight}
               className="mt-3 flex h-10 w-full cursor-pointer items-center justify-center rounded-md bg-action px-4 text-xs font-bold text-on-action transition hover:bg-action-hover"
             >
-              Aplică
+              {t("aplica")}
             </button>
           </div>
         ) : null}
 
         <SummaryToolButton
-          label="Șterge"
+          label={t("sterge")}
           active={activeTool === "erase"}
           onClick={() => onToggleTool("erase")}
         >
@@ -5064,14 +5039,14 @@ function SummaryToolsPanel({
           label="AI"
           active={activeTool === "ai"}
           disabled={!hasAiAccess}
-          tooltip={!hasAiAccess ? AI_ACCESS_UNAVAILABLE_MESSAGE : undefined}
+          tooltip={!hasAiAccess ? t("functionalitateaAiNuEsteDisponibila") : undefined}
           onClick={() => onToggleTool("ai")}
         >
           <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
         </SummaryToolButton>
 
         <SummaryToolButton
-          label="Notiță"
+          label={t("notita")}
           active={activeTool === "note"}
           onClick={() => onToggleTool("note")}
         >
@@ -5091,7 +5066,7 @@ function SummaryToolsPanel({
           <Icon className="h-4 w-4 shrink-0">
             <path d="M18 6 6 18M6 6l12 12" />
           </Icon>
-          Șterge instrument
+          {t("stergeInstrument")}
         </button>
       </div>
 
@@ -5147,6 +5122,7 @@ function SummaryPanel({
   ) => Promise<void>;
   onNoteRemove: (projectId: string, noteId: string) => Promise<void>;
 }) {
+  const t = useTranslations("dashboard");
   const summaryRef = useRef<HTMLDivElement | null>(null);
   const keywordFocusTimer = useRef<number | null>(null);
   const aiRequestIdRef = useRef(0);
@@ -5335,14 +5311,14 @@ function SummaryPanel({
         question: cleanQuestion || null,
         status: "done",
         response: {
-          title: "Explicația nu este disponibilă momentan",
+          title: t("explicatiaNuEsteDisponibilaMomentan"),
           answer:
             error instanceof Error
               ? error.message
-              : "Nu am putut genera explicația. Încearcă din nou peste câteva momente.",
+              : t("nuAmPututGeneraExplicatia"),
           bullets: [
-            "Verifică dacă ai selectat un fragment clar din rezumat.",
-            "Poți continua studiul și poți reveni la explicație mai târziu.",
+            t("verificaDacaAiSelectatUn"),
+            t("potiContinuaStudiulSiPoti"),
           ],
         },
       });
@@ -5537,14 +5513,13 @@ function SummaryPanel({
     return (
       <article className="rounded-xl border border-subtle bg-surface p-6 text-center sm:p-8">
         <p className="mx-auto inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-          Rezumat
+          {t("rezumat")}
         </p>
         <h2 className="mx-auto mt-3 max-w-2xl font-serif text-3xl font-semibold leading-tight">
-          Rezumatul nu este generat încă.
+          {t("rezumatulNuEsteGeneratInca")}
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-muted">
-          Reviss generează automat rezumatul după încărcarea materialelor.
-          Dacă generarea a eșuat, reîncearcă din pagina proiectului.
+          {t("revissGenereazaAutomatRezumatulDupa")}
         </p>
       </article>
     );
@@ -5712,23 +5687,23 @@ function SummaryPanel({
 
   const toolHintText =
     activeTool === "highlight"
-      ? "Selectează un fragment, apoi apasă Aplică pe selecție."
+      ? t("selecteazaUnFragmentApoiApasa")
       : activeTool === "erase"
-        ? "Apasă pe un text evidențiat ca să-l ștergi."
+        ? t("apasaPeUnTextEvidentiat")
         : activeTool === "ai"
-          ? "Selectează un fragment, apoi confirmă cu Întreabă."
+          ? t("selecteazaUnFragmentApoiConfirma")
       : activeTool === "note"
-        ? "Selectează un fragment ca să adaugi o notiță."
+        ? t("selecteazaUnFragmentCaSa")
         : null;
   const activeToolLabel =
     activeTool === "highlight"
-      ? "Evidențiere"
+      ? t("evidentiere")
       : activeTool === "erase"
-        ? "Ștergere"
+        ? t("stergere")
         : activeTool === "ai"
           ? "AI"
           : activeTool === "note"
-            ? "Notiță"
+            ? t("notita")
             : null;
 
   return (
@@ -5744,7 +5719,7 @@ function SummaryPanel({
           <path d="M12 3v18M3 12h18" />
           <path d="M18 6 6 18" />
         </Icon>
-        Instrumente
+        {t("instrumente")}
         {activeToolLabel ? (
           <span className="rounded-md bg-on-action/15 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em]">
             {activeToolLabel}
@@ -5763,7 +5738,7 @@ function SummaryPanel({
               className="sticky top-16 z-20 mt-4 w-full max-w-md rounded-xl border border-info-border bg-info-soft p-4 text-info theme-shadow-card"
             >
               <p className="text-[11px] font-black uppercase tracking-[0.16em]">
-                Text selectat pentru AI
+                {t("textSelectatPentruAi")}
               </p>
               <p className="mt-2 line-clamp-3 text-sm leading-6">
                 “{pendingAiSelection.text}”
@@ -5772,19 +5747,19 @@ function SummaryPanel({
                 htmlFor="summary-ai-question"
                 className="mt-4 block text-[11px] font-black uppercase tracking-[0.16em]"
               >
-                Întrebarea ta
+                {t("intrebareaTa")}
               </label>
               <textarea
                 id="summary-ai-question"
                 value={pendingAiQuestion}
                 onChange={(event) => setPendingAiQuestion(event.target.value)}
-                placeholder="Ex: explică pe scurt pentru examen sau compară cu teoria lui Kant."
+                placeholder={t("exExplicaPeScurtPentru")}
                 rows={3}
                 maxLength={1000}
                 className="mt-2 w-full resize-none rounded-md border border-info-border bg-surface px-3 py-2 text-sm leading-6 text-content outline-none transition placeholder:text-muted focus:border-info focus:ring-2 focus:ring-info/15"
               />
               <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold text-info/70">
-                <span>Opțional</span>
+                <span>{t("optional")}</span>
                 <span>{pendingAiQuestion.length}/1000</span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -5792,14 +5767,14 @@ function SummaryPanel({
                   type="submit"
                   className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:bg-action-hover"
                 >
-                  Întreabă
+                  {t("intreaba")}
                 </button>
                 <button
                   type="button"
                   onClick={handleCancelAiSelection}
                   className="inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-info-border bg-surface px-5 text-sm font-bold text-content transition hover:bg-surface-hover"
                 >
-                  Anulează
+                  {t("anuleaza")}
                 </button>
               </div>
             </form>
@@ -5812,8 +5787,8 @@ function SummaryPanel({
                   <button
                     type="button"
                     onClick={handleDeleteNote}
-                    aria-label="Șterge notița"
-                    title="Șterge notița"
+                    aria-label={t("stergeNotita")}
+                    title={t("stergeNotita")}
                     className="flex h-7 w-7 items-center justify-center rounded-md text-warning transition hover:bg-warning-border/25 hover:text-content"
                   >
                     <Icon className="h-4 w-4">
@@ -5825,7 +5800,7 @@ function SummaryPanel({
                 <button
                   type="button"
                   onClick={handleCloseNotePanel}
-                  aria-label="Închide"
+                  aria-label={t("inchide")}
                   className="flex h-7 w-7 items-center justify-center rounded-md text-warning transition hover:bg-warning-border/25 hover:text-content"
                 >
                   <Icon className="h-4 w-4">
@@ -5843,7 +5818,7 @@ function SummaryPanel({
                       : current,
                   )
                 }
-                placeholder="Scrie o notiță aici..."
+                placeholder={t("scrieONotitaAici")}
                 rows={5}
                 autoFocus
                 className="w-full resize-none bg-transparent p-1 text-sm leading-6 text-content outline-none placeholder:text-muted"
@@ -5854,7 +5829,7 @@ function SummaryPanel({
                   type="button"
                   onClick={handleSaveNote}
                   disabled={!notePanel.draft.trim()}
-                  aria-label="Salvează"
+                  aria-label={t("salveaza")}
                   className="flex h-7 w-7 items-center justify-center rounded-md text-warning transition hover:bg-warning-border/25 hover:text-content disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   <Icon className="h-4 w-4">
@@ -5883,6 +5858,7 @@ function SummaryPanel({
                     className="select-text font-serif text-xl font-semibold leading-snug text-content sm:text-2xl"
                   >
                     {renderSummaryText(
+                      t,
                       group.text,
                       group.paragraphIndex,
                       displayKeywords,
@@ -5915,6 +5891,7 @@ function SummaryPanel({
                         className="scroll-mt-28 rounded-md select-text pl-1 target:bg-warning-soft target:ring-2 target:ring-warning-border"
                       >
                         {renderSummaryText(
+                      t,
                           item.text,
                           item.paragraphIndex,
                           displayKeywords,
@@ -5943,6 +5920,7 @@ function SummaryPanel({
                   className="scroll-mt-28 rounded-md select-text target:bg-warning-soft target:ring-2 target:ring-warning-border"
                 >
                   {renderSummaryText(
+                      t,
                     group.text,
                     group.paragraphIndex,
                     displayKeywords,
@@ -5963,7 +5941,7 @@ function SummaryPanel({
 
           <div className="mt-6">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-              Cuvinte cheie din rezumat
+              {t("cuvinteCheieDinRezumat")}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {displayKeywords.map((keyword) => (
@@ -6006,20 +5984,20 @@ function SummaryPanel({
             <div className="flex items-center justify-between gap-4 border-b border-subtle px-5 py-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-muted">
-                  Instrumente
+                  {t("instrumente")}
                 </p>
                 <h3
                   id="summary-tools-title"
                   className="mt-1 font-serif text-2xl font-semibold leading-tight text-content"
                 >
-                  Alege modul de lucru.
+                  {t("alegeModulDeLucru")}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsToolsDialogOpen(false)}
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-subtle text-content transition hover:bg-surface-hover"
-                aria-label="Închide instrumentele"
+                aria-label={t("inchideInstrumentele")}
               >
                 <Icon className="h-4 w-4">
                   <path d="M18 6 6 18M6 6l12 12" />
@@ -6048,7 +6026,7 @@ function SummaryPanel({
                 onClick={() => setIsToolsDialogOpen(false)}
                 className="flex h-11 w-full cursor-pointer items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:bg-action-hover"
               >
-                Închide
+                {t("inchide")}
               </button>
             </div>
 
@@ -6071,14 +6049,14 @@ function SummaryPanel({
             <div className="shrink-0 flex items-start justify-between gap-4 border-b border-subtle bg-surface p-5 sm:p-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-info">
-                  Reviss AI
+                  {t("revissAi")}
                 </p>
                 <h3
                   id="summary-ai-title"
                   className="mt-2 font-serif text-2xl font-semibold leading-tight text-content"
                 >
                   {aiDialog.status === "loading"
-                    ? "Generez explicația"
+                    ? t("generezExplicatia")
                     : aiDialog.response?.title}
                 </h3>
               </div>
@@ -6087,7 +6065,7 @@ function SummaryPanel({
                 onClick={handleCloseAiDialog}
                 className="rounded-md border border-subtle px-4 py-2 text-xs font-bold text-content transition hover:bg-surface-hover"
               >
-                Închide
+                {t("inchide")}
               </button>
             </div>
 
@@ -6095,13 +6073,13 @@ function SummaryPanel({
               <div className="space-y-5">
               <div className="rounded-xl border border-info-border bg-info-soft p-4 text-info">
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em]">
-                  Ai întrebat despre
+                  {t("aiIntrebatDespre")}
                 </p>
                 <p className="mt-2 text-sm leading-6">“{aiDialog.text}”</p>
                 {aiDialog.question ? (
                   <div className="mt-3 border-t border-info-border/60 pt-3">
                     <p className="text-[11px] font-bold uppercase tracking-[0.14em]">
-                      Întrebarea ta
+                      {t("intrebareaTa")}
                     </p>
                     <p className="mt-1 text-sm leading-6">{aiDialog.question}</p>
                   </div>
@@ -6113,11 +6091,10 @@ function SummaryPanel({
                   <div>
                     <div className="mx-auto h-14 w-14 animate-spin rounded-full border-2 border-info-border border-t-info" />
                     <p className="mt-5 font-serif text-2xl font-semibold text-content">
-                      Analizez fragmentul...
+                      {t("analizezFragmentul")}
                     </p>
                     <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">
-                      Caut legătura cu rezumatul, extrag ideea utilă pentru examen
-                      și o formulez pe scurt.
+                      {t("cautLegaturaCuRezumatulExtrag")}
                     </p>
                     <div className="mx-auto mt-6 max-w-sm space-y-2">
                       <div className="h-3 animate-pulse rounded-full bg-info-soft" />
@@ -6133,7 +6110,7 @@ function SummaryPanel({
                   </p>
                   <div className="border-t border-subtle pt-4">
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                      Cum să reții
+                      {t("cumSaRetii")}
                     </p>
                     <div className="mt-2 divide-y divide-subtle">
                       {aiDialog.response?.bullets.map((bullet) => (
@@ -6175,6 +6152,7 @@ function SummaryResetHighlightsModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center bg-content/35 px-4 py-6 backdrop-blur-sm"
@@ -6202,11 +6180,10 @@ function SummaryResetHighlightsModal({
             id="reset-highlights-title"
             className="mt-4 font-serif text-2xl font-semibold leading-tight text-content"
           >
-            Sigur vrei să resetezi toate evidențierile din rezumat?
+            {t("sigurVreiSaReseteziToate")}
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Toate highlight-urile aplicate în acest rezumat vor fi șterse
-            definitiv. Notițele nu sunt afectate.
+            {t("toateHighlightUrileAplicateIn")}
           </p>
         </div>
 
@@ -6217,7 +6194,7 @@ function SummaryResetHighlightsModal({
             disabled={isResetting}
             className="rounded-md border border-subtle bg-surface px-5 py-3 text-sm font-bold transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
           >
-            Renunță
+            {t("renunta")}
           </button>
           <button
             type="button"
@@ -6225,7 +6202,7 @@ function SummaryResetHighlightsModal({
             disabled={isResetting}
             className="rounded-md bg-danger px-5 py-3 text-sm font-bold text-app transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
           >
-            {isResetting ? "Se resetează..." : "Resetează highlight-urile"}
+            {isResetting ? t("seReseteaza") : t("reseteazaHighlightUrile")}
           </button>
         </div>
       </div>
@@ -6317,6 +6294,7 @@ const accountFlashcardLayouts = [
 ];
 
 function buildProjectFlashcardDecks(
+  t: DashboardTranslator,
   project: StudyProject,
 ): Record<FlashcardDeckId, AccountFlashcardDeck> {
   const generatedFlashcards = getGeneratedFlashcards(project.flashcards);
@@ -6341,34 +6319,34 @@ function buildProjectFlashcardDecks(
 
   return {
     initial: {
-      eyebrow: "Generate initial",
+      eyebrow: t("generateInitial"),
       title: generatedFlashcards.length
-        ? `Flashcard-uri pentru ${project.name}`
-        : "Flashcardurile nu sunt generate încă",
+        ? t("flashcardUriPentruName", { name: project.name })
+        : t("flashcardurileNuSuntGenerateInca"),
       description:
         generatedFlashcards.length
-          ? "Pachetul generat automat din materialele încărcate, pregătit pentru recapitulare activă."
-          : "Flashcardurile apar aici după ce Reviss termină generarea pachetului de studiu.",
+          ? t("pachetulGeneratAutomatDinMaterialele")
+          : t("flashcardurileAparAiciDupaCe"),
       cards,
     },
     quiz: {
-      eyebrow: "Din quiz-urile tale",
+      eyebrow: t("dinQuizUrileTale"),
       title: quizMistakeCards.length
-        ? "Întrebările greșite transformate în flashcarduri"
-        : "Aici apar întrebările greșite salvate",
+        ? t("intrebarileGresiteTransformateInFlashcar")
+        : t("aiciAparIntrebarileGresiteSalvate"),
       description:
         quizMistakeCards.length
-          ? "Greșelile pe care le-ai salvat din quizuri, cu răspunsul corect."
-          : "Fă un quiz. Când greșești, apasă „Salvează ca flashcard\u201d și întrebarea ajunge aici.",
+          ? t("greselilePeCareLeAi")
+          : t("faUnQuizCandGresesti"),
       cards: quizMistakeCards,
     },
     manual: {
-      eyebrow: "Create de tine",
+      eyebrow: t("createDeTine"),
       title: manualCards.length
-        ? "Flashcardurile tale"
-        : "Creează primul flashcard",
+        ? t("flashcardurileTale")
+        : t("creeazaPrimulFlashcard"),
       description:
-        "Flashcardurile create manual rămân separate de cele generate automat.",
+        t("flashcardurileCreateManualRamanSeparate"),
       cards: manualCards,
     },
   };
@@ -6462,6 +6440,7 @@ function FlashcardTicket({
   card: FlashcardStudyCard;
   onOpenDeck: (deckId: FlashcardDeckId) => void;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <article className="theme-shadow-card flex min-h-[15rem] flex-col rounded-xl border border-subtle bg-surface p-6 transition hover:-translate-y-0.5 hover:border-content/25">
       <div>
@@ -6477,7 +6456,7 @@ function FlashcardTicket({
       </div>
       <div className="mt-auto flex items-center justify-between gap-4 border-t border-subtle pt-5">
         <span className="text-xs text-muted">
-          durată est.
+          {t("durataEst")}
           <b className="block font-serif text-2xl font-semibold leading-none text-content">
             {card.duration}
           </b>
@@ -6488,7 +6467,7 @@ function FlashcardTicket({
           onClick={() => onOpenDeck(card.id)}
           className="inline-flex shrink-0 items-center gap-2 rounded-md bg-action px-4 py-2.5 text-sm font-bold text-on-action transition hover:bg-action-hover"
         >
-          Continuă
+          {t("continua")}
           <Icon>
             <path d="M5 12h14M13 5l7 7-7 7" />
           </Icon>
@@ -6509,6 +6488,7 @@ function AccountFlashcardFaceContent({
   onFlip?: () => void;
   onToggleReview?: () => void;
 }) {
+  const t = useTranslations("dashboard");
   const textAreaRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef<HTMLHeadingElement | null>(null);
   const [fitFontSize, setFitFontSize] = useState<number | null>(null);
@@ -6516,7 +6496,7 @@ function AccountFlashcardFaceContent({
   const text = isAnswer ? card.answer : card.question;
   const image = isAnswer ? undefined : card.questionImage;
   const textDensity = getFlashcardTextDensity(text);
-  const flipLabel = isAnswer ? "Vezi întrebarea" : "Vezi răspunsul";
+  const flipLabel = isAnswer ? t("veziIntrebarea") : t("veziRaspunsul");
   const hasReviewToggle = Boolean(onToggleReview);
 
   useLayoutEffect(() => {
@@ -6602,8 +6582,8 @@ function AccountFlashcardFaceContent({
           aria-pressed={card.review}
           aria-label={
             card.review
-              ? "Scoate flashcardul din recapitulare"
-              : "Marchează flashcardul pentru recapitulare"
+              ? t("scoateFlashcardulDinRecapitulare")
+              : t("marcheazaFlashcardulPentruRecapitulare")
           }
         >
           <Icon className="h-4 w-4">
@@ -6718,6 +6698,7 @@ function FlashcardDeckPage({
   hasAiAccess: boolean;
   onUsageRefresh: () => Promise<void>;
 }) {
+  const t = useTranslations("dashboard");
   const flashcardTextRef = useRef<HTMLDivElement | null>(null);
   const shuffleIdRef = useRef(0);
   const shuffleTimerRef = useRef<number | null>(null);
@@ -6953,14 +6934,14 @@ function FlashcardDeckPage({
         question: cleanQuestion || null,
         status: "done",
         response: {
-          title: "Explicația nu este disponibilă momentan",
+          title: t("explicatiaNuEsteDisponibilaMomentan"),
           answer:
             error instanceof Error
               ? error.message
-              : "Nu am putut genera explicația. Încearcă din nou peste câteva momente.",
+              : t("nuAmPututGeneraExplicatia"),
           bullets: [
-            "Verifică dacă ai selectat un fragment clar din flashcard.",
-            "Poți continua recapitularea și poți reveni la explicație mai târziu.",
+            t("verificaDacaAiSelectatUn2"),
+            t("potiContinuaRecapitulareaSiPoti"),
           ],
         },
       });
@@ -6988,7 +6969,7 @@ function FlashcardDeckPage({
         <Icon>
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </Icon>
-        Înapoi la pachete
+        {t("inapoiLaPachete")}
       </button>
 
       <div className="grid gap-8 border-t border-subtle pt-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
@@ -7001,17 +6982,17 @@ function FlashcardDeckPage({
           </h2>
           <div className="mt-5 divide-y divide-subtle border-y border-subtle text-sm">
             <div className="flex items-center justify-between gap-4 py-3">
-              <span className="text-muted">Flashcard-uri</span>
+              <span className="text-muted">{t("flashcardUri")}</span>
               <b className="text-content">{deck.cards.length}</b>
             </div>
             <div className="flex items-center justify-between gap-4 py-3">
-              <span className="text-muted">Marcate</span>
+              <span className="text-muted">{t("marcate")}</span>
               <b className="text-content">{reviewCardsCount}</b>
             </div>
             <div className="flex items-center justify-between gap-4 py-3">
-              <span className="text-muted">Interacțiune</span>
+              <span className="text-muted">{t("interactiune")}</span>
               <b className="text-right text-content">
-                {hasAiAccess ? "Selectează text pentru AI" : "AI indisponibil"}
+                {hasAiAccess ? t("selecteazaTextPentruAi") : t("aiIndisponibil")}
               </b>
             </div>
           </div>
@@ -7024,10 +7005,10 @@ function FlashcardDeckPage({
               className="sticky top-16 z-20 mt-4 rounded-xl border border-info-border bg-info-soft p-4 text-info theme-shadow-card"
             >
               <p className="text-[11px] font-bold uppercase tracking-[0.16em]">
-                Text selectat din{" "}
+                {t("textSelectatDin")}{" "}
                 {pendingFlashcardSelection.side === "question"
-                  ? "întrebare"
-                  : "răspuns"}
+                  ? t("intrebare")
+                  : t("raspuns")}
               </p>
               <p className="mt-2 text-sm leading-6">
                 “{pendingFlashcardSelection.text}”
@@ -7036,19 +7017,19 @@ function FlashcardDeckPage({
                 htmlFor="flashcard-ai-question"
                 className="mt-4 block text-[11px] font-black uppercase tracking-[0.16em]"
               >
-                Întrebarea ta
+                {t("intrebareaTa")}
               </label>
               <textarea
                 id="flashcard-ai-question"
                 value={pendingFlashcardQuestion}
                 onChange={(event) => setPendingFlashcardQuestion(event.target.value)}
-                placeholder="Ex: explică de ce răspunsul e corect sau dă-mi un exemplu simplu."
+                placeholder={t("exExplicaDeCeRaspunsul")}
                 rows={3}
                 maxLength={1000}
                 className="mt-2 w-full resize-none rounded-md border border-info-border bg-surface px-3 py-2 text-sm leading-6 text-content outline-none transition placeholder:text-muted focus:border-info focus:ring-2 focus:ring-info/15"
               />
               <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold text-info/70">
-                <span>Opțional</span>
+                <span>{t("optional")}</span>
                 <span>{pendingFlashcardQuestion.length}/1000</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -7056,18 +7037,18 @@ function FlashcardDeckPage({
                   <button
                     type="submit"
                     disabled={!hasAiAccess}
-                    title={!hasAiAccess ? AI_ACCESS_UNAVAILABLE_MESSAGE : undefined}
+                    title={!hasAiAccess ? t("functionalitateaAiNuEsteDisponibila") : undefined}
                     className={`rounded-md px-4 py-2 text-xs font-bold transition ${
                       hasAiAccess
                         ? "cursor-pointer bg-action text-on-action hover:bg-action-hover"
                         : "cursor-not-allowed border border-info-border bg-surface text-muted opacity-65"
                     }`}
                   >
-                    {hasAiAccess ? "Întreabă" : "AI indisponibil"}
+                    {hasAiAccess ? t("intreaba") : t("aiIndisponibil")}
                   </button>
                   {!hasAiAccess ? (
                     <span className="pointer-events-none absolute left-0 top-full z-30 mt-2 w-64 rounded-lg border border-subtle bg-surface px-3 py-2 text-xs font-semibold leading-5 text-content opacity-0 shadow-lg shadow-black/10 transition group-hover:opacity-100 group-focus-within:opacity-100">
-                      {AI_ACCESS_UNAVAILABLE_MESSAGE}
+                      {t("functionalitateaAiNuEsteDisponibila")}
                     </span>
                   ) : null}
                 </span>
@@ -7080,7 +7061,7 @@ function FlashcardDeckPage({
                   }}
                   className="rounded-md border border-info-border px-4 py-2 text-xs font-bold transition hover:bg-info-soft/70"
                 >
-                  Anulează
+                  {t("anuleaza")}
                 </button>
               </div>
             </form>
@@ -7197,21 +7178,19 @@ function FlashcardDeckPage({
                 {showReviewOnly ? (
                   <>
                     <p className="font-serif text-3xl font-semibold">
-                      Nu ai flashcarduri marcate pentru recapitulare.
+                      {t("nuAiFlashcarduriMarcatePentru")}
                     </p>
                     <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted">
-                      Apasă pe iconița cu creierul de pe un flashcard ca să-l
-                      adaugi aici.
+                      {t("apasaPeIconitaCuCreierul")}
                     </p>
                   </>
                 ) : (
                   <>
                     <p className="font-serif text-3xl font-semibold">
-                      Încă nu ai flashcarduri din quizuri.
+                      {t("incaNuAiFlashcarduriDin")}
                     </p>
                     <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted">
-                      Intră într-un quiz și răspunde. Când greșești, apasă
-                      „Salvează ca flashcard” și întrebarea ajunge aici.
+                      {t("intraIntrUnQuizSi")}
                     </p>
                   </>
                 )}
@@ -7227,7 +7206,7 @@ function FlashcardDeckPage({
                   onClick={() => moveCard(-1)}
                   disabled={isAnimating || cards.length <= 1}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-subtle bg-app text-content transition hover:-translate-y-0.5 hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-55 sm:h-12 sm:w-12"
-                  aria-label="Flashcard anterior"
+                  aria-label={t("flashcardAnterior")}
                 >
                   <Icon>
                     <path d="M19 12H5M11 5l-7 7 7 7" />
@@ -7238,7 +7217,7 @@ function FlashcardDeckPage({
                   onClick={() => moveCard(1)}
                   disabled={isAnimating || cards.length <= 1}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-action text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-55 sm:h-12 sm:w-12"
-                  aria-label="Flashcard următor"
+                  aria-label={t("flashcardUrmator")}
                 >
                   <Icon>
                     <path d="M5 12h14M13 5l7 7-7 7" />
@@ -7259,7 +7238,7 @@ function FlashcardDeckPage({
                   <Icon className="h-4 w-4 sm:h-5 sm:w-5">
                     <path d="M16 3h5v5M4 20l17-17M21 16v5h-5M15 15l6 6M4 4l5 5" />
                   </Icon>
-                  Amestecă
+                  {t("amesteca")}
                 </button>
                 {deck.cards.length > 0 ? (
                   <button
@@ -7276,7 +7255,7 @@ function FlashcardDeckPage({
                       <path d="M9.5 2a2.5 2.5 0 0 0-2.5 2.5v.5a3 3 0 0 0-2 2.83V8a3 3 0 0 0-1 5.83V15a3 3 0 0 0 3 3 2.5 2.5 0 0 0 2.5 2.5h.5a2.5 2.5 0 0 0 2.5-2.5V4.5A2.5 2.5 0 0 0 9.5 2Z" />
                       <path d="M14.5 2a2.5 2.5 0 0 1 2.5 2.5v.5a3 3 0 0 1 2 2.83V8a3 3 0 0 1 1 5.83V15a3 3 0 0 1-3 3 2.5 2.5 0 0 1-2.5 2.5h-.5a2.5 2.5 0 0 1-2.5-2.5V4.5A2.5 2.5 0 0 1 14.5 2Z" />
                     </Icon>
-                    Marcate
+                    {t("marcate")}
                   </button>
                 ) : null}
               </div>
@@ -7299,7 +7278,7 @@ function FlashcardDeckPage({
                   <path d="M9.5 2a2.5 2.5 0 0 0-2.5 2.5v.5a3 3 0 0 0-2 2.83V8a3 3 0 0 0-1 5.83V15a3 3 0 0 0 3 3 2.5 2.5 0 0 0 2.5 2.5h.5a2.5 2.5 0 0 0 2.5-2.5V4.5A2.5 2.5 0 0 0 9.5 2Z" />
                   <path d="M14.5 2a2.5 2.5 0 0 1 2.5 2.5v.5a3 3 0 0 1 2 2.83V8a3 3 0 0 1 1 5.83V15a3 3 0 0 1-3 3 2.5 2.5 0 0 1-2.5 2.5h-.5a2.5 2.5 0 0 1-2.5-2.5V4.5A2.5 2.5 0 0 1 14.5 2Z" />
                 </Icon>
-                Marcate
+                {t("marcate")}
               </button>
             </div>
           ) : null}
@@ -7317,14 +7296,14 @@ function FlashcardDeckPage({
             <div className="flex shrink-0 items-start justify-between gap-4 border-b border-subtle bg-surface p-5 sm:p-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-info">
-                  Flashcard AI
+                  {t("flashcardAi")}
                 </p>
                 <h3
                   id="flashcard-ai-title"
                   className="mt-2 font-serif text-2xl font-semibold leading-tight text-content"
                 >
                   {flashcardAiDialog.status === "loading"
-                    ? "Generez explicația"
+                    ? t("generezExplicatia")
                     : flashcardAiDialog.response?.title}
                 </h3>
               </div>
@@ -7333,7 +7312,7 @@ function FlashcardDeckPage({
                 onClick={handleCloseFlashcardAiDialog}
                 className="rounded-md border border-subtle px-4 py-2 text-xs font-bold text-content transition hover:bg-surface-hover"
               >
-                Închide
+                {t("inchide")}
               </button>
             </div>
 
@@ -7341,10 +7320,10 @@ function FlashcardDeckPage({
               <div className="space-y-5">
                 <div className="rounded-xl border border-info-border bg-info-soft p-4 text-info">
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em]">
-                    Ai întrebat despre{" "}
+                    {t("aiIntrebatDespre")}{" "}
                     {flashcardAiDialog.side === "question"
-                      ? "întrebare"
-                      : "răspuns"}
+                      ? t("intrebare")
+                      : t("raspuns")}
                   </p>
                   <p className="mt-2 text-sm leading-6">
                     “{flashcardAiDialog.text}”
@@ -7352,7 +7331,7 @@ function FlashcardDeckPage({
                   {flashcardAiDialog.question ? (
                     <div className="mt-3 border-t border-info-border/60 pt-3">
                       <p className="text-[11px] font-bold uppercase tracking-[0.14em]">
-                        Întrebarea ta
+                        {t("intrebareaTa")}
                       </p>
                       <p className="mt-1 text-sm leading-6">
                         {flashcardAiDialog.question}
@@ -7366,11 +7345,10 @@ function FlashcardDeckPage({
                     <div>
                       <div className="mx-auto h-14 w-14 animate-spin rounded-full border-2 border-info-border border-t-info" />
                       <p className="mt-5 font-serif text-2xl font-semibold text-content">
-                        Analizez flashcardul...
+                        {t("analizezFlashcardul")}
                       </p>
                       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">
-                        Caut conceptul, legătura cu răspunsul și cea mai scurtă
-                        explicație utilă pentru recapitulare.
+                        {t("cautConceptulLegaturaCuRaspunsul")}
                       </p>
                       <div className="mx-auto mt-6 max-w-sm space-y-2">
                         <div className="h-3 animate-pulse rounded-full bg-info-soft" />
@@ -7386,7 +7364,7 @@ function FlashcardDeckPage({
                     </p>
                     <div className="border-t border-subtle pt-4">
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                        Cum să-l înveți
+                        {t("cumSaLInveti")}
                       </p>
                       <div className="mt-2 divide-y divide-subtle">
                         {flashcardAiDialog.response?.bullets.map((bullet) => (
@@ -7419,10 +7397,10 @@ type ManualFlashcardPayload = {
   questionImageFile?: File;
 };
 
-const manualFlashcardDifficulties = [
-  { value: "low", label: "Ușor" },
-  { value: "medium", label: "Mediu" },
-  { value: "high", label: "Greu" },
+const manualFlashcardDifficulties: Array<{ value: string; labelKey: DashboardKey }> = [
+  { value: "low", labelKey: "usor" },
+  { value: "medium", labelKey: "mediu" },
+  { value: "high", labelKey: "greu" },
 ];
 
 function readImageAsDataUrl(file: File) {
@@ -7441,6 +7419,7 @@ function ManualFlashcardBuilderPage({
   onBack: () => void;
   onCreate: (flashcard: ManualFlashcardPayload) => Promise<void>;
 }) {
+  const t = useTranslations("dashboard");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [category, setCategory] = useState("");
@@ -7507,15 +7486,15 @@ function ManualFlashcardBuilderPage({
             <Icon>
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </Icon>
-            Înapoi la pachete
+            {t("inapoiLaPachete")}
           </button>
 
           <div className="mt-4 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
             <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Flashcard manual
+              {t("flashcardManual")}
             </span>
             <h2 className="min-w-0 font-serif text-3xl font-semibold leading-none text-content sm:text-4xl">
-              Creează flashcard.
+              {t("creeazaFlashcard")}
             </h2>
           </div>
         </div>
@@ -7523,7 +7502,7 @@ function ManualFlashcardBuilderPage({
         <div className="divide-y divide-subtle border-y border-subtle">
             <label className="grid gap-2 py-3 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-center">
               <span className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Categorie
+                {t("categorie")}
               </span>
               <input
                 value={category}
@@ -7535,7 +7514,7 @@ function ManualFlashcardBuilderPage({
 
             <div className="grid gap-2 py-3 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-center">
               <span className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Dificultate
+                {t("dificultate")}
               </span>
               <div className="flex flex-wrap gap-2">
                 {manualFlashcardDifficulties.map((option) => {
@@ -7552,7 +7531,7 @@ function ManualFlashcardBuilderPage({
                           : "border-subtle text-muted hover:bg-surface-hover hover:text-content"
                       }`}
                     >
-                      {option.label}
+                      {t(option.labelKey)}
                     </button>
                   );
                 })}
@@ -7563,11 +7542,11 @@ function ManualFlashcardBuilderPage({
 
       <div className="grid gap-5 xl:grid-cols-2">
         <ManualFlashcardEditorCard
-          label="Întrebare"
-          eyebrow="Față"
+          label={t("intrebare2")}
+          eyebrow={t("fata")}
           value={question}
           image={questionImage}
-          placeholder="Scrie întrebarea aici..."
+          placeholder={t("scrieIntrebareaAici")}
           onChange={setQuestion}
           onImageChange={handleImageChange}
           onImageRemove={() => {
@@ -7576,10 +7555,10 @@ function ManualFlashcardBuilderPage({
           }}
         />
         <ManualFlashcardEditorCard
-          label="Răspuns"
-          eyebrow="Spate"
+          label={t("raspuns2")}
+          eyebrow={t("spate")}
           value={answer}
-          placeholder="Scrie răspunsul..."
+          placeholder={t("scrieRaspunsul")}
           onChange={setAnswer}
           allowImage={false}
         />
@@ -7592,7 +7571,7 @@ function ManualFlashcardBuilderPage({
           disabled={isSaving}
           className="h-12 cursor-pointer rounded-md border border-subtle px-5 text-sm font-bold text-content transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
         >
-          Anulare
+          {t("anulare")}
         </button>
         <button
           type="button"
@@ -7600,7 +7579,7 @@ function ManualFlashcardBuilderPage({
           disabled={!canSave}
           className="h-12 cursor-pointer rounded-md bg-action px-6 text-sm font-bold text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted"
         >
-          {isSaving ? "Se salvează..." : "Salvare"}
+          {isSaving ? t("seSalveaza") : t("salvare")}
         </button>
       </div>
     </section>
@@ -7628,6 +7607,7 @@ function ManualFlashcardEditorCard({
   onImageRemove?: () => void;
   allowImage?: boolean;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <article className="rounded-xl border border-subtle bg-surface">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-subtle px-5 py-4">
@@ -7644,7 +7624,7 @@ function ManualFlashcardEditorCard({
             <Icon className="h-4 w-4">
               <path d="M12 5v14M5 12h14" />
             </Icon>
-            Adaugă imagine
+            {t("adaugaImagine")}
             <input
               type="file"
               accept="image/*"
@@ -7676,7 +7656,7 @@ function ManualFlashcardEditorCard({
               onClick={onImageRemove}
               className="absolute right-7 top-7 cursor-pointer rounded-md bg-action px-3 py-1.5 text-xs font-bold text-on-action transition hover:bg-action-hover"
             >
-              Șterge
+              {t("sterge")}
             </button>
           </div>
         ) : null}
@@ -7707,47 +7687,47 @@ function FlashcardsPanel({
     review: boolean,
   ) => Promise<void>;
 }) {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const [activeDeckId, setActiveDeckId] = useState<FlashcardDeckId | null>(null);
-  const decks = useMemo(() => buildProjectFlashcardDecks(project), [project]);
+  const decks = useMemo(() => buildProjectFlashcardDecks(t, project), [project, t]);
   const quizMistakeCount = project.quizMistakeFlashcards.length;
   const manualFlashcardCount = project.manualFlashcards.length;
   const flashcardCards: FlashcardStudyCard[] = [
     {
       id: "initial",
-      badge: "Generate initial",
+      badge: t("generateInitial"),
       title: `${project.flashcardsDue} din ${project.flashcardsTotal} flashcard-uri`,
       description:
-        "Pachetul generat din materialele încărcate, bun pentru prima recapitulare structurată.",
-      duration: "8 min",
-      metric: "din rezumatul inițial",
+        t("pachetulGeneratDinMaterialeleIncarcate"),
+      duration: t("t8Min"),
+      metric: t("dinRezumatulInitial"),
     },
     {
       id: "quiz",
-      badge: "Recapitulare adaptivă",
+      badge: t("recapitulareAdaptiva"),
       title: quizMistakeCount
         ? quizMistakeCount === 1
-          ? "1 flashcard din greșeli"
-          : `${quizMistakeCount} flashcard-uri din greșeli`
-        : "Din quiz-urile tale",
+          ? t("t1FlashcardDinGreseli")
+          : t("quizmistakecountFlashcardUriDinGreseli", { quizMistakeCount })
+        : t("dinQuizUrileTale"),
       description:
         quizMistakeCount
-          ? "Întrebările pe care ai ales să le salvezi, cu răspunsul corect."
-          : "Când greșești o întrebare de quiz, poți salva aici întrebarea și răspunsul corect.",
-      duration: quizMistakeCount ? `${Math.max(3, quizMistakeCount * 2)} min` : "0 min",
-      metric: "din greșeli reale",
+          ? t("intrebarilePeCareAiAles")
+          : t("candGresestiOIntrebareDe"),
+      duration: quizMistakeCount ? `${Math.max(3, quizMistakeCount * 2)} min` : t("t0Min"),
+      metric: t("dinGreseliReale"),
     },
   ];
 
   if (manualFlashcardCount > 0) {
     flashcardCards.push({
       id: "manual",
-      badge: "Create manual",
-      title: `${manualFlashcardCount} flashcard-uri create de tine`,
-      description:
-        "Cardurile adăugate manual, separate de pachetele generate automat.",
-      duration: `${Math.max(2, manualFlashcardCount * 2)} min`,
-      metric: "create manual",
+      badge: t("createManual"),
+      title: t("flashcardUriCreateDeTine", { count: manualFlashcardCount }),
+      description: t("cardurileAdaugateManual"),
+      duration: t("nMin", { count: Math.max(2, manualFlashcardCount * 2) }),
+      metric: t("createManualMetric"),
     });
   }
 
@@ -7792,7 +7772,7 @@ function FlashcardsPanel({
           <Icon>
             <path d="M12 5v14M5 12h14" />
           </Icon>
-          Creează flashcard
+          {t("creeazaFlashcard2")}
         </button>
       </div>
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -7914,7 +7894,7 @@ function normalizeGeneratedQuizComplexity(
   return "Ușor";
 }
 
-function buildProjectQuizData(project: StudyProject) {
+function buildProjectQuizData(t: DashboardTranslator, project: StudyProject) {
   if (!project.quizzes.length) {
     return {
       catalog: [],
@@ -7990,11 +7970,11 @@ function buildProjectQuizData(project: StudyProject) {
           correctIndexes: correctIndexes.length ? correctIndexes : [0],
           explanation:
             question.explanation ??
-            "Explicația nu a fost inclusă în JSON, dar răspunsul corect este marcat.",
+            t("explicatiaNuAFostInclusa"),
           aiInsight: question.review_advice ||
-            "Explică răspunsul din memorie și compară-l cu variantele apropiate.",
-          review: getQuizReviewLocation(question, summaryParagraphs),
-          source: `Quiz generat · ${project.name}`,
+            t("explicaRaspunsulDinMemorieSi"),
+          review: getQuizReviewLocation(t, question, summaryParagraphs),
+          source: t("quizGeneratName", { name: project.name }),
         };
       });
 
@@ -8007,7 +7987,7 @@ function buildProjectQuizData(project: StudyProject) {
         title: quiz.title,
         description:
           quiz.description ??
-          "Quiz generat din materialele acestui proiect.",
+          t("quizGeneratDinMaterialeleAcestui"),
         complexity,
         duration: `${Math.max(3, Math.ceil(questionIds.length * 1.4))} min`,
         focus: project.subjectName,
@@ -8140,6 +8120,7 @@ function buildQuizCompletionResult(
 }
 
 function buildMistakeFlashcardFromQuestion(
+  t: DashboardTranslator,
   question: AccountQuizQuestion,
 ): StudyFlashcardCard {
   // Joining the options only reads as an answer for the choice questions.
@@ -8162,10 +8143,17 @@ function buildMistakeFlashcardFromQuestion(
     review: false,
     topic: question.concept,
     question: question.question,
-    answer: question.explanation || fallbackAnswer || "vezi explicația",
+    answer: question.explanation || fallbackAnswer || t("veziExplicatia"),
     tone: "danger",
     sourceQuestionId: question.sourceQuestionId ?? question.id,
   };
+}
+
+function quizComplexityLabel(t: DashboardTranslator, complexity: QuizComplexity) {
+  if (complexity === "Ușor") return t("complexityUsor");
+  if (complexity === "Mediu") return t("complexityMediu");
+  if (complexity === "Greu") return t("complexityGreu");
+  return t("complexityExamen");
 }
 
 function getQuizComplexityClass(complexity: QuizComplexity) {
@@ -8223,6 +8211,7 @@ function QuizPanel({
   /** How many quizzes this project may hold, from the account's plan. */
   maxQuizzesPerProject: number;
 }) {
+  const t = useTranslations("dashboard");
   const [isQuizConfigOpen, setIsQuizConfigOpen] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
@@ -8247,7 +8236,7 @@ function QuizPanel({
   } | null>(null);
   const [completionRetry, setCompletionRetry] = useState(0);
 
-  const quizData = useMemo(() => buildProjectQuizData(project), [project]);
+  const quizData = useMemo(() => buildProjectQuizData(t, project), [project, t]);
   const hasReachedQuizLimit = quizData.catalog.length >= maxQuizzesPerProject;
   const activeQuiz = activeQuizId
     ? quizData.catalog.find((quiz) => quiz.id === activeQuizId) ?? null
@@ -8299,9 +8288,10 @@ function QuizPanel({
         setCompletionSave((current) =>
           current?.attemptId === attemptId ? { attemptId, status: "error" } : current,
         );
-        toast.error("Rezultatul quizului nu a putut fi salvat.", "Reîncearcă salvarea înainte să ieși din quiz.");
+        toast.error(t("rezultatulQuizuluiNuAPututFiSalvat"), t("reincearcaSalvareaInainte"));
       });
   }, [
+    t,
     activeQuiz,
     isComplete,
     attemptId,
@@ -8344,11 +8334,11 @@ function QuizPanel({
       await onCancelQuizGeneration(project.id);
       setIsGeneratingQuizzes(false);
       setIsQuizConfigOpen(false);
-      toast.success("Generarea quizului a fost anulată.");
+      toast.success(t("generareaQuizuluiAFostAnulata"));
     } catch (error) {
       toast.error(
         (error instanceof Error
-          ? toFriendlyGenerationError(error.message)
+          ? toFriendlyGenerationError(t, error.message)
           : null) ?? "Nu am putut anula generarea quizului.",
       );
     } finally {
@@ -8372,7 +8362,7 @@ function QuizPanel({
           }
           toast.error(
             (error instanceof Error
-              ? toFriendlyGenerationError(error.message)
+              ? toFriendlyGenerationError(t, error.message)
               : null) ?? "Quizul nu a putut fi generat.",
           );
         } finally {
@@ -8397,10 +8387,8 @@ function QuizPanel({
         onOpenQuizConfig={() => {
           if (hasReachedQuizLimit) {
             toast.warning(
-              `Ai atins limita de ${maxQuizzesPerProject} ${
-                maxQuizzesPerProject === 1 ? "quiz" : "quizuri"
-              } pentru acest proiect.`,
-              "Treci la un plan superior ca să generezi mai multe.",
+              t("aiAtinsLimitaDeMaxquizzesperproject", { maxQuizzesPerProject, value: maxQuizzesPerProject === 1 ? "quiz" : "quizuri" }),
+              t("treciLaUnPlanSuperior"),
             );
             return;
           }
@@ -8490,7 +8478,7 @@ function QuizPanel({
       onQuizMistake(
         project.id,
         activeQuestion.sourceQuestionId ?? null,
-        buildMistakeFlashcardFromQuestion(activeQuestion),
+        buildMistakeFlashcardFromQuestion(t, activeQuestion),
       ),
     )
       .then(() => {
@@ -8535,14 +8523,14 @@ function QuizPanel({
 
   const activeQuestionModeLabel =
     activeQuestion.mode === "multiple"
-      ? "Alege toate răspunsurile corecte"
+      ? t("alegeToateRaspunsurileCorecte")
       : activeQuestion.mode === "matching"
-        ? "Asociază fiecare element cu perechea lui"
+        ? t("asociazaFiecareElementCuPerechea")
         : activeQuestion.mode === "ordering"
-          ? "Așază cuvintele în ordinea corectă"
+          ? t("asazaCuvinteleInOrdineaCorecta")
           : activeQuestion.mode === "cloze"
-            ? "Completează golurile din propoziție"
-            : "Alege un singur răspuns";
+            ? t("completeazaGolurileDinPropozitie")
+            : t("alegeUnSingurRaspuns");
   const activeQuestionResult = isAnswered
     ? isQuizAnswerCorrect(activeQuestion, submittedAnswer)
     : null;
@@ -8561,7 +8549,7 @@ function QuizPanel({
           <Icon>
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </Icon>
-          Înapoi la quiz-uri
+          {t("inapoiLaQuizUri")}
         </button>
 
         <div className="flex flex-wrap gap-2">
@@ -8573,7 +8561,7 @@ function QuizPanel({
               activeQuiz.complexity,
             )}`}
           >
-            {activeQuiz.complexity}
+            {quizComplexityLabel(t, activeQuiz.complexity)}
           </span>
         </div>
       </div>
@@ -8582,7 +8570,7 @@ function QuizPanel({
         <header className="grid gap-6 border-b border-subtle p-5 sm:p-7 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-end">
           <div>
             <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Quiz activ
+              {t("quizActiv")}
             </span>
             <h2 className="mt-4 max-w-4xl font-serif text-4xl font-semibold leading-none text-content sm:text-5xl">
               {activeQuiz.title}
@@ -8596,7 +8584,7 @@ function QuizPanel({
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-                  Progres
+                  {t("progres")}
                 </p>
                 <p className="mt-1 font-serif text-4xl font-semibold text-content">
                   {completionPercent}%
@@ -8604,7 +8592,7 @@ function QuizPanel({
               </div>
               <p className="text-right text-xs font-bold leading-5 text-muted">
                 {answeredCount}/{quizQuestions.length}
-                <span className="block">răspunse</span>
+                <span className="block">{t("raspunse")}</span>
               </p>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-app">
@@ -8623,7 +8611,7 @@ function QuizPanel({
                 <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-muted">
                   {/* One text node, so the "Întrebarea N din M" translation
                       pattern can match it. */}
-                  {`Întrebarea ${activeQuestionIndex + 1} din ${quizQuestions.length}`}
+                  {t("intrebareaValueDinLength", { value: activeQuestionIndex + 1, length: quizQuestions.length })}
                 </span>
                 <span className="inline-flex rounded-md border border-subtle bg-app px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-muted">
                   {activeQuestionModeLabel}
@@ -8693,7 +8681,7 @@ function QuizPanel({
                 disabled={!canSubmitDraftAnswer}
                 className="mt-5 inline-flex items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-bold text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Verifică răspunsul
+                {t("verificaRaspunsul")}
               </button>
             ) : null}
 
@@ -8706,7 +8694,7 @@ function QuizPanel({
                 }`}
               >
                 <p className="text-xs font-bold uppercase tracking-[0.16em]">
-                  {activeQuestionResult ? "Corect" : "De revizuit"}
+                  {activeQuestionResult ? "Corect" : t("deRevizuit")}
                 </p>
                 <h4 className="mt-2 max-w-3xl font-serif text-base font-semibold leading-snug text-content">
                   {activeQuestion.explanation}
@@ -8723,7 +8711,7 @@ function QuizPanel({
                       />
                     ) : (
                       <p className="mt-2 text-xs text-muted">
-                        Acest quiz nu are o trimitere verificabilă la rezumat.
+                        {t("acestQuizNuAreO")}
                       </p>
                     )}
                   </>
@@ -8731,7 +8719,7 @@ function QuizPanel({
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="rounded-md border border-subtle bg-app px-3 py-1.5 text-xs font-bold text-content">
-                    Sursă: {activeQuestion.source}
+                    {t("sursa")} {activeQuestion.source}
                   </span>
                   <span className="rounded-md border border-subtle bg-app px-3 py-1.5 text-xs font-bold text-content">
                     Concept: {activeQuestion.concept}
@@ -8742,14 +8730,14 @@ function QuizPanel({
                   <div className="mt-5 rounded-md border border-subtle bg-app p-4">
                     {mistakeCardState === "saved" ? (
                       <p className="text-xs font-bold leading-6 text-success">
-                        Salvat în Flashcard-uri, pachetul Din quiz-urile tale.
+                        {t("salvatInFlashcardUriPachetul")}
                       </p>
                     ) : (
                       <>
                         <p className="text-xs leading-6 text-muted">
                           {mistakeCardState === "error"
-                            ? "Nu am putut salva flashcard-ul. Încearcă din nou."
-                            : "Vrei să reții întrebarea asta ca flashcard?"}
+                            ? t("nuAmPututSalvaFlashcard")
+                            : t("vreiSaRetiiIntrebareaAsta")}
                         </p>
                         <button
                           type="button"
@@ -8758,10 +8746,10 @@ function QuizPanel({
                           className="mt-3 inline-flex items-center justify-center rounded-md bg-action px-4 py-2 text-xs font-bold text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           {mistakeCardState === "saving"
-                            ? "Se salvează..."
+                            ? t("seSalveaza")
                             : mistakeCardState === "error"
-                              ? "Reîncearcă"
-                              : "Salvează ca flashcard"}
+                              ? t("reincearca")
+                              : t("salveazaCaFlashcard")}
                         </button>
                       </>
                     )}
@@ -8774,7 +8762,7 @@ function QuizPanel({
               <div className="mt-5 text-sm" role="status" aria-live="polite">
                 {completionSave.status === "error" ? (
                   <div className="rounded-md border border-danger-border bg-danger-soft p-3 text-danger">
-                    <p>Rezultatul nu a fost salvat în istoric. Reîncearcă înainte să ieși din quiz.</p>
+                    <p>{t("rezultatulNuAFostSalvat")}</p>
                     <button
                       type="button"
                       className="mt-2 cursor-pointer font-bold underline underline-offset-4"
@@ -8784,17 +8772,17 @@ function QuizPanel({
                         setCompletionRetry((value) => value + 1);
                       }}
                     >
-                      Reîncearcă salvarea
+                      {t("reincearcaSalvarea")}
                     </button>
                   </div>
                 ) : completionSave.status === "saving" ? (
-                  <p className="text-muted">Se salvează rezultatul în istoric...</p>
+                  <p className="text-muted">{t("seSalveazaRezultatulInIstoric")}</p>
                 ) : (
                   <Link
                     href={quizReviewHistoryHref(project.id, attemptId)}
                     className="font-semibold text-action underline underline-offset-4"
                   >
-                    Vezi greșelile în Progres →
+                    {t("veziGreselileInProgres")}
                   </Link>
                 )}
               </div>
@@ -8810,7 +8798,7 @@ function QuizPanel({
                 <Icon>
                   <path d="M19 12H5M11 5l-7 7 7 7" />
                 </Icon>
-                Înapoi
+                {t("inapoi")}
               </button>
 
               {isComplete ? (
@@ -8819,7 +8807,7 @@ function QuizPanel({
                   onClick={() => setShowQuizSummary(true)}
                   className="inline-flex items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-bold text-on-action transition hover:bg-action-hover"
                 >
-                  Vezi sumarul
+                  {t("veziSumarul")}
                 </button>
               ) : (
                 <button
@@ -8830,7 +8818,7 @@ function QuizPanel({
                   }
                   className="inline-flex items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-bold text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Următoarea întrebare
+                  {t("urmatoareaIntrebare")}
                   <Icon>
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </Icon>
@@ -8841,7 +8829,7 @@ function QuizPanel({
 
           <aside className="border-t border-subtle bg-app/45 p-5 sm:p-6 xl:border-l xl:border-t-0">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-              Hartă quiz
+              {t("hartaQuiz")}
             </p>
             <div className="mt-4 grid grid-cols-5 gap-2 xl:grid-cols-4">
               {quizQuestions.map((question, questionIndex) => {
@@ -8872,10 +8860,10 @@ function QuizPanel({
             </div>
 
             <div className="mt-6 divide-y divide-subtle border-y border-subtle">
-              <QuizSideStat label="Corecte" value={String(correctCount)} />
-              <QuizSideStat label="Acuratețe" value={`${scorePercent}%`} />
+              <QuizSideStat label={t("corecte")} value={String(correctCount)} />
+              <QuizSideStat label={t("acuratete")} value={`${scorePercent}%`} />
               <QuizSideStat
-                label="Concepte slabe"
+                label={t("concepteSlabe")}
                 value={weakConcepts.length ? String(weakConcepts.length) : "0"}
               />
             </div>
@@ -8883,7 +8871,7 @@ function QuizPanel({
             {activeQuiz.attempts.length ? (
               <div className="mt-6 border-t border-subtle pt-5">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                  Istoric
+                  {t("istoric")}
                 </p>
                 <div className="mt-3 divide-y divide-subtle border-y border-subtle">
                   {activeQuiz.attempts.map((attempt, attemptIndex) => (
@@ -8891,7 +8879,7 @@ function QuizPanel({
                       key={attempt.id}
                       href={quizReviewHistoryHref(project.id, attempt.id)}
                       className="flex items-center justify-between gap-3 py-2.5 text-xs hover:text-action"
-                      aria-label={`Vezi încercarea din ${formatQuizAttemptTimestamp(attempt.completedAt)} în Progres`}
+                      aria-label={t("veziIncercareaDinValueIn", { value: formatQuizAttemptTimestamp(attempt.completedAt) })}
                     >
                       <span className="font-bold text-muted">
                         #{activeQuiz.attempts.length - attemptIndex} ·{" "}
@@ -8920,21 +8908,20 @@ function QuizPanel({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                  Sumar final
+                  {t("sumarFinal")}
                 </p>
                 <h3
                   id="quiz-summary-title"
                   className="mt-2 font-serif text-2xl font-semibold leading-tight"
                 >
-                  Ai obținut {correctCount}/{quizQuestions.length} răspunsuri
-                  corecte.
+                  {t("aiObtinut")} {correctCount}/{quizQuestions.length} {t("raspunsuriCorecte")}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowQuizSummary(false)}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-subtle text-muted transition hover:bg-surface-hover hover:text-content"
-                aria-label="Închide sumarul"
+                aria-label={t("inchideSumarul")}
               >
                 <Icon className="h-4 w-4">
                   <path d="M18 6 6 18M6 6l12 12" />
@@ -8944,17 +8931,17 @@ function QuizPanel({
 
             <p className="mt-3 text-sm leading-7 text-muted">
               {savedMistakeCount
-                ? "Greșelile salvate te așteaptă în flashcard-uri."
-                : "Poți salva ca flashcard întrebările greșite cu răspuns unic."}
+                ? t("greselileSalvateTeAsteaptaIn")
+                : t("potiSalvaCaFlashcardIntrebarile")}
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <QuizResultCard label="Scor quiz" value={`${scorePercent}%`} />
+              <QuizResultCard label={t("scorQuiz")} value={`${scorePercent}%`} />
               <QuizResultCard
-                label="Flashcard-uri salvate"
+                label={t("flashcardUriSalvate")}
                 value={String(savedMistakeCount)}
               />
-              <QuizResultCard label="Concepte de revizuit" value={String(weakConcepts.length)} />
+              <QuizResultCard label={t("concepteDeRevizuit")} value={String(weakConcepts.length)} />
             </div>
 
             <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -8963,14 +8950,14 @@ function QuizPanel({
                 onClick={resetQuiz}
                 className="rounded-md border border-subtle px-5 py-3 text-sm font-bold text-content transition hover:bg-surface-hover"
               >
-                Reia quiz-ul
+                {t("reiaQuizUl")}
               </button>
               <button
                 type="button"
                 onClick={handleBackToQuizList}
                 className="rounded-md bg-action px-5 py-3 text-sm font-bold text-on-action transition hover:bg-action-hover"
               >
-                Înapoi la quiz-uri
+                {t("inapoiLaQuizUri")}
               </button>
             </div>
           </div>
@@ -9002,10 +8989,16 @@ function QuizLibrary({
   onOpenQuizConfig: () => void;
   onStartQuiz: (quizId: string) => void;
 }) {
-  const { language } = useLanguage();
-  const loadingCopy = quizGenerationLoadingCopy[language];
+  const t = useTranslations("dashboard");
+  const loadingCopy = {
+    buttonIdle: t("genereazaUnQuiz"),
+    buttonBusy: t("seGenereaza"),
+    title: t("construiescQuizurile"),
+    description: t("analizezMaterialulCompletEchilibrezDific"),
+    steps: [t("citescMaterialul"), t("compunIntrebarile"), t("verificRaspunsurile")],
+  };
   const isButtonBusy = isGenerating || projectStatus === "generating_quizzes";
-  const newQuizLabel = { ro: "Quiz nou", en: "New quiz", fr: "Nouveau quiz" }[language];
+  const newQuizLabel = t("quizNou");
 
   if (!quizzes.length) {
 
@@ -9013,15 +9006,14 @@ function QuizLibrary({
       <section className="grid gap-6 rounded-xl border border-subtle bg-surface p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
           <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-            Quiz-uri
+            {t("quizUri")}
           </p>
           <h2 className="mt-4 max-w-2xl font-serif text-3xl font-semibold leading-tight">
-            Generează testele când vrei.
+            {t("genereazaTesteleCandVrei")}
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-7 text-muted">
-            Alegi dificultatea, câte întrebări vrei și ce tipuri de răspuns, iar
-            noi generăm un quiz pe măsură. Planul tău permite{" "}
-            {quizLimit} {quizLimit === 1 ? "quiz" : "quizuri"} în acest proiect.
+            {t("alegiDificultateaCateIntrebariVrei")}{" "}
+            {quizLimit} {quizLimit === 1 ? "quiz" : "quizuri"} {t("inAcestProiect")}
           </p>
           {errorMessage ? (
             <div className="mt-4 rounded-xl border border-danger-border bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
@@ -9037,7 +9029,7 @@ function QuizLibrary({
             disabled={isButtonBusy}
             className="inline-flex min-w-56 cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-6 py-4 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:bg-subtle disabled:text-muted"
           >
-            <span data-no-auto-translate>
+            <span>
               {isButtonBusy ? loadingCopy.buttonBusy : loadingCopy.buttonIdle}
             </span>
             {isButtonBusy ? (
@@ -9059,8 +9051,8 @@ function QuizLibrary({
               className="inline-flex min-w-56 cursor-pointer items-center justify-center gap-2 rounded-md border border-danger-border bg-danger-soft px-6 py-3 text-sm font-black text-danger transition hover:opacity-85 disabled:cursor-wait disabled:opacity-60"
             >
               {isCancellingGeneration
-                ? "Se anulează..."
-                : "Anulare generare quiz"}
+                ? t("seAnuleaza")
+                : t("anulareGenerareQuiz")}
               <Icon>
                 <path d="M18 6 6 18M6 6l12 12" />
               </Icon>
@@ -9120,14 +9112,13 @@ function QuizLibrary({
       <div className="flex flex-col gap-5 border-b border-subtle pb-5">
         <div>
           <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-            Quiz-uri
+            {t("quizUri")}
           </span>
           <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight text-content sm:text-4xl">
-            Alege testul potrivit.
+            {t("alegeTestulPotrivit")}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            Recapitulare, aplicare și simulare de examen, separate ca să știi
-            exact ce exersezi.
+            {t("recapitulareAplicareSiSimulareDe")}
           </p>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -9146,7 +9137,7 @@ function QuizLibrary({
               disabled={isButtonBusy}
               className="inline-flex min-h-10 min-w-40 cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-4 py-2 text-xs font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:bg-subtle disabled:text-muted"
             >
-              <span data-no-auto-translate>
+              <span>
                 {isButtonBusy ? loadingCopy.buttonBusy : newQuizLabel}
               </span>
               {isButtonBusy ? (
@@ -9163,8 +9154,8 @@ function QuizLibrary({
                 className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-danger-border px-4 py-2 text-xs font-black text-danger transition hover:bg-danger-soft disabled:cursor-wait disabled:opacity-60"
               >
                 {isCancellingGeneration
-                  ? "Se anulează..."
-                  : "Anulare generare quiz"}
+                  ? t("seAnuleaza")
+                  : t("anulareGenerareQuiz")}
                 <Icon className="h-3.5 w-3.5">
                   <path d="M18 6 6 18M6 6l12 12" />
                 </Icon>
@@ -9176,7 +9167,7 @@ function QuizLibrary({
           <div role="status" aria-live="polite" className="space-y-3 border-t border-subtle pt-4">
             <div className="flex items-center gap-3 text-sm font-semibold text-muted">
               <span aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-info-border border-t-info motion-reduce:animate-none" />
-              <span data-no-auto-translate>{loadingCopy.title}</span>
+              <span>{loadingCopy.title}</span>
             </div>
             <div aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-info-soft">
               <div className="h-full w-full animate-pulse rounded-full bg-info motion-reduce:animate-none" />
@@ -9204,11 +9195,12 @@ function QuizCatalogCard({
   quiz: AccountQuiz;
   onStartQuiz: (quizId: string) => void;
 }) {
+  const t = useTranslations("dashboard");
   const isCompleted = Boolean(quiz.completedAt);
   const resultLabel =
     isCompleted && quiz.scorePercent !== null
       ? `${quiz.scorePercent}%`
-      : "Neîncercat";
+      : t("neincercat");
   const lastAttemptLabel = isCompleted
     ? `Ultima rulare: ${formatQuizAttemptTimestamp(quiz.completedAt ?? "")}`
     : quiz.focus;
@@ -9225,7 +9217,7 @@ function QuizCatalogCard({
             quiz.complexity,
           )}`}
         >
-          {quiz.complexity}
+          {quizComplexityLabel(t, quiz.complexity)}
         </span>
       </div>
 
@@ -9237,10 +9229,10 @@ function QuizCatalogCard({
       </p>
 
       <div className="mt-5 divide-y divide-subtle border-y border-subtle">
-        <QuizCardStat label="Întrebări" value={String(quiz.questionIds.length)} />
-        <QuizCardStat label="Durată" value={quiz.duration} />
+        <QuizCardStat label={t("intrebari")} value={String(quiz.questionIds.length)} />
+        <QuizCardStat label={t("durata")} value={quiz.duration} />
         <QuizCardStat
-          label="Rezultat"
+          label={t("rezultat")}
           value={resultLabel}
         />
       </div>
@@ -9254,7 +9246,7 @@ function QuizCatalogCard({
           onClick={() => onStartQuiz(quiz.id)}
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-bold text-on-action transition hover:bg-action-hover"
         >
-          {isCompleted ? "Reintră" : "Începe"}
+          {isCompleted ? t("reintra") : t("incepe")}
           <Icon>
             <path d="M5 12h14M13 5l7 7-7 7" />
           </Icon>
@@ -9348,26 +9340,27 @@ function QuizResultCard({ label, value }: { label: string; value: string }) {
 }
 
 function StrategiesPanel({ project }: { project: StudyProject }) {
+  const t = useTranslations("dashboard");
   const strategies = project.strategies;
   const universalStrategies = [
     [
-      "Închide cursul și încearcă să răspunzi",
-      "După fiecare secțiune, spune pe scurt ideea principală fără să te uiți în material.",
+      t("inchideCursulSiIncearcaSa"),
+      t("dupaFiecareSectiuneSpunePe"),
     ],
     [
-      "Revino mâine peste ideile importante",
-      "O recapitulare scurtă după o zi te ajută să fixezi conceptele care altfel se uită repede.",
+      t("revinoMainePesteIdeileImportante"),
+      t("oRecapitulareScurtaDupaO"),
     ],
     [
-      "Explică simplu, cu exemple",
-      "Dacă poți lega teoria de un exemplu concret, ai șanse mult mai mari să o reții la examen.",
+      t("explicaSimpluCuExemple"),
+      t("dacaPotiLegaTeoriaDe"),
     ],
   ];
   const readyFlashcards = getGeneratedFlashcards(project.flashcards).length;
   const stats = [
-    ["Strategii AI", String(strategies.length)],
-    ["Quiz-uri", String(project.quizzes.length)],
-    ["Flashcard-uri", String(readyFlashcards)],
+    [t("strategiiAi"), String(strategies.length)],
+    [t("quizUri"), String(project.quizzes.length)],
+    [t("flashcardUri"), String(readyFlashcards)],
   ];
 
   return (
@@ -9376,14 +9369,13 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
         <article className="theme-shadow-card rounded-xl border border-subtle bg-surface">
           <div className="border-b border-subtle p-5 sm:p-6">
             <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Strategii AI
+              {t("strategiiAi")}
             </span>
             <h2 className="mt-4 max-w-3xl font-serif text-3xl font-semibold leading-tight text-content sm:text-4xl">
-              Plan de studiu pentru {project.subjectName}.
+              {t("planDeStudiuPentru")} {project.subjectName}.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-              Pașii sunt generați din materialul proiectului și sunt gândiți
-              pentru recapitulare activă, nu pentru citire pasivă.
+              {t("pasiiSuntGeneratiDinMaterialul")}
             </p>
           </div>
 
@@ -9401,7 +9393,7 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
 
         <aside className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-            Context
+            {t("context")}
           </p>
           <div className="mt-4 divide-y divide-subtle border-y border-subtle">
             {stats.map(([label, value]) => (
@@ -9419,10 +9411,10 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
 
           <div className="mt-5 border-t border-subtle pt-4">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-              Ritm recomandat
+              {t("ritmRecomandat")}
             </p>
             <p className="mt-2 text-sm font-semibold leading-6 text-content">
-              20-30 min pe sesiune, apoi verificare rapidă în quiz-uri.
+              {t("t2030MinPeSesiune")}
             </p>
           </div>
         </aside>
@@ -9432,10 +9424,10 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
         <div className="grid lg:grid-cols-[18rem_minmax(0,1fr)]">
           <div className="border-b border-subtle p-5 sm:p-6 lg:border-b-0 lg:border-r">
             <span className="inline-flex rounded-md border border-subtle bg-app px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Bază
+              {t("baza")}
             </span>
             <h3 className="mt-4 font-serif text-2xl font-semibold leading-tight text-content">
-              Bune de folosit la orice curs.
+              {t("buneDeFolositLaOrice")}
             </h3>
           </div>
           <div className="divide-y divide-subtle">
@@ -9522,7 +9514,7 @@ type ProgressQuizScore = {
 
 type ProgressWeekdayActivity = {
   label: string;
-  name: string;
+  nameKey: DashboardKey;
   count: number;
   /** The busiest weekday (ties included), drawn in the accent colour. */
   isTop: boolean;
@@ -9697,6 +9689,7 @@ function getQuizReviewHistory(quizzes: StudyProject["quizzes"]): QuizReviewHisto
 }
 
 function buildQuizReviewHistoryData(
+  t: DashboardTranslator,
   project: StudyProject,
   selectedAttemptId: string | null = null,
 ) {
@@ -9725,7 +9718,7 @@ function buildQuizReviewHistoryData(
         unavailableCount += 1;
         continue;
       }
-      const review = getQuizReviewLocation(question, paragraphs);
+      const review = getQuizReviewLocation(t, question, paragraphs);
       const concept = question.concept?.trim() || question.review_section?.trim() || quiz.title;
       const key = `${concept.toLocaleLowerCase("ro-RO")}:${review?.paragraphIndex ?? "none"}`;
       let group = groups.get(key);
@@ -9750,6 +9743,7 @@ function buildQuizReviewHistoryData(
 }
 
 function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedAttemptId = searchParams.get("attempt");
@@ -9763,23 +9757,23 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
     return () => window.cancelAnimationFrame(frame);
   }, [project.id]);
   const data = useMemo(
-    () => buildQuizReviewHistoryData(project, selectedAttemptId),
-    [project, selectedAttemptId],
+    () => buildQuizReviewHistoryData(t, project, selectedAttemptId),
+    [project, selectedAttemptId, t],
   );
 
   return (
     <section ref={sectionRef} id="de-revizuit" tabIndex={-1} className="scroll-mt-24 rounded-xl border border-subtle bg-surface p-5 sm:p-7">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-semibold text-content">De revizuit</h2>
+          <h2 className="font-serif text-2xl font-semibold text-content">{t("deRevizuit")}</h2>
           <p className="mt-2 text-sm leading-6 text-muted">
             {data.selectedEntry
-              ? `Greșelile din „${data.selectedEntry.quiz.title}”, ${formatQuizAttemptTimestamp(data.selectedEntry.attempt.completed_at)}.`
-              : "Greșelile din ultima încercare a fiecărui quiz, grupate pe concepte."}
+              ? t("greselileDinTitleValue", { title: data.selectedEntry.quiz.title, value: formatQuizAttemptTimestamp(data.selectedEntry.attempt.completed_at) })
+              : t("greselileDinUltimaIncercareA")}
           </p>
         </div>
         <label className="flex min-w-0 flex-col gap-2 text-sm font-semibold text-content lg:max-w-sm">
-          Afișează
+          {t("afiseaza")}
           <select
             value={data.missingAttempt ? "missing" : selectedAttemptId ?? ""}
             onChange={(event) => router.replace(
@@ -9787,8 +9781,8 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
             )}
             className="w-full rounded-md border border-subtle bg-app px-3 py-2 text-sm text-content"
           >
-            <option value="">Ultimele încercări</option>
-            {data.missingAttempt ? <option value="missing" disabled>Încercare indisponibilă</option> : null}
+            <option value="">{t("ultimeleIncercari")}</option>
+            {data.missingAttempt ? <option value="missing" disabled>{t("incercareIndisponibila")}</option> : null}
             {data.history.map(({ quiz, attempt }) => (
               <option key={attempt.id} value={attempt.id}>
                 {quiz.title} · {formatQuizAttemptTimestamp(attempt.completed_at)} · {attempt.score_percent}%
@@ -9800,23 +9794,23 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
 
       {data.selectedEntry ? (
         <p className="mt-4 text-sm font-semibold text-content">
-          Scor: {data.selectedEntry.attempt.score_percent}% · {data.selectedEntry.attempt.correct_count}/{data.selectedEntry.attempt.answered_count} răspunsuri corecte
+          Scor: {data.selectedEntry.attempt.score_percent}% · {data.selectedEntry.attempt.correct_count}/{data.selectedEntry.attempt.answered_count} {t("raspunsuriCorecte2")}
         </p>
       ) : null}
       {data.missingAttempt ? (
-        <p className="mt-5 text-sm text-muted">Încercarea nu mai este disponibilă pentru acest proiect. Alege „Ultimele încercări”.</p>
+        <p className="mt-5 text-sm text-muted">{t("incercareaNuMaiEsteDisponibila")}</p>
       ) : data.unavailableCount > 0 ? (
         <p className="mt-5 rounded-md border border-subtle bg-app p-3 text-sm leading-6 text-muted">
-          Unele încercări au doar scorul salvat, fără detaliile întrebărilor greșite. Reia acele quizuri pentru a le include în „De revizuit”.
+          {t("uneleIncercariAuDoarScorul")}
         </p>
       ) : null}
       {!data.groups.length && !data.missingAttempt ? (
         <p className="mt-5 text-sm leading-6 text-muted">
           {data.detailedCount > 0
-            ? "Nu există răspunsuri greșite în încercările cu detalii afișate."
+            ? t("nuExistaRaspunsuriGresiteIn")
             : data.history.length
-              ? "Recomandările vor apărea aici după o nouă încercare."
-              : "Finalizează un quiz pentru a vedea aici conceptele de reluat."}
+              ? t("recomandarileVorApareaAiciDupa")
+              : t("finalizeazaUnQuizPentruA")}
         </p>
       ) : null}
       <div className="mt-5 space-y-3">
@@ -9825,7 +9819,7 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
             <summary className="cursor-pointer font-semibold text-content">
               {group.concept}
               <span className="ml-2 text-xs font-normal text-muted">
-                {group.items.length} {group.items.length === 1 ? "întrebare" : "întrebări"}
+                {group.items.length} {group.items.length === 1 ? t("intrebare") : t("intrebari2")}
               </span>
             </summary>
             <div className="mt-4 space-y-5">
@@ -9844,7 +9838,7 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
                   {item.review ? (
                     <QuizReviewReference projectId={project.id} review={item.review} />
                   ) : (
-                    <p className="mt-3 text-xs text-muted">Această întrebare nu are o trimitere verificabilă la rezumat.</p>
+                    <p className="mt-3 text-xs text-muted">{t("aceastaIntrebareNuAreO")}</p>
                   )}
                 </div>
               ))}
@@ -9856,8 +9850,8 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
   );
 }
 
-function buildProgressWeakConcepts(project: StudyProject): Array<[string, number]> {
-  const reviewData = buildQuizReviewHistoryData(project);
+function buildProgressWeakConcepts(t: DashboardTranslator, project: StudyProject): Array<[string, number]> {
+  const reviewData = buildQuizReviewHistoryData(t, project);
   const weakConceptCounts = new Map<string, number>();
   for (const group of reviewData.groups) {
     weakConceptCounts.set(
@@ -9884,7 +9878,7 @@ function buildProgressWeakConcepts(project: StudyProject): Array<[string, number
   );
 }
 
-function buildProjectProgressData(project: StudyProject) {
+function buildProjectProgressData(t: DashboardTranslator, project: StudyProject) {
   const quizzes = project.quizzes;
   const totalQuizzes = quizzes.length;
   const completedQuizzes = quizzes.filter((quiz) => quiz.completed_at);
@@ -9929,7 +9923,7 @@ function buildProjectProgressData(project: StudyProject) {
         allAttempts[0].scorePercent
       : 0;
 
-  const weakConcepts = buildProgressWeakConcepts(project);
+  const weakConcepts = buildProgressWeakConcepts(t, project);
 
   const quizScores: ProgressQuizScore[] = quizzes
     .map((quiz) => {
@@ -9999,15 +9993,15 @@ function buildProjectProgressData(project: StudyProject) {
 }
 
 const PROGRESS_WEEKDAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"] as const;
-const PROGRESS_WEEKDAY_NAMES = [
+const PROGRESS_WEEKDAY_NAME_KEYS: DashboardKey[] = [
   "luni",
-  "marți",
+  "marti",
   "miercuri",
   "joi",
   "vineri",
-  "sâmbătă",
-  "duminică",
-] as const;
+  "sambata",
+  "duminica",
+];
 /** The readiness score the gauge and the CTA treat as "ready for the exam". */
 const PROGRESS_READINESS_TARGET = 80;
 
@@ -10024,14 +10018,15 @@ function buildProgressWeekdayActivity(
 
   return counts.map((count, index) => ({
     label: PROGRESS_WEEKDAY_LABELS[index],
-    name: PROGRESS_WEEKDAY_NAMES[index],
+    nameKey: PROGRESS_WEEKDAY_NAME_KEYS[index],
     count,
     isTop: maxCount > 0 && count === maxCount,
   }));
 }
 
 function ProgressPanel({ project }: { project: StudyProject }) {
-  const data = useMemo(() => buildProjectProgressData(project), [project]);
+  const t = useTranslations("dashboard");
+  const data = useMemo(() => buildProjectProgressData(t, project), [project, t]);
   const completionPercent = data.totalQuizzes
     ? Math.round((data.completedCount / data.totalQuizzes) * 100)
     : 0;
@@ -10046,28 +10041,28 @@ function ProgressPanel({ project }: { project: StudyProject }) {
     ? data.weakConcepts
         .slice(0, 2)
         .map(([concept]) => concept)
-        .join(" și ")
+        .join(` ${t("conjunctieSi")} `)
     : null;
   const trendBadge =
     data.totalAttempts > 1 ? (
-      <ProgressTrendBadge delta={data.trendDelta} suffix="de la prima încercare" />
+      <ProgressTrendBadge delta={data.trendDelta} suffix={t("deLaPrimaIncercare")} />
     ) : null;
   const flashcardSegments: ProgressFlashcardSegment[] = [
     {
       label: "Generate",
-      detail: "din material",
+      detail: t("dinMaterial"),
       value: data.generatedFlashcardsCount,
       color: "var(--theme-action)",
     },
     {
       label: "Manuale",
-      detail: "adăugate de tine",
+      detail: t("adaugateDeTine"),
       value: data.manualFlashcardsCount,
       color: "var(--theme-warning-text)",
     },
     {
-      label: "Din greșeli",
-      detail: "salvate la quiz",
+      label: t("dinGreseli"),
+      detail: t("salvateLaQuiz"),
       value: data.quizMistakeFlashcardsCount,
       color: "var(--theme-danger-text)",
     },
@@ -10078,7 +10073,7 @@ function ProgressPanel({ project }: { project: StudyProject }) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <ProgressKpiCard
           highlighted
-          label="Scor de pregătire"
+          label={t("scorDePregatire")}
           value={data.totalQuizzes ? `${readinessScore}%` : "–"}
           icon={
             <Icon className="h-4 w-4">
@@ -10091,18 +10086,18 @@ function ProgressPanel({ project }: { project: StudyProject }) {
             data.totalQuizzes ? (
               trendBadge ?? (
                 <span className="text-xs font-semibold opacity-80">
-                  Scoruri și quiz-uri finalizate, combinate
+                  {t("scoruriSiQuizUriFinalizate")}
                 </span>
               )
             ) : (
               <span className="text-xs font-semibold opacity-80">
-                Apare după primul quiz rezolvat
+                {t("apareDupaPrimulQuizRezolvat")}
               </span>
             )
           }
         />
         <ProgressKpiCard
-          label="Scor mediu"
+          label={t("scorMediu")}
           value={formatProgressPercent(data.averageScore)}
           icon={
             <Icon className="h-4 w-4">
@@ -10114,9 +10109,9 @@ function ProgressPanel({ project }: { project: StudyProject }) {
             <span className="text-xs font-semibold text-muted">
               {data.totalAttempts
                 ? `${data.totalAttempts} ${
-                    data.totalAttempts === 1 ? "încercare" : "încercări"
+                    data.totalAttempts === 1 ? t("incercare") : t("incercari")
                   } · maxim ${formatProgressPercent(data.maxScore)}`
-                : "Nicio încercare încă"}
+                : t("nicioIncercareInca")}
             </span>
           }
         />
@@ -10134,12 +10129,12 @@ function ProgressPanel({ project }: { project: StudyProject }) {
             <span className="text-xs font-semibold text-muted">
               {data.totalQuizzes
                 ? `${completionPercent}% din quiz-urile proiectului`
-                : "Generează primul quiz din tab-ul Quiz"}
+                : t("genereazaPrimulQuizDinTab")}
             </span>
           }
         />
         <ProgressKpiCard
-          label="De reluat"
+          label={t("deReluat")}
           value={String(weakCount)}
           icon={
             <Icon className="h-4 w-4">
@@ -10153,14 +10148,14 @@ function ProgressPanel({ project }: { project: StudyProject }) {
                 href={getTabHref("flashcards", project.id)}
                 className="inline-flex items-center gap-1 text-xs font-black text-content underline-offset-4 hover:underline"
               >
-                Repetă greșelile
+                {t("repetaGreselile")}
                 <Icon className="h-3.5 w-3.5">
                   <path d="M5 12h14M13 5l7 7-7 7" />
                 </Icon>
               </Link>
             ) : (
               <span className="text-xs font-semibold text-muted">
-                Nicio greșeală recurentă
+                {t("nicioGresealaRecurenta")}
               </span>
             )
           }
@@ -10169,13 +10164,13 @@ function ProgressPanel({ project }: { project: StudyProject }) {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.85fr)]">
         <ProgressCard
-          title="Evoluția scorurilor"
+          title={t("evolutiaScorurilor")}
           subtitle={
             data.recentAttempts.length
               ? `ultimele ${data.recentAttempts.length} ${
-                  data.recentAttempts.length === 1 ? "încercare" : "încercări"
+                  data.recentAttempts.length === 1 ? t("incercare") : t("incercari")
                 }`
-              : "linia apare după primul quiz"
+              : t("liniaApareDupaPrimulQuiz")
           }
           action={trendBadge}
         >
@@ -10183,8 +10178,8 @@ function ProgressPanel({ project }: { project: StudyProject }) {
             <ProgressScoreTrendChart attempts={data.recentAttempts} />
           ) : (
             <ProgressEmptyState
-              title="Graficul apare după primul quiz."
-              description="Fiecare încercare adaugă un punct pe linie, ca să vezi dacă scorurile cresc."
+              title={t("graficulApareDupaPrimulQuiz")}
+              description={t("fiecareIncercareAdaugaUnPunct")}
             />
           )}
           <ProgressFlashcardStrip
@@ -10194,28 +10189,28 @@ function ProgressPanel({ project }: { project: StudyProject }) {
         </ProgressCard>
 
         <ProgressCard
-          title="Pregătire pentru examen"
-          subtitle={`ținta: ${PROGRESS_READINESS_TARGET}%`}
+          title={t("pregatirePentruExamen")}
+          subtitle={t("tintaProgressReadinessTarget", { PROGRESS_READINESS_TARGET })}
         >
           <ProgressGauge value={data.totalQuizzes ? readinessScore : 0} />
           <p className="mt-4 text-center text-sm leading-6 text-muted">
             {!data.totalQuizzes
-              ? "Rezolvă un quiz ca să vedem cât de pregătit ești."
+              ? t("rezolvaUnQuizCaSa")
               : readinessScore >= PROGRESS_READINESS_TARGET
-                ? "Ești peste țintă. Mai repetă o dată conceptele greșite înainte de examen."
+                ? t("estiPesteTintaMaiRepeta")
                 : focusText
-                  ? `Concentrează-te pe: ${focusText}.`
-                  : "Continuă cu quiz-urile neîncercate ca să urce scorul."}
+                  ? t("concentreazaTePeFocustext", { focusText })
+                  : t("continuaCuQuizUrileNeincercate")}
           </p>
           <Link
             href={getTabHref("quiz", project.id)}
             className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-action px-4 text-sm font-black text-on-action transition hover:bg-action-hover"
           >
             {nextQuiz
-              ? "Începe următorul quiz"
+              ? t("incepeUrmatorulQuiz")
               : data.totalQuizzes
-                ? "Repetă un quiz"
-                : "Generează un quiz"}
+                ? t("repetaUnQuiz")
+                : t("genereazaUnQuiz")}
             <Icon>
               <path d="M5 12h14M13 5l7 7-7 7" />
             </Icon>
@@ -10230,36 +10225,36 @@ function ProgressPanel({ project }: { project: StudyProject }) {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.5fr)_minmax(0,0.85fr)]">
         <ProgressCard
-          title="Zile active"
+          title={t("zileActive")}
           subtitle={
             data.activeDaysCount
               ? `${data.activeDaysCount} ${
                   data.activeDaysCount === 1 ? "zi" : "zile"
                 } cu quiz-uri`
-              : "încercări pe zilele săptămânii"
+              : t("incercariPeZileleSaptamanii")
           }
         >
           <ProgressWeekdayBars days={data.weekdayActivity} />
           <p className="mt-4 rounded-lg bg-app px-3 py-2 text-center text-xs font-semibold text-muted">
             {topWeekday
-              ? `Înveți cel mai des ${topWeekday.name}.`
-              : "Aici vei vedea în ce zile înveți cel mai mult."}
+              ? t("invetiCelMaiDesName", { name: t(topWeekday.nameKey) })
+              : t("aiciVeiVedeaInCe")}
           </p>
         </ProgressCard>
 
         <ProgressCard
-          title="Quiz-uri"
+          title={t("quizUri")}
           subtitle={
             data.totalQuizzes
               ? `${data.totalQuizzes} ${data.totalQuizzes === 1 ? "modul" : "module"}`
-              : "niciun quiz generat"
+              : t("niciunQuizGenerat")
           }
           action={
             <Link
               href={getTabHref("quiz", project.id)}
               className="inline-flex h-8 items-center gap-1 rounded-md border border-subtle bg-app px-3 text-xs font-black text-content transition hover:bg-surface-hover"
             >
-              Toate
+              {t("toate")}
               <Icon className="h-3.5 w-3.5">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </Icon>
@@ -10270,13 +10265,13 @@ function ProgressPanel({ project }: { project: StudyProject }) {
         </ProgressCard>
 
         <ProgressCard
-          title="Concepte de reluat"
+          title={t("concepteDeReluat")}
           subtitle={
             data.weakConcepts.length
               ? `${data.weakConcepts.length} ${
                   data.weakConcepts.length === 1 ? "concept" : "concepte"
                 }`
-              : "din răspunsurile greșite"
+              : t("dinRaspunsurileGresite")
           }
         >
           <ProgressWeakConceptsList
@@ -10286,35 +10281,35 @@ function ProgressPanel({ project }: { project: StudyProject }) {
         </ProgressCard>
       </div>
 
-      <Suspense fallback={<p className="text-sm text-muted">Se încarcă recomandările...</p>}>
+      <Suspense fallback={<p className="text-sm text-muted">{t("seIncarcaRecomandarile")}</p>}>
         <ProgressQuizReviewPanel project={project} />
       </Suspense>
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        <ProgressCard title="Constanță" subtitle="ultimele 4 săptămâni">
+        <ProgressCard title={t("constanta")} subtitle={t("ultimele4Saptamani")}>
           <ProgressActivityHeatmap activityDays={data.activityDays} />
         </ProgressCard>
 
-        <ProgressCard title="Stăpânire pe subiecte" subtitle="din quiz-uri">
+        <ProgressCard title={t("stapanirePeSubiecte")} subtitle="din quiz-uri">
           <ProgressRadarChart scores={data.competencyScores} />
         </ProgressCard>
 
-        <ProgressCard title="Materiale de studiu" subtitle="ce ai în proiect">
+        <ProgressCard title={t("materialeDeStudiu")} subtitle={t("ceAiInProiect")}>
           <ProgressMaterialsList
             items={[
               {
-                label: "Flashcard-uri",
+                label: t("flashcardUri"),
                 value: data.totalFlashcards,
                 href: getTabHref("flashcards", project.id),
               },
-              { label: "Concepte cheie", value: data.keywordsCount },
+              { label: t("concepteCheie"), value: data.keywordsCount },
               {
-                label: "Highlight-uri în rezumat",
+                label: t("highlightUriInRezumat"),
                 value: data.highlightsCount,
                 href: getTabHref("rezumat", project.id),
               },
-              { label: "Notițe", value: data.notesCount },
-              { label: "Încercări la quiz-uri", value: data.totalAttempts },
+              { label: t("notite"), value: data.notesCount },
+              { label: t("incercariLaQuizUri"), value: data.totalAttempts },
             ]}
           />
         </ProgressCard>
@@ -10433,6 +10428,7 @@ function ProgressTrendBadge({
 
 /** A half ring, filled up to the score, with the target marked on it. */
 function ProgressGauge({ value }: { value: number }) {
+  const t = useTranslations("dashboard");
   const percent = clampProgressPercent(value);
   const targetAngle = Math.PI * (1 - PROGRESS_READINESS_TARGET / 100);
   const targetX = 100 + Math.cos(targetAngle) * 80;
@@ -10448,7 +10444,7 @@ function ProgressGauge({ value }: { value: number }) {
     <div
       className="relative mx-auto mt-4 w-full max-w-[16rem]"
       role="img"
-      aria-label={`Scor de pregătire ${percent}% din ținta ${PROGRESS_READINESS_TARGET}%`}
+      aria-label={t("scorDePregatirePercentDin", { percent, PROGRESS_READINESS_TARGET })}
     >
       <svg viewBox="0 0 200 112" className="w-full">
         <path
@@ -10477,7 +10473,7 @@ function ProgressGauge({ value }: { value: number }) {
           stroke="var(--theme-content)"
           strokeWidth={2}
         >
-          <title>Țintă {PROGRESS_READINESS_TARGET}%</title>
+          <title>{t("tinta")} {PROGRESS_READINESS_TARGET}%</title>
         </circle>
       </svg>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center">
@@ -10485,7 +10481,7 @@ function ProgressGauge({ value }: { value: number }) {
           {percent}%
         </span>
         <span className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted">
-          pregătit
+          {t("pregatit")}
         </span>
       </div>
     </div>
@@ -10493,13 +10489,14 @@ function ProgressGauge({ value }: { value: number }) {
 }
 
 function ProgressWeekdayBars({ days }: { days: ProgressWeekdayActivity[] }) {
+  const t = useTranslations("dashboard");
   const maxCount = Math.max(1, ...days.map((day) => day.count));
 
   return (
     <div
       className="mt-4 grid h-40 grid-cols-7 items-end gap-2"
       role="img"
-      aria-label="Încercări la quiz-uri pe zilele săptămânii"
+      aria-label={t("incercariLaQuizUriPe")}
     >
       {days.map((day, index) => {
         const height = day.count ? Math.max(12, (day.count / maxCount) * 100) : 6;
@@ -10508,7 +10505,7 @@ function ProgressWeekdayBars({ days }: { days: ProgressWeekdayActivity[] }) {
           <div
             key={`${day.label}-${index}`}
             className="flex h-full flex-col items-center justify-end gap-2"
-            title={`${day.name}: ${day.count} ${day.count === 1 ? "încercare" : "încercări"}`}
+            title={`${t(day.nameKey)}: ${day.count} ${day.count === 1 ? t("incercare") : t("incercari")}`}
           >
             {day.isTop ? (
               <span className="text-[11px] font-black text-content">{day.count}</span>
@@ -10538,11 +10535,12 @@ function ProgressWeekdayBars({ days }: { days: ProgressWeekdayActivity[] }) {
 }
 
 function ProgressQuizTable({ quizScores }: { quizScores: ProgressQuizScore[] }) {
+  const t = useTranslations("dashboard");
   if (!quizScores.length) {
     return (
       <ProgressEmptyState
-        title="Quiz-urile nu sunt generate încă."
-        description="După ce generezi primul quiz, îl vei vedea aici cu scorul și încercările lui."
+        title={t("quizUrileNuSuntGenerate")}
+        description={t("dupaCeGenereziPrimulQuiz")}
       />
     );
   }
@@ -10552,7 +10550,7 @@ function ProgressQuizTable({ quizScores }: { quizScores: ProgressQuizScore[] }) 
       <div className="grid grid-cols-[minmax(0,1fr)_4.5rem] gap-3 border-b border-subtle pb-2 text-[10px] font-black uppercase tracking-[0.14em] text-muted sm:grid-cols-[minmax(0,1fr)_4.5rem_5rem_5.5rem]">
         <span>Quiz</span>
         <span className="text-right">Scor</span>
-        <span className="hidden text-right sm:block">Încercări</span>
+        <span className="hidden text-right sm:block">{t("incercari2")}</span>
         <span className="hidden text-right sm:block">Ultima</span>
       </div>
       <div className="max-h-[22rem] divide-y divide-subtle overflow-y-auto [scrollbar-width:thin]">
@@ -10573,11 +10571,11 @@ function ProgressQuizTable({ quizScores }: { quizScores: ProgressQuizScore[] }) 
                       quiz.complexity,
                     )}`}
                   >
-                    {quiz.complexity}
+                    {quizComplexityLabel(t, quiz.complexity)}
                   </span>
                   <span className="truncate">
                     {quiz.questionCount}{" "}
-                    {quiz.questionCount === 1 ? "întrebare" : "întrebări"}
+                    {quiz.questionCount === 1 ? t("intrebare") : t("intrebari2")}
                   </span>
                 </p>
               </div>
@@ -10617,11 +10615,12 @@ function ProgressWeakConceptsList({
   concepts: Array<[string, number]>;
   projectId: string;
 }) {
+  const t = useTranslations("dashboard");
   if (!concepts.length) {
     return (
       <ProgressEmptyState
-        title="Nimic de reluat încă."
-        description="Greșelile din quiz-uri se grupează aici pe concepte, ca să le repeți rapid."
+        title={t("nimicDeReluatInca")}
+        description={t("greselileDinQuizUriSe")}
       />
     );
   }
@@ -10640,7 +10639,7 @@ function ProgressWeakConceptsList({
               <div className="flex items-center justify-between gap-3">
                 <p className="truncate text-sm font-bold text-content">{concept}</p>
                 <span className="shrink-0 text-xs font-black text-content">
-                  {count} {count === 1 ? "greșeală" : "greșeli"}
+                  {count} {count === 1 ? t("greseala") : t("greseli")}
                 </span>
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-app">
@@ -10657,7 +10656,7 @@ function ProgressWeakConceptsList({
         href={getTabHref("flashcards", projectId)}
         className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-subtle bg-app text-sm font-black text-content transition hover:bg-surface-hover"
       >
-        Repetă cardurile din greșeli
+        {t("repetaCardurileDinGreseli")}
         <Icon>
           <path d="M5 12h14M13 5l7 7-7 7" />
         </Icon>
@@ -10674,11 +10673,12 @@ function ProgressFlashcardStrip({
   segments: ProgressFlashcardSegment[];
   total: number;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div className="mt-5 rounded-xl border border-subtle bg-app/60 p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-black text-content">Flashcard-uri</p>
-        <span className="text-xs font-semibold text-muted">{total} în total</span>
+        <p className="text-xs font-black text-content">{t("flashcardUri")}</p>
+        <span className="text-xs font-semibold text-muted">{total} {t("inTotal")}</span>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-3">
         {segments.map((segment) => {
@@ -10762,6 +10762,7 @@ function ProgressScoreTrendChart({
 }: {
   attempts: ProgressAttempt[];
 }) {
+  const t = useTranslations("dashboard");
   const width = 760;
   const height = 240;
   const paddingLeft = 44;
@@ -10791,7 +10792,7 @@ function ProgressScoreTrendChart({
     <div
       className="mt-4 overflow-x-auto [scrollbar-width:thin]"
       role="img"
-      aria-label="Evoluția scorurilor la quiz-uri în timp"
+      aria-label={t("evolutiaScorurilorLaQuizUri")}
     >
       <svg
         viewBox={`0 0 ${width} ${height}`}
@@ -10933,6 +10934,7 @@ function wrapProgressLabel(label: string, maxCharsPerLine: number, maxLines: num
 }
 
 function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
+  const t = useTranslations("dashboard");
   const size = 280;
   const center = size / 2;
   const radius = 92;
@@ -10944,8 +10946,8 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
   if (scores.length < 3) {
     return (
       <ProgressEmptyState
-        title="Radarul se activează după mai multe rezultate."
-        description="Ai nevoie de cel puțin trei subiecte evaluate pentru o hartă lizibilă."
+        title={t("radarulSeActiveazaDupaMai")}
+        description={t("aiNevoieDeCelPutin")}
       />
     );
   }
@@ -10969,7 +10971,7 @@ function ProgressRadarChart({ scores }: { scores: ProgressCompetencyScore[] }) {
     <div
       className="mt-2 flex flex-1 items-center justify-center overflow-hidden"
       role="img"
-      aria-label="Radarul competențelor pe subiecte"
+      aria-label={t("radarulCompetentelorPeSubiecte")}
     >
       <svg
         viewBox={`${-padX} ${-padY} ${size + padX * 2} ${size + padY * 2}`}
@@ -11067,6 +11069,7 @@ function ProgressActivityHeatmap({
 }: {
   activityDays: ProgressActivityDay[];
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div className="mt-4 flex flex-1 flex-col">
       <div className="space-y-2">
@@ -11082,7 +11085,7 @@ function ProgressActivityHeatmap({
               title={
                 day.isFuture
                   ? day.label
-                  : `${day.label}: ${day.count} încercări`
+                  : t("labelCountIncercari", { label: day.label, count: day.count })
               }
               className={`h-7 rounded-md border transition hover:scale-105 ${getProgressHeatmapLevelClass(
                 day.level,
@@ -11094,7 +11097,7 @@ function ProgressActivityHeatmap({
         </div>
       </div>
       <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-[11px] font-bold text-muted">
-        <span>Mai puțin</span>
+        <span>{t("maiPutin")}</span>
         <div className="flex items-center gap-1.5">
           {[0, 1, 2, 3].map((level) => (
             <span
@@ -11103,7 +11106,7 @@ function ProgressActivityHeatmap({
             />
           ))}
         </div>
-        <span>Mai mult</span>
+        <span>{t("maiMult")}</span>
       </div>
     </div>
   );
@@ -11159,7 +11162,7 @@ function NewProjectView({
   hasMaterialRights: boolean;
   generationState: GenerationState;
   generationProgress: number;
-  completedSteps: string[];
+  completedSteps: DashboardKey[];
   preparedProject: StudyProjectPrepareResponse | null;
   isCancellingGeneration: boolean;
   quotaNotice: string | null;
@@ -11179,6 +11182,7 @@ function NewProjectView({
   onCancelGeneration: () => void | Promise<void>;
   onOpenGeneratedProject: () => void;
 }) {
+  const t = useTranslations("dashboard");
   const totalFileSize = files.reduce((total, file) => total + file.size, 0);
   const detailFieldsCompleted =
     projectName.trim().length >= PROJECT_DETAIL_MIN_LENGTH &&
@@ -11203,7 +11207,7 @@ function NewProjectView({
         <Icon>
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </Icon>
-        Proiectele tale
+        {t("proiecteleTale")}
       </button>
 
       {generationState === "form" ? (
@@ -11211,10 +11215,10 @@ function NewProjectView({
           <header className="flex flex-col gap-4 border-b border-subtle pb-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
               <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-                Proiect nou
+                {t("proiectNou")}
               </p>
               <h1 className="mt-3 font-serif text-4xl font-semibold leading-none text-content sm:text-5xl">
-                Încarcă un curs.
+                {t("incarcaUnCurs")}
               </h1>
             </div>
           </header>
@@ -11225,10 +11229,10 @@ function NewProjectView({
                 <label className="grid gap-3 border-b border-subtle px-5 py-4 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
                   <span>
                     <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-muted">
-                      Nume proiect
+                      {t("numeProiect")}
                     </span>
                     <span className="mt-1 hidden text-xs text-muted md:block">
-                      Cum îl vei găsi în cont.
+                      {t("cumIlVeiGasiIn")}
                     </span>
                   </span>
                   <input
@@ -11239,7 +11243,7 @@ function NewProjectView({
                     type="text"
                     minLength={PROJECT_DETAIL_MIN_LENGTH}
                     maxLength={160}
-                    placeholder="Ex: Farma sem. 2"
+                    placeholder={t("exFarmaSem2")}
                     className="h-11 w-full rounded-lg border border-subtle bg-app px-3 text-sm font-semibold text-content outline-none transition placeholder:text-muted/45 focus:border-action focus:ring-4 focus:ring-action-soft"
                   />
                 </label>
@@ -11247,10 +11251,10 @@ function NewProjectView({
                 <label className="grid gap-3 border-b border-subtle px-5 py-4 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
                   <span>
                     <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-muted">
-                      Materie
+                      {t("materie")}
                     </span>
                     <span className="mt-1 hidden text-xs text-muted md:block">
-                      Context pentru AI.
+                      {t("contextPentruAi")}
                     </span>
                   </span>
                   <input
@@ -11261,7 +11265,7 @@ function NewProjectView({
                     type="text"
                     minLength={PROJECT_DETAIL_MIN_LENGTH}
                     maxLength={160}
-                    placeholder="Ex: Imunologie"
+                    placeholder={t("exImunologie")}
                     className="h-11 w-full rounded-lg border border-subtle bg-app px-3 text-sm font-semibold text-content outline-none transition placeholder:text-muted/45 focus:border-action focus:ring-4 focus:ring-action-soft"
                   />
                 </label>
@@ -11269,10 +11273,10 @@ function NewProjectView({
                 <label className="grid gap-3 px-5 py-4 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
                   <span>
                     <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-muted">
-                      Școală
+                      {t("scoala")}
                     </span>
                     <span className="mt-1 hidden text-xs text-muted md:block">
-                      Facultate, școală sau nivel.
+                      {t("facultateScoalaSauNivel")}
                     </span>
                   </span>
                   <input
@@ -11283,7 +11287,7 @@ function NewProjectView({
                     type="text"
                     minLength={PROJECT_DETAIL_MIN_LENGTH}
                     maxLength={220}
-                    placeholder="Ex: UMF / UTCN"
+                    placeholder={t("exUmfUtcn")}
                     className="h-11 w-full rounded-lg border border-subtle bg-app px-3 text-sm font-semibold text-content outline-none transition placeholder:text-muted/45 focus:border-action focus:ring-4 focus:ring-action-soft"
                   />
                 </label>
@@ -11320,17 +11324,17 @@ function NewProjectView({
                 <span className="min-w-0 flex-1">
                   <span className="block text-base font-black leading-tight text-content">
                     {files.length
-                      ? `${files.length} materiale selectate`
-                      : "Adaugă materialele"}
+                      ? t("lengthMaterialeSelectate", { length: files.length })
+                      : t("adaugaMaterialele")}
                   </span>
                   <span className="mt-1 block text-sm text-muted">
                     {files.length
-                      ? `${formatBytes(totalFileSize)} în total`
-                      : "Trage fișiere aici sau apasă pentru selectare."}
+                      ? t("valueInTotal", { value: formatBytes(totalFileSize) })
+                      : t("trageFisiereAiciSauApasa")}
                   </span>
                 </span>
                 <span className="hidden rounded-md bg-action px-4 py-2 text-xs font-black text-on-action sm:inline-flex">
-                  Alege fișiere
+                  {t("alegeFisiere")}
                 </span>
               </button>
 
@@ -11350,7 +11354,7 @@ function NewProjectView({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <span className="min-w-0">
                     <p className="text-xs font-black uppercase tracking-[0.14em] text-muted">
-                      Limite plan {planLimits.planName}
+                      {t("limitePlan")} {planLimits.planName}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-muted">
                       Maximum{" "}
@@ -11359,11 +11363,11 @@ function NewProjectView({
                         "proiect",
                         "proiecte",
                       )}
-                      /lună,{" "}
-                      {planLimits.filesPerProject} fișiere/proiect,{" "}
-                      {planLimits.fileSizeMb} MB/fișier,{" "}
-                      {planLimits.projectSizeMb} MB/proiect. Cota lunară:{" "}
-                      {planLimits.monthlyMaterials} materiale și{" "}
+                      {t("luna")}{" "}
+                      {planLimits.filesPerProject} {t("fisiereProiect")}{" "}
+                      {planLimits.fileSizeMb} {t("mbFisier")}{" "}
+                      {planLimits.projectSizeMb} {t("mbProiectCotaLunara")}{" "}
+                      {planLimits.monthlyMaterials} {t("materialeSi")}{" "}
                       {planLimits.monthlyPageLimit} pagini procesate. Documente
                       scanate:{" "}
                       {planLimits.allowScannedDocuments
@@ -11376,7 +11380,7 @@ function NewProjectView({
                     href="/upgrade"
                     className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-md border border-subtle bg-app px-4 text-sm font-black text-content transition hover:bg-action hover:text-on-action"
                   >
-                    Vezi planuri
+                    {t("veziPlanuri")}
                   </Link>
                 </div>
                 {quotaNotice ? (
@@ -11406,7 +11410,7 @@ function NewProjectView({
                         onClick={() => onRemoveFile(index)}
                         className="w-fit cursor-pointer rounded-md border border-subtle px-3 py-2 text-xs font-bold text-muted transition hover:bg-danger-soft hover:text-danger"
                       >
-                        Elimină
+                        {t("elimina")}
                       </button>
                     </div>
                   ))}
@@ -11416,13 +11420,13 @@ function NewProjectView({
 
             <aside className="h-fit rounded-xl border border-subtle bg-surface p-5 xl:sticky xl:top-6">
               <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Pregătire
+                {t("pregatire")}
               </p>
 
               <div className="mt-4 rounded-lg border border-subtle bg-app p-3">
                 <div
                   role="progressbar"
-                  aria-label="Progres pregătire"
+                  aria-label={t("progresPregatire")}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={setupProgress}
@@ -11444,7 +11448,7 @@ function NewProjectView({
                   }
                   className="mt-1 h-4 w-4 accent-action"
                 />
-                Am dreptul să folosesc aceste materiale.
+                {t("amDreptulSaFolosescAceste")}
               </label>
 
               <button
@@ -11453,20 +11457,18 @@ function NewProjectView({
                 onClick={onStartGeneration}
                 className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-5 py-4 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted"
               >
-                Generează pachetul
+                {t("genereazaPachetul")}
                 <Icon>
                   <path d="M5 12h14M13 5l7 7-7 7" />
                 </Icon>
               </button>
 
               <p className="mt-4 text-xs leading-5 text-muted">
-                Se generează rezumatul, cuvintele cheie, strategiile și
-                flashcardurile. Quizurile se pornesc separat din tabul dedicat.
+                {t("seGenereazaRezumatulCuvinteleCheie")}
               </p>
 
               <p className="mt-3 text-xs leading-5 text-muted">
-                Nu încărca date sensibile sau materiale pentru care nu ai drept
-                de utilizare.
+                {t("nuIncarcaDateSensibileSau")}
               </p>
             </aside>
           </div>
@@ -11501,22 +11503,23 @@ function GenerationView({
   projectName: string;
   state: GenerationState;
   progress: number;
-  completedSteps: string[];
+  completedSteps: DashboardKey[];
   preparedProject: StudyProjectPrepareResponse | null;
   isCancellingGeneration: boolean;
   onCancelGeneration: () => void | Promise<void>;
   onOpenGeneratedProject: () => void;
 }) {
+  const t = useTranslations("dashboard");
   return (
     <div className="rounded-xl border border-subtle bg-surface p-6 sm:p-8">
       <h1 className="font-serif text-3xl font-semibold leading-tight">
-        {state === "done" ? "Pachetul este pregătit" : "Generăm pachetul"}
+        {state === "done" ? t("pachetulEstePregatit") : t("generamPachetul")}
         <span className="text-muted"> - {projectName}</span>
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
         {state === "done"
-          ? "Rezumatul, cuvintele cheie, strategiile și flashcardurile au fost salvate în proiect."
-          : "Pregătim materialele și creăm primul pachet de studiu."}
+          ? t("rezumatulCuvinteleCheieStrategiileSi")
+          : t("pregatimMaterialeleSiCreamPrimul")}
       </p>
 
       <div className="mt-6 h-2 overflow-hidden rounded-full bg-app">
@@ -11534,7 +11537,7 @@ function GenerationView({
             disabled={isCancellingGeneration}
             className="inline-flex items-center justify-center gap-2 rounded-md border border-subtle bg-app px-5 py-3 text-sm font-black text-content transition hover:border-danger-border hover:bg-danger-soft hover:text-danger disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted"
           >
-            {isCancellingGeneration ? "Se anulează..." : "Anulare"}
+            {isCancellingGeneration ? t("seAnuleaza") : t("anulare")}
             <Icon>
               <path d="M18 6 6 18M6 6l12 12" />
             </Icon>
@@ -11550,7 +11553,7 @@ function GenerationView({
 
           return (
             <div key={step} className="flex items-center gap-3 py-4">
-              <span className="flex-1 text-sm font-semibold">{step}</span>
+              <span className="flex-1 text-sm font-semibold">{t(step)}</span>
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full ${
                   isDone
@@ -11579,8 +11582,7 @@ function GenerationView({
             </Icon>
           </span>
           <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted">
-            Proiectul este pregătit pentru studiu. Quizurile se generează separat,
-            din tabul Quiz-uri, când vrei să intri în testare.
+            {t("proiectulEstePregatitPentruStudiu")}
           </p>
 
           <button
@@ -11589,7 +11591,7 @@ function GenerationView({
             onClick={onOpenGeneratedProject}
             className="mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-semibold text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted"
           >
-            Deschide proiectul
+            {t("deschideProiectul")}
             <Icon>
               <path d="M5 12h14M13 5l7 7-7 7" />
             </Icon>

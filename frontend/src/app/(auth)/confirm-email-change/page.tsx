@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
-import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthPage, authPageMetadata } from "@/components/auth/auth-page";
 import { ConfirmEmailChangeClient } from "@/components/auth/confirm-email-change-client";
 
-export const metadata: Metadata = {
-  title: "Confirmare email nou | Reviss",
-  description: "Confirmă noua adresă de email pentru contul tău Reviss.",
-};
+export function generateMetadata() {
+  return authPageMetadata("confirmEmailChange");
+}
 
 type ConfirmEmailChangePageProps = {
   searchParams: Promise<{ token?: string }>;
@@ -17,22 +15,8 @@ export default async function ConfirmEmailChangePage({
   const { token } = await searchParams;
 
   return (
-    <AuthShell
-      eyebrow="Confirmare email"
-      title="Confirmăm noua ta adresă de email."
-      description="Acest pas ne asigură că adresa nouă îți aparține înainte să o legăm de cont."
-      alternateText="Ți-ai amintit adresa veche?"
-      alternateLabel="Intră în cont"
-      alternateHref="/login"
-      asideTitle="Contul tău rămâne neschimbat în rest."
-      asideDescription="Materialele, quiz-urile și flashcard-urile rămân salvate. Doar adresa de email se actualizează."
-      features={[
-        "Confirmare din emailul trimis la adresa nouă",
-        "Link cu expirare și utilizare unică",
-        "Restul contului rămâne neschimbat",
-      ]}
-    >
+    <AuthPage page="confirmEmailChange">
       <ConfirmEmailChangeClient token={token} />
-    </AuthShell>
+    </AuthPage>
   );
 }

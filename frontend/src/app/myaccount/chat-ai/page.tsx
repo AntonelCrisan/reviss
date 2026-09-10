@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AccountTabRoutePage } from "@/components/account/account-tab-route-page";
 
-export const metadata: Metadata = {
-  title: "Chat AI | Reviss",
-  description: "Chat AI contextual pentru proiectul tău Reviss.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.chatAi");
+  return { title: t("title"), description: t("description") };
+}
 
 export default function ChatAiPage({
   searchParams,

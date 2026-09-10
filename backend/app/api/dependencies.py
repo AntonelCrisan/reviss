@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
+from app.core.i18n import apply_user_language
 from app.db.session import get_db_session
 from app.models import User
 from app.services.auth import AuthService, InvalidSessionError
@@ -35,12 +36,14 @@ async def get_current_user(
         )
 
     try:
-        return await service.get_user_by_session_token(token)
+        user = await service.get_user_by_session_token(token)
     except InvalidSessionError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Sesiunea nu mai este validă.",
         ) from exc
+    apply_user_language(user.language_preference)
+    return user
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -56,9 +59,11 @@ async def get_optional_current_user(
         return None
 
     try:
-        return await service.get_user_by_session_token(token)
+        user = await service.get_user_by_session_token(token)
     except InvalidSessionError:
         return None
+    apply_user_language(user.language_preference)
+    return user
 
 
 OptionalCurrentUser = Annotated[User | None, Depends(get_optional_current_user)]

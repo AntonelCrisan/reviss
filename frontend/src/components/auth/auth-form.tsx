@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -101,7 +102,11 @@ function safeRedirectPath(value: string | undefined) {
   return value;
 }
 
+const legalLinkClassName =
+  "font-semibold underline decoration-subtle underline-offset-2";
+
 export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
+  const t = useTranslations("auth.form");
   const router = useRouter();
   const { user, isLoading, setUser } = useAuth();
   const afterLoginPath = safeRedirectPath(redirectTo);
@@ -137,7 +142,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
       isRegister &&
       formData.get("password") !== formData.get("confirmPassword")
     ) {
-      toast.error("Parolele introduse nu coincid.");
+      toast.error(t("errors.passwordsMismatch"));
       return;
     }
 
@@ -151,12 +156,10 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
       if (isForgotPassword) {
         if (resetRequestLockRef.current || hasRequestedReset) {
           setSuccessDialog({
-            eyebrow: "Resetare parolă",
-            title: "Linkul de resetare a fost deja solicitat.",
-            message:
-              "Dacă adresa există în platformă, emailul este deja pe drum.",
-            helper:
-              "Pentru siguranță, poți solicita un nou link după expirarea celui curent.",
+            eyebrow: t("dialog.reset.eyebrow"),
+            title: t("dialog.reset.alreadyTitle"),
+            message: t("dialog.reset.alreadyMessage"),
+            helper: t("dialog.reset.alreadyHelper"),
           });
           return;
         }
@@ -165,11 +168,10 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
         const result = await requestPasswordReset(email);
         setHasRequestedReset(true);
         setSuccessDialog({
-          eyebrow: "Resetare parolă",
-          title: "Verifică emailul pentru linkul de resetare.",
+          eyebrow: t("dialog.reset.eyebrow"),
+          title: t("dialog.reset.title"),
           message: result.message,
-          helper:
-            "Poți folosi linkul o singură dată. Dacă nu îl vezi, verifică și folderul Spam sau Promotions.",
+          helper: t("dialog.reset.helper"),
         });
         return;
       }
@@ -184,11 +186,10 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
           });
         form.reset();
         setSuccessDialog({
-          eyebrow: "Verifică emailul",
-          title: "Linkul de confirmare a fost trimis.",
+          eyebrow: t("dialog.register.eyebrow"),
+          title: t("dialog.register.title"),
           message: result.message,
-          helper:
-            "Linkul este valabil 30 de minute. Dacă nu îl vezi, verifică și folderul Spam sau Promotions.",
+          helper: t("dialog.register.helper"),
         });
         return;
       }
@@ -206,14 +207,22 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
         resetRequestLockRef.current = false;
       }
       toast.error(
-        error instanceof AuthApiError
-          ? error.message
-          : "Serviciul de autentificare nu este disponibil momentan.",
+        error instanceof AuthApiError ? error.message : t("errors.unavailable"),
       );
     } finally {
       setIsSubmitting(false);
     }
   }
+
+  const submitLabel = isSubmitting
+    ? t("submit.processing")
+    : isForgotPassword
+      ? hasRequestedReset
+        ? t("submit.forgotSent")
+        : t("submit.forgot")
+      : isRegister
+        ? t("submit.register")
+        : t("submit.login");
 
   return (
     <>
@@ -224,28 +233,28 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
           className="flex h-11 w-full items-center justify-center gap-2.5 rounded-md border border-subtle bg-surface px-5 text-sm font-bold text-content transition hover:-translate-y-0.5 hover:bg-app"
         >
           <GoogleIcon />
-          Continuă cu Google
+          {t("continueWithGoogle")}
         </a>
         <p className="text-center text-[11px] leading-4 text-muted">
-          Continuând, ești de acord cu{" "}
-          <Link
-            href="/termeni-si-conditii"
-            className="font-semibold underline decoration-subtle underline-offset-2"
-          >
-            Termenii
-          </Link>{" "}
-          și{" "}
-          <Link
-            href="/politica-de-confidentialitate"
-            className="font-semibold underline decoration-subtle underline-offset-2"
-          >
-            Politica de confidențialitate
-          </Link>
-          .
+          {t.rich("consent", {
+            terms: (chunks) => (
+              <Link href="/termeni-si-conditii" className={legalLinkClassName}>
+                {chunks}
+              </Link>
+            ),
+            privacy: (chunks) => (
+              <Link
+                href="/politica-de-confidentialitate"
+                className={legalLinkClassName}
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
         <div className="flex items-center gap-3">
           <span className="h-px flex-1 bg-subtle" />
-          <span className="text-xs font-semibold text-muted">sau</span>
+          <span className="text-xs font-semibold text-muted">{t("or")}</span>
           <span className="h-px flex-1 bg-subtle" />
         </div>
       </div>
@@ -254,7 +263,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
       {isRegister ? (
         <div>
           <label htmlFor="name" className="text-sm font-bold text-content">
-            Nume complet
+            {t("fullName")}
           </label>
           <input
             id="name"
@@ -263,7 +272,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
             autoComplete="name"
             required
             minLength={2}
-            placeholder="Andrei Mureșan"
+            placeholder={t("fullNamePlaceholder")}
             className={inputClassName}
           />
         </div>
@@ -271,7 +280,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
 
       <div>
         <label htmlFor="email" className="text-sm font-bold text-content">
-          Adresă de email
+          {t("email")}
         </label>
         <input
           id="email"
@@ -280,7 +289,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
           autoComplete="email"
           required
           disabled={isForgotPassword && hasRequestedReset}
-          placeholder="student@universitate.ro"
+          placeholder={t("emailPlaceholder")}
           className={inputClassName}
         />
       </div>
@@ -289,14 +298,14 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
         <div>
           <div className="flex items-center justify-between">
             <label htmlFor="password" className="text-sm font-bold text-content">
-              Parolă
+              {t("password")}
             </label>
             {!isRegister ? (
               <Link
                 href="/forgot-password"
                 className="text-xs font-bold text-muted transition hover:text-content"
               >
-                Ai uitat parola?
+                {t("forgotPassword")}
               </Link>
             ) : null}
           </div>
@@ -308,14 +317,18 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
               autoComplete={isRegister ? "new-password" : "current-password"}
               required
               minLength={isRegister ? 10 : 1}
-              placeholder={isRegister ? "Minimum 10 caractere" : "Parola ta"}
+              placeholder={
+                isRegister
+                  ? t("passwordPlaceholderRegister")
+                  : t("passwordPlaceholderLogin")
+              }
               className={`${inputClassName} pr-12`}
             />
             <button
               type="button"
               onClick={() => setShowPassword((visible) => !visible)}
               className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center text-muted transition hover:text-content"
-              aria-label={showPassword ? "Ascunde parola" : "Afișează parola"}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
             >
               <EyeIcon crossed={showPassword} />
             </button>
@@ -323,8 +336,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
         </div>
       ) : (
         <div className="rounded-xl border border-info-border bg-info-soft px-4 py-3 text-xs leading-5 text-info">
-          Îți vom trimite un link securizat. Acesta va putea fi folosit o singură
-          dată și va expira automat.
+          {t("resetHint")}
         </div>
       )}
 
@@ -334,7 +346,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
             htmlFor="confirmPassword"
             className="text-sm font-bold text-content"
           >
-            Confirmă parola
+            {t("confirmPassword")}
           </label>
           <div className="relative">
             <input
@@ -344,7 +356,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
               autoComplete="new-password"
               required
               minLength={10}
-              placeholder="Repetă parola"
+              placeholder={t("confirmPasswordPlaceholder")}
               className={`${inputClassName} pr-12`}
             />
             <button
@@ -352,7 +364,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
               onClick={() => setShowConfirmation((visible) => !visible)}
               className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center text-muted transition hover:text-content"
               aria-label={
-                showConfirmation ? "Ascunde parola" : "Afișează parola"
+                showConfirmation ? t("hidePassword") : t("showPassword")
               }
             >
               <EyeIcon crossed={showConfirmation} />
@@ -368,7 +380,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
             type="checkbox"
             className="mt-0.5 h-4 w-4 rounded border-subtle accent-action"
           />
-          <span>Păstrează-mă conectat pe acest dispozitiv.</span>
+          <span>{t("remember")}</span>
         </label>
       ) : null}
 
@@ -382,26 +394,30 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
               className="mt-0.5 h-4 w-4 rounded border-subtle accent-action"
             />
             <span>
-              Am citit și accept{" "}
-              <Link
-                href="/termeni-si-conditii"
-                className="font-bold text-content underline decoration-subtle underline-offset-4"
-              >
-                Termenii și condițiile
-              </Link>
-              .
+              {t.rich("acceptTerms", {
+                terms: (chunks) => (
+                  <Link
+                    href="/termeni-si-conditii"
+                    className="font-bold text-content underline decoration-subtle underline-offset-4"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </span>
           </label>
 
           <p className="rounded-xl border border-info-border bg-info-soft px-4 py-3 text-xs leading-5 text-info">
-            Informațiile despre prelucrarea datelor sunt disponibile în{" "}
-            <Link
-              href="/politica-de-confidentialitate"
-              className="font-bold underline underline-offset-4"
-            >
-              Politica de confidențialitate
-            </Link>
-            .
+            {t.rich("privacyInfo", {
+              privacy: (chunks) => (
+                <Link
+                  href="/politica-de-confidentialitate"
+                  className="font-bold underline underline-offset-4"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
 
           <label className="flex cursor-pointer items-start gap-3 text-xs leading-5 text-muted">
@@ -410,7 +426,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
               type="checkbox"
               className="mt-0.5 h-4 w-4 rounded border-subtle accent-action"
             />
-            <span>Doresc să primesc noutăți și oferte prin e-mail.</span>
+            <span>{t("newsletter")}</span>
           </label>
         </div>
       ) : null}
@@ -420,15 +436,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
         disabled={isSubmitting || (isForgotPassword && hasRequestedReset)}
         className="theme-shadow-action flex h-11 w-full items-center justify-center gap-3 rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover disabled:cursor-wait disabled:opacity-65 disabled:hover:translate-y-0"
       >
-        {isSubmitting
-          ? "Se procesează..."
-          : isForgotPassword
-          ? hasRequestedReset
-            ? "Linkul a fost trimis"
-            : "Trimite linkul de resetare"
-          : isRegister
-            ? "Creează contul"
-            : "Intră în cont"}
+        {submitLabel}
         <ArrowIcon />
       </button>
     </form>
@@ -454,19 +462,9 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
             </svg>
           </div>
 
-          <p hidden className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-muted">
-            Verifică emailul
-          </p>
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-muted">
             {successDialog.eyebrow}
           </p>
-          <h2
-            hidden
-            id="register-success-title"
-            className="font-serif text-2xl font-semibold leading-tight"
-          >
-            Linkul de confirmare a fost trimis.
-          </h2>
           <h2
             id="auth-success-title"
             className="font-serif text-2xl font-semibold leading-tight"
@@ -475,9 +473,6 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted">
             {successDialog.message}
-          </p>
-          <p hidden className="mt-3 rounded-2xl border border-info-border bg-info-soft px-4 py-3 text-xs font-semibold leading-5 text-info">
-            Linkul este valabil 30 de minute. Dacă nu îl vezi, verifică și folderul Spam sau Promotions.
           </p>
           <p className="mt-3 rounded-2xl border border-info-border bg-info-soft px-4 py-3 text-xs font-semibold leading-5 text-info">
             {successDialog.helper}
@@ -488,7 +483,7 @@ export function AuthForm({ mode, redirectTo, initialError }: AuthFormProps) {
             onClick={() => setSuccessDialog(null)}
             className="theme-shadow-action mt-5 flex h-11 w-full items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover"
           >
-            Am înțeles
+            {t("dialog.dismiss")}
           </button>
         </div>
       </div>

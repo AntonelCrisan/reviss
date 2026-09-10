@@ -1,0 +1,2056 @@
+{
+  "language": {
+    "label": "Language",
+    "ro": "Romanian",
+    "en": "English",
+    "fr": "French"
+  },
+  "marketing": {
+    "hero": {
+      "badge": "Your course, turned into a learning plan",
+      "title": {
+        "main": "Stop rereading.",
+        "accent": "Learn actively."
+      },
+      "description": "Reviss turns your course materials into clear summaries, flashcards and quizzes that help you understand, practise and remember.",
+      "cta": {
+        "primary": "Start learning",
+        "secondary": "See how it works"
+      },
+      "feature": {
+        "files": "PDFs and notes",
+        "quiz": "Personalized quizzes",
+        "progress": "Measurable progress"
+      }
+    },
+    "nav": {
+      "how": "How it works",
+      "flashcards": "Flashcards",
+      "benefits": "Benefits",
+      "pricing": "Pricing",
+      "questions": "Questions"
+    },
+    "account": "My account",
+    "login": "Log in",
+    "register": "Create account",
+    "goToAccount": "Go to my account",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "header": {
+      "mainNav": "Main navigation",
+      "mobileNav": "Mobile navigation"
+    },
+    "meta": {
+      "title": "Reviss | AI summaries, flashcards and quizzes for students",
+      "description": "Upload PDFs, courses or presentations and Reviss turns them into AI summaries, flashcards, quizzes and clear exam plans.",
+      "ogDescription": "Turn your courses into study packs: clear summaries, flashcards, quizzes and measurable progress.",
+      "ogAlt": "Reviss - AI summaries, flashcards and quizzes for students",
+      "appDescription": "AI platform for students that turns courses, PDFs, documents and presentations into summaries, flashcards, quizzes and learning strategies.",
+      "keywords": "AI lecture summaries, flashcards from lectures, personalised exam quizzes, university summaries, AI for active learning, smart revision"
+    },
+    "preview": {
+      "course": "Cell biology",
+      "processed": "Course processed by Reviss",
+      "ready": "Ready to study",
+      "uploaded": "Uploaded course",
+      "pages": "28 pages",
+      "generated": "Generated pack",
+      "summary": "Summary",
+      "summaryValue": "6 min",
+      "flashcards": "Flashcards",
+      "quizzes": "Quizzes",
+      "concepts": "Concepts",
+      "nextSession": "Next session",
+      "nextSessionDetail": "12 flashcards + an 8-question quiz",
+      "nextSessionTime": "25 min"
+    },
+    "stats": {
+      "1": {
+        "title": "One course",
+        "text": "summary, cards and test"
+      },
+      "2": {
+        "title": "Active learning",
+        "text": "not passive reading"
+      },
+      "3": {
+        "title": "Guided repetition",
+        "text": "exactly when you need it"
+      },
+      "4": {
+        "title": "Adaptive theme",
+        "text": "comfort day and night"
+      }
+    },
+    "useCases": {
+      "eyebrow": "For university, exam season and finals",
+      "title": "When courses pile up, Reviss turns them into clear steps.",
+      "description": "Use Reviss when you need AI summaries from PDFs, flashcards for revision, personalized quizzes and a simpler way to prepare for university exams.",
+      "items": {
+        "1": {
+          "title": "AI summaries from PDFs and courses",
+          "description": "Upload course materials, Word documents, presentations or notes and Reviss turns them into a structured summary for quick revision."
+        },
+        "2": {
+          "title": "Flashcards for active learning",
+          "description": "Important concepts become cards to review, so you check what you already know and what needs another look before the exam."
+        },
+        "3": {
+          "title": "Personalized quizzes for university",
+          "description": "Generate questions from your own materials, with explanations and feedback, to practise applying ideas rather than rereading them."
+        },
+        "4": {
+          "title": "Revision plan for exam season",
+          "description": "Reviss gathers summaries, keywords, flashcards and progress into one clear flow for tests, exams and your thesis."
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "From raw material to clear progress",
+      "title": "Three steps between the course and understanding.",
+      "description": "No dozens of tabs and no hours lost preparing materials. Reviss builds the study space and you focus on learning.",
+      "steps": {
+        "1": {
+          "title": "Upload the material",
+          "description": "Add the PDF, your notes or the course handout. No rewriting entire chapters by hand."
+        },
+        "2": {
+          "title": "The AI structures it",
+          "description": "Reviss identifies the important ideas and prepares the summary, flashcards and tests."
+        },
+        "3": {
+          "title": "Learn actively",
+          "description": "Practise, get explanations and see exactly which concepts need revisiting."
+        }
+      }
+    },
+    "session": {
+      "eyebrow": "A session that knows what comes next",
+      "title": "From \"I read it\" to \"I can explain it\".",
+      "description": "The platform combines the summary with active testing and visible progress. Every session has a clear purpose, not just another page to get through.",
+      "cta": "Create your first pack",
+      "cards": {
+        "1": "Essential summary",
+        "2": "Explained questions",
+        "3": "Smart repetition",
+        "4": "Visible progress"
+      }
+    },
+    "flashcards": {
+      "eyebrow": "Flashcards that keep up with you",
+      "title": "You don't just read. You test your memory.",
+      "description": "Upload the course and Reviss extracts the key ideas and turns them into flashcards. Scroll to flip through the deck in both directions.",
+      "hint": "Tap the first card to flip it, and tap again to return to the question.",
+      "staticEyebrow": "Active flashcards",
+      "staticTitle": "From the course straight into memory.",
+      "seeQuestion": "See the question",
+      "seeAnswer": "See the answer",
+      "cards": {
+        "1": {
+          "topic": "Cell biology",
+          "question": "What is the main role of ribosomes?",
+          "answer": "Ribosomes synthesise proteins by translating the information in mRNA."
+        },
+        "2": {
+          "topic": "Organic chemistry",
+          "question": "What defines a covalent bond?",
+          "answer": "The sharing of one or more pairs of electrons."
+        },
+        "3": {
+          "topic": "Modern history",
+          "question": "In what year did the French Revolution begin?",
+          "answer": "The French Revolution began in 1789."
+        },
+        "4": {
+          "topic": "Programming",
+          "answer": "Bubble sort"
+        }
+      }
+    },
+    "benefits": {
+      "eyebrow": "Everything you need in one place",
+      "title": "Built for exam season, tests and finals.",
+      "description": "Every tool is tied to the same course, so you never lose context when moving from understanding to practice.",
+      "quiz": {
+        "eyebrow": "Quizzes with feedback",
+        "title": "You understand the answer, not just the score.",
+        "question": "Which organelle produces most of the cell's ATP?",
+        "answers": {
+          "1": "The ribosome",
+          "2": "The mitochondrion",
+          "3": "The Golgi apparatus"
+        },
+        "explanation": "The mitochondrion converts the energy in nutrients into ATP, the form of energy the cell uses."
+      },
+      "progress": {
+        "title": "Progress without guessing",
+        "description": "See the concepts you have mastered, the tricky answers and what to review in the next session."
+      },
+      "source": {
+        "title": "Your materials stay the source",
+        "description": "Questions and explanations start from the course you uploaded, so studying stays relevant to your subject."
+      }
+    },
+    "pricing": {
+      "eyebrow": "Simple plans, no surprises",
+      "title": "Choose how intensely you want to learn.",
+      "description": "Start for free, and when the courses pile up move to a plan with more space, smart repetition and progress analysis.",
+      "cancelAnytime": "Cancel or change your plan at any time",
+      "bestChoice": "Best choice",
+      "viewPlan": "See plan details",
+      "monthlyNote": "Billed monthly, with no contract period.",
+      "free": "free",
+      "perMonth": "/ month",
+      "perYear": "/ year",
+      "currency": "RON",
+      "fallback": {
+        "start": {
+          "name": "Beginner",
+          "description": "For your first course and your first active study sessions.",
+          "features": {
+            "1": "3 materials processed per month",
+            "2": "Summary, flashcards and quiz",
+            "3": "Up to 25 pages per material",
+            "4": "History for the last 7 days"
+          }
+        },
+        "focus": {
+          "name": "Focus",
+          "description": "Everything you need for university, from seminar to exam.",
+          "discount": "25% launch discount",
+          "features": {
+            "1": "30 materials processed per month",
+            "2": "Up to 200 pages per material",
+            "3": "Unlimited flashcards and quizzes",
+            "4": "Smart repetition and AI explanations",
+            "5": "Full progress for every course"
+          }
+        },
+        "pro": {
+          "name": "Exam Pro",
+          "description": "For intense exam seasons, your thesis and large volumes of courses.",
+          "discount": "Save 20 RON",
+          "features": {
+            "1": "100 materials processed per month",
+            "2": "Up to 500 pages per material",
+            "3": "Priority generation during busy periods",
+            "4": "Exam simulations and advanced analysis",
+            "5": "Export for summaries and flashcards"
+          }
+        }
+      }
+    },
+    "cta": {
+      "eyebrow": "Start with your next course",
+      "title": "Start simple. Learn with confidence.",
+      "description": "Create your account and turn your first material into a clear, active study session.",
+      "primary": "Create a free account",
+      "secondary": "I already have an account"
+    },
+    "faq": {
+      "eyebrow": "Frequently asked questions",
+      "title": "Before you start.",
+      "items": {
+        "1": {
+          "question": "What materials can I upload to Reviss?",
+          "answer": "You can upload PDFs, Word documents, presentations and text notes. Scanned documents or photos of text are reserved for the Pro plan, where we enable OCR processing."
+        },
+        "2": {
+          "question": "What does Reviss generate from a course?",
+          "answer": "First you get the summary, the keywords, the learning strategies and the flashcards. Quizzes are generated separately, when you are ready to move into active testing."
+        },
+        "3": {
+          "question": "Are the quizzes useful for exams?",
+          "answer": "Yes, the questions are designed by level: revision, understanding and application, then exam simulation. They do not replace official exam papers, but they show you where to go back."
+        },
+        "4": {
+          "question": "Can I ask for AI explanations on passages from the summary or flashcards?",
+          "answer": "Yes, on the Pro plan you can select a passage that is unclear and ask for a contextual explanation tied to your subject, project and uploaded content."
+        },
+        "5": {
+          "question": "Are my materials public?",
+          "answer": "No. Materials belong to your account and your projects. You must have the right to use the files you upload, and generated content should be checked before use."
+        },
+        "6": {
+          "question": "Is there a free plan?",
+          "answer": "Yes. The Beginner plan lets you try the flow with lower limits. Paid plans add more materials, larger documents, AI explanations and advanced study options."
+        }
+      }
+    },
+    "plans": {
+      "pageTitle": "Plans and pricing",
+      "pageDescription": "Compare Reviss plans: price, materials processed per month, limits and benefits. Start for free and move to a paid plan when you need more.",
+      "breadcrumbHome": "Home",
+      "breadcrumbPlans": "Plans",
+      "breadcrumbLabel": "Breadcrumb",
+      "recommended": "Recommended",
+      "freeSuffix": "RON free",
+      "perMonth": "RON / month",
+      "perYear": "RON / year",
+      "perInterval": "RON / {interval}",
+      "permanent": "RON / forever",
+      "viewPlan": "See plan details",
+      "monthlyNote": "Billed monthly, with no contract period.",
+      "planTitle": "The {name} plan",
+      "metaTitle": "The {name} plan — price, limits and benefits",
+      "metaDescription": "The {name} plan from {site}: {price}. {description} See the limits, what is included and the terms of use.",
+      "priceFree": "free",
+      "pricePerMonth": "{price} RON per month",
+      "notFound": "Plan not found",
+      "materials": "Materials",
+      "aiLevel": "AI level",
+      "history": "History",
+      "includes": "What is included",
+      "includesLabel": "Includes",
+      "limits": "Plan limits",
+      "limitRows": {
+        "activeSlots": "Active projects at once",
+        "newPerMonth": "New projects per month",
+        "materialsPerMonth": "Materials per month",
+        "filesPerProject": "Files per project",
+        "maxFileSize": "Maximum file size",
+        "pagesPerMaterial": "Pages per material",
+        "initialFlashcards": "Flashcards generated initially",
+        "questionsPerQuiz": "Questions per quiz",
+        "quizzesPerProject": "Quizzes per project",
+        "ocr": "Scanned documents (OCR)",
+        "aiChat": "AI chat per project"
+      },
+      "included": "Included",
+      "notIncluded": "Not included",
+      "includedOne": "Included",
+      "notIncludedOne": "Not included",
+      "conditions": "Terms of use",
+      "billing": "Billing",
+      "noPayment": "No payment",
+      "autoRenew": "Automatic renewal",
+      "currencyLabel": "Currency",
+      "cancellation": "Cancellation",
+      "cancelAnytime": "Any time, from your account",
+      "ctaFree": "Start for free",
+      "ctaTry": "Try the {name} plan",
+      "stripeNote": "Payments are processed securely by Stripe. See the <terms>Terms and Conditions</terms>.",
+      "try": {
+        "createHint": "Create your account in a few steps, no card needed.",
+        "loginHint": "We ask you to sign in first, then you continue straight to payment.",
+        "currentPlan": "This is your plan",
+        "currentHint": "Go to your account to continue studying.",
+        "switchFree": "Switch to the free plan",
+        "switchFreeHint": "Your current plan stays active until the end of the paid period."
+      }
+    },
+    "footer": {
+      "tagline": "Turn your study materials into automatically generated flashcards.",
+      "disclaimer": "Reviss is an educational tool. Automatically generated content may contain errors and must be checked.",
+      "legalHeading": "Legal links",
+      "supportHeading": "Support",
+      "companyHeading": "Company details",
+      "links": {
+        "terms": "Terms and conditions",
+        "privacy": "Privacy policy",
+        "cookies": "Cookie policy",
+        "contact": "Contact and support",
+        "withdrawal": "Contract withdrawal",
+        "report": "Report content"
+      },
+      "companyName": "Company name",
+      "registeredOffice": "Registered office",
+      "cui": "Tax ID (CUI)",
+      "registerNumber": "Trade Register no.",
+      "shareCapital": "Share capital",
+      "email": "Email",
+      "phone": "Phone",
+      "rights": "All rights reserved.",
+      "anpcSalAlt": "ANPC Alternative Dispute Resolution",
+      "anpcSolAlt": "Online Dispute Resolution"
+    }
+  },
+  "auth": {
+    "googleFailed": "Google sign-in failed. Please try again.",
+    "shell": {
+      "asideEyebrow": "Your study space"
+    },
+    "form": {
+      "continueWithGoogle": "Continue with Google",
+      "consent": "By continuing you agree to the <terms>Terms</terms> and the <privacy>Privacy Policy</privacy>.",
+      "or": "or",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Alex Popescu",
+      "email": "Email address",
+      "emailPlaceholder": "student@university.edu",
+      "password": "Password",
+      "forgotPassword": "Forgot your password?",
+      "passwordPlaceholderRegister": "At least 10 characters",
+      "passwordPlaceholderLogin": "Your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "resetHint": "We will send you a secure link. It can be used once and expires automatically.",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat the password",
+      "remember": "Keep me signed in on this device.",
+      "acceptTerms": "I have read and accept the <terms>Terms and Conditions</terms>.",
+      "privacyInfo": "Information about how your data is processed is available in the <privacy>Privacy Policy</privacy>.",
+      "newsletter": "I want to receive news and offers by email.",
+      "submit": {
+        "processing": "Processing...",
+        "forgot": "Send the reset link",
+        "forgotSent": "Link sent",
+        "register": "Create account",
+        "login": "Log in"
+      },
+      "errors": {
+        "passwordsMismatch": "The passwords do not match.",
+        "unavailable": "The sign-in service is unavailable right now."
+      },
+      "dialog": {
+        "dismiss": "Got it",
+        "reset": {
+          "eyebrow": "Password reset",
+          "title": "Check your email for the reset link.",
+          "helper": "The link can be used once. If you cannot see it, check the Spam or Promotions folder too.",
+          "alreadyTitle": "A reset link has already been requested.",
+          "alreadyMessage": "If the address exists on the platform, the email is already on its way.",
+          "alreadyHelper": "For safety, you can request a new link once the current one expires."
+        },
+        "register": {
+          "eyebrow": "Check your email",
+          "title": "The confirmation link has been sent.",
+          "helper": "The link is valid for 30 minutes. If you cannot see it, check the Spam or Promotions folder too."
+        }
+      }
+    },
+    "reset": {
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password",
+      "submit": "Set new password",
+      "submitting": "Updating...",
+      "missingToken": "The reset link is missing or incomplete.",
+      "updateFailed": "The password could not be updated right now."
+    },
+    "verify": {
+      "checking": "Verifying your email address...",
+      "missingToken": "The confirmation link is missing or incomplete.",
+      "confirmed": "Email confirmed. Your account has been created.",
+      "failed": "We could not confirm the email right now.",
+      "goToAccount": "Go to my account",
+      "registerAgain": "Create the account again",
+      "backToLogin": "Back to sign in"
+    },
+    "confirmChange": {
+      "checking": "Confirming your new email address...",
+      "missingToken": "The confirmation link is missing or incomplete.",
+      "failed": "We could not confirm the address right now.",
+      "login": "Sign in",
+      "goToAccount": "Go to my account"
+    },
+    "pages": {
+      "login": {
+        "metaTitle": "Sign in",
+        "metaDescription": "Sign in to your Reviss account.",
+        "eyebrow": "Welcome back",
+        "title": "Keep building on what you have learned.",
+        "description": "Sign in to pick up your sessions, quizzes and progress exactly where you left off.",
+        "alternateText": "Don't have an account yet?",
+        "alternateLabel": "Sign up",
+        "asideTitle": "Your pace. Your progress.",
+        "asideDescription": "Reviss organises your course materials in a calm, clear space that is easy to come back to every day.",
+        "feature1": "Quizzes adapted to your level",
+        "feature2": "Progress kept between sessions",
+        "feature3": "Smartly scheduled reviews"
+      },
+      "register": {
+        "metaTitle": "Sign up",
+        "metaDescription": "Create a Reviss account.",
+        "eyebrow": "Start for free",
+        "title": "Create a study space that works with you.",
+        "description": "One account for courses, flashcards, quizzes and a clear picture of your progress.",
+        "alternateText": "Already have an account?",
+        "alternateLabel": "Sign in",
+        "asideTitle": "Less chaos. More clarity.",
+        "asideDescription": "Turn your notes into small, measurable steps, in an interface designed for focus.",
+        "feature1": "Personal learning plan",
+        "feature2": "Flashcards generated from your courses",
+        "feature3": "Light theme and Warm Night"
+      },
+      "forgotPassword": {
+        "metaTitle": "Password reset",
+        "metaDescription": "Request a link to reset your Reviss password.",
+        "eyebrow": "Recover access",
+        "title": "Get back to your courses in moments.",
+        "description": "Enter the address linked to your account and we will send you the steps to choose a new password.",
+        "alternateText": "Remembered your password?",
+        "alternateLabel": "Back to sign in",
+        "asideTitle": "Your progress stays here.",
+        "asideDescription": "Resetting your password does not affect your courses, flashcards or session history.",
+        "feature1": "Secure reset link",
+        "feature2": "Materials and progress stay saved",
+        "feature3": "Quick way back to studying"
+      },
+      "resetPassword": {
+        "metaTitle": "New password",
+        "metaDescription": "Set a new password for your Reviss account.",
+        "eyebrow": "New password",
+        "title": "Choose a new password and get back in.",
+        "description": "The reset link can be used once, after which older sessions are closed automatically.",
+        "alternateText": "Remembered your password?",
+        "alternateLabel": "Back to sign in",
+        "asideTitle": "A safe reset, without losing progress.",
+        "asideDescription": "Your materials, quizzes and flashcards stay saved in your account.",
+        "feature1": "Token that expires automatically",
+        "feature2": "Older sessions close after the reset",
+        "feature3": "Progress stays unchanged"
+      },
+      "verifyEmail": {
+        "metaTitle": "Email confirmation",
+        "metaDescription": "Confirm the email address for your Reviss account.",
+        "eyebrow": "Email confirmation",
+        "title": "We verify the address before creating the account.",
+        "description": "This step keeps the platform clean and confirms that the address belongs to you.",
+        "alternateText": "Already confirmed your account?",
+        "alternateLabel": "Sign in",
+        "asideTitle": "A safe account starts with a verified address.",
+        "asideDescription": "After confirmation you will be signed in automatically and taken to your study space.",
+        "feature1": "Verification before the account is created",
+        "feature2": "Session created automatically after confirmation",
+        "feature3": "Single-use link that expires"
+      },
+      "confirmEmailChange": {
+        "metaTitle": "New email confirmation",
+        "metaDescription": "Confirm the new email address for your Reviss account.",
+        "eyebrow": "Email confirmation",
+        "title": "We are confirming your new email address.",
+        "description": "This step makes sure the new address belongs to you before we link it to the account.",
+        "alternateText": "Remembered your old address?",
+        "alternateLabel": "Sign in",
+        "asideTitle": "The rest of your account stays the same.",
+        "asideDescription": "Your materials, quizzes and flashcards stay saved. Only the email address changes.",
+        "feature1": "Confirmation from the email sent to the new address",
+        "feature2": "Single-use link that expires",
+        "feature3": "The rest of the account stays unchanged"
+      }
+    }
+  },
+  "settings": {
+    "tabs": {
+      "account": {
+        "label": "Account",
+        "eyebrow": "Profile",
+        "title": "Your account details.",
+        "description": "Basic information, your current plan and an account summary."
+      },
+      "study": {
+        "label": "Study",
+        "eyebrow": "Learning",
+        "title": "How you want Reviss to work.",
+        "description": "Preferences for your study pace and AI feedback."
+      },
+      "appearance": {
+        "label": "Appearance",
+        "eyebrow": "Interface",
+        "title": "Choose the display mode.",
+        "description": "Light, dark or system, separate from the colour palette."
+      },
+      "colors": {
+        "label": "Colours",
+        "eyebrow": "Theme editor",
+        "title": "The app's colours.",
+        "description": "Presets like in a code editor, plus fine-grained overrides."
+      },
+      "notifications": {
+        "label": "Notifications",
+        "eyebrow": "Reminders",
+        "title": "Alerts and emails.",
+        "description": "Choose which notifications you receive while studying."
+      },
+      "security": {
+        "label": "Security",
+        "eyebrow": "Access",
+        "title": "Sessions and protection.",
+        "description": "Settings for your account, sessions and critical actions."
+      },
+      "privacy": {
+        "label": "Data",
+        "eyebrow": "Privacy",
+        "title": "Privacy and data.",
+        "description": "Export, delete or change the consents tied to your account data."
+      }
+    },
+    "header": {
+      "section": "Section:"
+    },
+    "dates": {
+      "unknown": "unknown",
+      "unknownArchive": "unknown date"
+    },
+    "state": {
+      "on": "on",
+      "off": "off",
+      "active": "active"
+    },
+    "theme": {
+      "system": "System",
+      "dark": "Dark",
+      "light": "Light"
+    },
+    "languages": {
+      "ro": {
+        "title": "Română",
+        "description": "The main interface for students in Romania."
+      },
+      "en": {
+        "title": "English",
+        "description": "For international students who prefer English."
+      },
+      "fr": {
+        "title": "Français",
+        "description": "For French-speaking students."
+      }
+    },
+    "themeOptions": {
+      "light": {
+        "title": "Light",
+        "description": "A clear interface for daytime study."
+      },
+      "dark": {
+        "title": "Dark",
+        "description": "Calm contrast for evening sessions."
+      },
+      "system": {
+        "title": "System",
+        "description": "Follows your device preference."
+      }
+    },
+    "studyPace": {
+      "light": {
+        "title": "Flexible",
+        "description": "For busy days, with minimal review."
+      },
+      "balanced": {
+        "title": "Structured",
+        "description": "Short but steady sessions for daily progress."
+      },
+      "exam": {
+        "title": "Intensive",
+        "description": "A demanding pace, with more frequent quizzes and active review."
+      }
+    },
+    "aiFeedback": {
+      "short": {
+        "title": "Concise",
+        "description": "Short answers, good for quick revision."
+      },
+      "guided": {
+        "title": "Guided",
+        "description": "Step-by-step explanations with simple examples."
+      },
+      "exam": {
+        "title": "Exam style",
+        "description": "Feedback focused on wording and exam traps."
+      }
+    },
+    "automation": {
+      "dailyReview": {
+        "title": "Daily review",
+        "description": "Get today's 5-20 minute recommendation."
+      },
+      "weakConceptAlerts": {
+        "title": "Weak concept alerts",
+        "description": "Appear when a concept is at risk of being forgotten."
+      },
+      "weeklyProgress": {
+        "title": "Weekly progress",
+        "description": "Get a summary with statistics every Monday."
+      },
+      "inactivityReminder": {
+        "title": "Inactivity reminder",
+        "description": "A nudge to come back if you have not studied for a few days."
+      }
+    },
+    "channels": {
+      "email": {
+        "title": "Email",
+        "description": "Reminders and alerts by email. Security confirmations and invoices always arrive, regardless of this switch."
+      },
+      "study": {
+        "title": "Study reminder",
+        "description": "Gentle alerts for the daily review. The same setting as \"Daily review\" in the Study tab."
+      },
+      "product": {
+        "title": "Product news",
+        "description": "New features and relevant changes in the app."
+      }
+    },
+    "alerts": {
+      "projectReady": {
+        "title": "Project generated",
+        "description": "When the summary, flashcards or quiz are ready."
+      },
+      "weakConcepts": {
+        "title": "Concepts to review",
+        "description": "When Reviss notices areas where retention drops. The same setting as \"Weak concept alerts\" in the Study tab."
+      },
+      "billing": {
+        "title": "Invoices and subscription",
+        "description": "The payment confirmation is always sent; this switch is only for future additional alerts."
+      },
+      "weeklyProgress": {
+        "title": "Weekly progress",
+        "description": "Statistics about your studying over the last week. The same setting as \"Weekly progress\" in the Study tab."
+      },
+      "inactivityReminder": {
+        "title": "Inactivity reminder",
+        "description": "When you have not studied for a few days. The same setting as \"Inactivity reminder\" in the Study tab."
+      },
+      "streakMilestone": {
+        "title": "Streaks and achievements",
+        "description": "When you reach a number of consecutive study days."
+      }
+    },
+    "delivery": {
+      "instant": {
+        "title": "Instant",
+        "description": "Get alerts as soon as they happen."
+      },
+      "daily": {
+        "title": "Daily digest",
+        "description": "A single email with what matters today."
+      }
+    },
+    "toasts": {
+      "preferencesLoadFailed": "Preferences could not be loaded.",
+      "preferenceSaveFailed": "The preference could not be saved.",
+      "archiveLoadFailed": "The project archive could not be loaded.",
+      "projectRestored": "The project has been restored to your active projects.",
+      "projectRestoreFailed": "The project could not be restored.",
+      "archivedDeleted": "The archived project has been permanently deleted.",
+      "projectDeleteFailed": "The project could not be deleted.",
+      "actionFailed": "The action could not be completed right now.",
+      "newsletterWithdrawFailed": "Consent could not be withdrawn right now.",
+      "deletionAlreadyPending": "You already have a deletion request on file. An administrator will process it.",
+      "deletionRequestFailed": "The deletion request could not be sent."
+    },
+    "account": {
+      "section": "Profile",
+      "defaultName": "Reviss Student",
+      "active": "Active account",
+      "unverified": "Unverified",
+      "memberSince": "Member since",
+      "interface": "Interface",
+      "language": "Language",
+      "role": "Role",
+      "admin": "Admin",
+      "userRole": "User",
+      "languageTitle": "App language",
+      "languageDetail": "The preference is saved on your account and applied after you sign in.",
+      "planSection": "Plan and limits",
+      "currentPlan": "Current plan",
+      "materialLimit": "Material limit",
+      "materialLimitDetail": "Set by your active subscription",
+      "dataProtection": "Data protection",
+      "secured": "Secured",
+      "securedDetail": "Authenticated session and protected data"
+    },
+    "study": {
+      "paceSection": "Current pace",
+      "choosePace": "Choose your pace",
+      "aiFeedback": "AI feedback",
+      "automations": "Automations"
+    },
+    "appearance": {
+      "stateSection": "Theme status",
+      "activeMode": "Active mode",
+      "displayedAs": "Currently shown as {mode}",
+      "palette": "Palette",
+      "paletteDetail": "Configured separately under Colours",
+      "sync": "Sync",
+      "saving": "Saving",
+      "accountPreference": "Account preference",
+      "syncDetail": "Applied automatically after you sign in",
+      "displayMode": "Display mode"
+    },
+    "colors": {
+      "currentSection": "Current theme",
+      "customCount": "{count} colours changed manually",
+      "reset": "Reset changes",
+      "presets": "Presets",
+      "editor": "Colour editor",
+      "editorDetail": "Changes override the selected palette.",
+      "customMeta": "{count} custom",
+      "preview": "Palette preview",
+      "previewCourse": "Active course",
+      "previewCourseName": "Cell biology",
+      "previewContinue": "Continue",
+      "previewStatus": "Status",
+      "previewStatusValue": "Ready to study",
+      "previewChat": "AI chat",
+      "previewChatValue": "Review the cell membrane first.",
+      "previewWarn": "Heads-up",
+      "previewWarnValue": "5 concepts enter the forgetting zone in 48h.",
+      "changeColor": "Change the colour for {label}",
+      "custom": "custom",
+      "modify": "Edit"
+    },
+    "themePresets": {
+      "classic": {
+        "name": "Reviss Classic",
+        "description": "The current warm palette, suited to long study sessions."
+      },
+      "forest": {
+        "name": "Forest Notes",
+        "description": "Calm academic green with lab accents."
+      },
+      "ocean": {
+        "name": "Ocean Focus",
+        "description": "Clean blue for dashboards and technical sessions."
+      },
+      "rose": {
+        "name": "Rose Paper",
+        "description": "Pinkish cream, friendly for notes and revision."
+      },
+      "graphite": {
+        "name": "Graphite IDE",
+        "description": "Neutral, like a code editor, with clearer contrast."
+      }
+    },
+    "colorVariables": {
+      "app": {
+        "label": "App background",
+        "description": "The large area behind the pages."
+      },
+      "sidebar": {
+        "label": "Sidebar",
+        "description": "The background of the account menu."
+      },
+      "surface": {
+        "label": "Cards",
+        "description": "The background of panels and forms."
+      },
+      "border": {
+        "label": "Outlines",
+        "description": "Lines, separators and edges."
+      },
+      "content": {
+        "label": "Primary text",
+        "description": "Titles, icons and important content."
+      },
+      "muted": {
+        "label": "Secondary text",
+        "description": "Descriptions, metadata and auxiliary messages."
+      },
+      "action": {
+        "label": "Accent / buttons",
+        "description": "Primary actions, CTAs and active elements."
+      },
+      "actionSoft": {
+        "label": "Subtle accent",
+        "description": "Badges and light accent backgrounds."
+      },
+      "successText": {
+        "label": "Success",
+        "description": "Positive messages and progress indicators."
+      },
+      "warningText": {
+        "label": "Warning",
+        "description": "Signals for review or risk."
+      },
+      "infoText": {
+        "label": "Info / AI",
+        "description": "AI chat, explanations and informative elements."
+      }
+    },
+    "notifications": {
+      "summarySection": "Notification summary",
+      "frequency": "Frequency",
+      "daily": "Daily",
+      "frequencyDetail": "How you receive important notifications",
+      "activeChannels": "Active channels",
+      "channelsDetail": "Email, study and product news",
+      "events": "Events",
+      "eventsDetail": "Allowed alert types",
+      "delivery": "Delivery",
+      "channels": "Channels"
+    },
+    "security": {
+      "tabLabel": "Security",
+      "backToSecurity": "Back to security",
+      "cancel": "Cancel",
+      "actions": "Security actions",
+      "changeName": "Change your name",
+      "changeNameDesc": "Update the name shown on your account.",
+      "changeEmail": "Change your email",
+      "changeEmailDesc": "The new address must be confirmed through an email sent to it.",
+      "changePassword": "Change your password",
+      "changePasswordDesc": "Update your account password and sign out the other active sessions.",
+      "change": "Change",
+      "deleteAccount": "Delete account",
+      "deleteAccountDesc": "Sends a request to the administrators. The account is not deleted automatically.",
+      "sending": "Sending",
+      "requested": "Requested",
+      "request": "Request"
+    },
+    "privacy": {
+      "section": "Data and privacy",
+      "download": "Download your account data",
+      "downloadDesc": "Includes your profile, preferences, projects, materials and flashcards, as a PDF document.",
+      "downloadAction": "Download data",
+      "deleteMaterials": "Delete uploaded materials",
+      "deleteMaterialsDesc": "Removes the source files attached to all your projects. Quizzes, summaries and flashcards stay untouched.",
+      "deleteFlashcards": "Delete flashcards",
+      "deleteFlashcardsDesc": "Removes the automatically generated cards from all your projects.",
+      "deleting": "Deleting",
+      "delete": "Delete",
+      "withdrawNewsletter": "Withdraw newsletter consent",
+      "withdrawNewsletterDesc": "Stops commercial communications by email.",
+      "withdrawing": "Withdrawing",
+      "withdraw": "Withdraw",
+      "cookies": "Cookie settings",
+      "cookiesDesc": "You can change or withdraw your consent for optional cookies at any time.",
+      "archive": "Project archive",
+      "archiveDesc": "Archived projects are hidden from the dashboard and can be restored from a separate window.",
+      "viewArchive": "View archive"
+    },
+    "modals": {
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "permanentDeletion": "Permanent deletion"
+    },
+    "deletionModal": {
+      "eyebrow": "Deletion request",
+      "title": "Send the account deletion request?",
+      "description": "The account will not be deleted automatically. An administrator will see the request in the admin area and process it manually.",
+      "warning": "Once sent, you cannot create another request while this one is pending.",
+      "submitting": "Sending...",
+      "submit": "Send the request"
+    },
+    "archiveModal": {
+      "eyebrow": "Archive",
+      "title": "Archived projects",
+      "description": "Restore the projects you want back on the dashboard, or delete them permanently.",
+      "close": "Close the archive",
+      "loading": "Loading the archive...",
+      "empty": "You have no archived projects.",
+      "restore": "Restore",
+      "meta": "{subject} · {count} materials · archived on {date}"
+    },
+    "archiveDelete": {
+      "title": "Delete the archived project \"{name}\"?",
+      "description": "This removes the project and its files. If you want to use it again, choose Restore instead.",
+      "confirm": "Delete permanently"
+    },
+    "wipe": {
+      "warning": "This action is permanent and cannot be undone.",
+      "materials": {
+        "title": "Delete all uploaded materials?",
+        "description": "The source files from all your projects will be permanently removed. Quizzes, summaries and flashcards already generated stay untouched.",
+        "confirm": "Delete materials"
+      },
+      "flashcards": {
+        "title": "Delete all flashcards?",
+        "description": "The cards generated from all your projects will be permanently removed.",
+        "confirm": "Delete flashcards"
+      }
+    },
+    "password": {
+      "current": "Current password",
+      "currentHint": "We check that it is really you.",
+      "newPlaceholder": "At least 10 characters",
+      "show": "Show password",
+      "hide": "Hide password",
+      "enterCurrent": "Enter your current password."
+    },
+    "changeName": {
+      "eyebrow": "Name",
+      "title": "Change your name.",
+      "description": "Update the name shown on your Reviss account.",
+      "fieldLabel": "Full name",
+      "fieldHint": "Visible on your account and profile.",
+      "placeholder": "First and last name",
+      "saving": "Saving...",
+      "save": "Save name",
+      "tooShort": "Your full name must have at least 2 characters.",
+      "sameAsCurrent": "The name you entered is the same as the current one.",
+      "updated": "Your name has been updated.",
+      "updateFailed": "Your name could not be updated right now."
+    },
+    "changeEmail": {
+      "eyebrow": "Email",
+      "title": "Change your email.",
+      "description": "Your current address is {email}. The new address becomes active only after you confirm it from the email you receive.",
+      "unknownEmail": "unknown",
+      "newAddress": "New address",
+      "newAddressHint": "We send a confirmation link here.",
+      "newAddressLabel": "New email address",
+      "placeholder": "name@example.com",
+      "sendAgain": "Send again",
+      "sending": "Sending...",
+      "send": "Send confirmation",
+      "sameAsCurrent": "The address you entered is the same as the current one.",
+      "requestFailed": "The request could not be sent right now."
+    },
+    "changePassword": {
+      "eyebrow": "Password",
+      "title": "Change your password.",
+      "description": "Update your account password. After saving, the other active sessions are signed out automatically.",
+      "newPassword": "New password",
+      "newPasswordHint": "At least 10 characters, with a letter and a digit.",
+      "changeAgain": "Change again",
+      "saving": "Saving...",
+      "save": "Save password",
+      "mustDiffer": "The new password must be different from the current one.",
+      "updateFailed": "The password could not be updated right now.",
+      "rules": {
+        "tooShort": "The new password must have at least 10 characters.",
+        "noSpaces": "The new password cannot start or end with spaces.",
+        "needsLetter": "The new password must contain at least one letter.",
+        "needsDigit": "The new password must contain at least one digit."
+      }
+    }
+  },
+  "cookies": {
+    "bannerLabel": "Cookie consent",
+    "bannerTitle": "Reviss cookie settings",
+    "bannerDescription": "We use cookies that are necessary for the site to work. Functional, analytics and marketing cookies are optional and are not enabled without your consent.",
+    "acceptAll": "Accept all",
+    "rejectOptionalLong": "Reject optional cookies",
+    "rejectOptional": "Reject optional",
+    "customize": "Customise",
+    "settingsEyebrow": "Cookie preferences",
+    "settingsTitle": "Choose which cookies you accept.",
+    "settingsDescription": "You can change these settings at any time from the footer. Necessary cookies stay active for sign-in and security.",
+    "closeSettings": "Close cookie settings",
+    "alwaysActive": "always active",
+    "savePreferences": "Save preferences",
+    "settingsButton": "Cookie settings",
+    "categories": {
+      "necessary": {
+        "label": "Necessary",
+        "description": "Keeps sign-in, security and the platform's basic features working."
+      },
+      "functional": {
+        "label": "Functional",
+        "description": "Remembers preferences such as the theme, interface settings and study options."
+      },
+      "analytics": {
+        "label": "Analytics",
+        "description": "Would help us understand how the product is used. We do not load analytics without consent."
+      },
+      "marketing": {
+        "label": "Marketing",
+        "description": "Would allow marketing campaigns and measurement. We do not load marketing scripts without consent."
+      }
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact and support",
+    "metaDescription": "Send Reviss a request about support, billing, privacy or content reports.",
+    "eyebrow": "Support",
+    "title": "Contact and support.",
+    "description": "Use the form for questions about your account, billing, personal data or reporting content."
+  },
+  "dashboard": {
+    "functionalitateaAiNuEsteDisponibila": "The AI feature is not available on your current plan.",
+    "alegeUnPlanCareInclude": "Choose a plan that includes AI chat, AI explanations and questions on selected text.",
+    "rezumat": "Summary",
+    "flashcardUri": "Flashcards",
+    "strategii": "Strategies",
+    "quizUri": "Quizzes",
+    "progres": "Progress",
+    "chatAi": "AI Chat",
+    "cont": "Account",
+    "studiu": "Study",
+    "aspect": "Appearance",
+    "culori": "Colors",
+    "notificari": "Notifications",
+    "securitate": "Security",
+    "date": "Date",
+    "planuri": "Plans",
+    "facturi": "Invoices",
+    "incarcareMateriale": "Uploading materials",
+    "sumarizareContinut": "Summarising content",
+    "creareFlashcarduri": "Creating flashcards",
+    "pregatireStrategieInvatare": "Preparing the learning strategy",
+    "genereazaUnQuiz": "Generate a quiz",
+    "seGenereaza": "Generating...",
+    "construiescQuizurile": "Building your quizzes...",
+    "analizezMaterialulCompletEchilibrezDific": "Analyzing the full material, balancing difficulty and checking the correct answers. This can take a few minutes.",
+    "citescMaterialul": "Reading the material",
+    "compunIntrebarile": "Writing the questions",
+    "verificRaspunsurile": "Checking the answers",
+    "generareaNuEsteDisponibilaMomentan": "Generation is not available right now. Try again in a few minutes.",
+    "pachetulNuAPututFi": "The pack could not be generated right now. Try again.",
+    "creeazaPachet": "creating pack",
+    "creeazaQuizuri": "creating quizzes",
+    "inAsteptare": "waiting",
+    "inProcesare": "processing",
+    "creatDeTine": "Created by you",
+    "continuaCuRezumatulGenerat": "Continue with generated summary",
+    "asteaptaGenerareaPachetului": "Wait for pack generation",
+    "pachetulProiectuluiEsteGeneratSi": "The project pack is generated and can be used for study.",
+    "revissConvertesteMaterialeleSiSalveaza": "Reviss converts the materials and automatically saves the generated content.",
+    "aiAtinsLimitaPlanuluiPlanname": "You have reached the {planName} plan limit: {value} per month.",
+    "planulPlannameNuIncludeIncarcari": "The {planName} plan does not include material uploads.",
+    "selectiaDepasesteCotaLunaraDe": "The selection exceeds the monthly material quota. You have {value} left.",
+    "planulPlannameNuIncludePagini": "The {planName} plan does not include processed pages.",
+    "aiAtinsLimitaLunaraDe": "You have reached the monthly limit of processed pages: {pages_processed}/{pages_limit}.",
+    "generareaNuAPututFi": "Generation could not be completed.",
+    "selectiaDepasesteLimitelePlanuluiPlannam": "The selection exceeds the limits of the {planName} plan.",
+    "proiectulNuAPututFi": "The project could not be prepared right now.",
+    "inchideMeniul": "Close menu",
+    "meniuPrincipal": "Main menu",
+    "extindeMeniul": "Expand the menu",
+    "restrangeMeniul": "Collapse the menu",
+    "proiectNou": "New project",
+    "acasa": "Home",
+    "setari": "Settings",
+    "setariAdmin": "Admin settings",
+    "abonament": "Subscription",
+    "proiecteleTale": "Your projects",
+    "proiectDezactivatPePlanulCurent": "Project deactivated on your current plan",
+    "dezactivat": "Deactivated",
+    "nuAiProiecteInca": "You do not have projects yet.",
+    "iesiDinCont": "Log out",
+    "proiecteLunare": "Monthly projects",
+    "materiale": "Materials",
+    "paginiProcesate": "Processed pages",
+    "aiCredits": "AI Credits",
+    "paginiOcr": "OCR pages",
+    "aiAtinsLimitaPlanuluiCurent": "You have reached your current plan's limit for \"{label}\". You can upgrade to a higher plan.",
+    "teApropiiDeLimitaLunara": "You are approaching the monthly limit for \"{label}\". You have {value} left.",
+    "aiUtilizatPercentDinResursele": "You have used {percent}% of this month's included resources for \"{label}\".",
+    "utilizareLunaAceasta": "Usage this month",
+    "nuAiIncaProiecteIncarca": "You do not have projects yet. Upload your first course and we will begin.",
+    "ai1ProiectPregatitPentru": "You have 1 project ready to study.",
+    "aiLengthProiectePregatitePentru": "You have {length} projects ready to study.",
+    "buna": "Hello,",
+    "proiecteActive": "Active projects",
+    "inSpatiulTauDeStudiu": "in your study space",
+    "t1DezactivatPePlanulCurent": "1 deactivated on the current plan",
+    "deactivatedprojectcountDezactivatePePlan": "{deactivatedProjectCount} deactivated on the current plan",
+    "pacheteDeStudiu": "Study packs",
+    "cuPachetGenerat": "with a generated pack",
+    "inPacheteleGenerate": "in generated packs",
+    "deschideMeniulPentruName": "Open the menu for {name}",
+    "redenumire": "Rename",
+    "activare": "Activate",
+    "dezactivare": "Deactivate",
+    "arhivare": "Archive",
+    "stergere": "Delete",
+    "indisponibilPePlanulCurent": "Unavailable on your current plan",
+    "deschideProiectul": "Open project",
+    "numeProiect": "Project name",
+    "renunta": "Cancel",
+    "salveaza": "Save",
+    "niciunProiectInca": "No projects yet.",
+    "creeazaPrimulProiectIncarcaMaterialele": "Create your first project, upload the materials and Reviss prepares your summary, flashcards and quizzes.",
+    "stergereDefinitiva": "Permanent deletion",
+    "confirmaStergereaProiectului": "Confirm project deletion.",
+    "aceastaActiuneEliminaProiectulMaterialel": "This action removes the project, converted materials and generated content. To keep it hidden instead, use archive.",
+    "proiect": "Project",
+    "continut": "Content",
+    "materialeRezumatFlashcardUriQuiz": "Materials, summary, flashcards, quizzes and progress.",
+    "alternativa": "Alternative",
+    "arhiveazaProiectulDacaVreiDoar": "Archive the project if you only want to hide it temporarily.",
+    "seSterge": "Deleting...",
+    "stergeDefinitiv": "Delete permanently",
+    "inapoiLa": "Back to",
+    "proiectActiv": "Active project",
+    "chatAiNuEsteDisponibil": "AI chat is not available on your current plan.",
+    "veziPlanurile": "See the plans",
+    "salutSuntAiUlPentru": "Hi! I'm the AI for the project \"{name}\". Ask me anything about this material.",
+    "nuAmPututGeneraUn": "I could not generate a useful answer right now. Try again in a few moments.",
+    "raspunsulNuAPututFi": "The answer could not be generated right now. Try again.",
+    "chatNou": "New chat",
+    "revissPregatesteRaspunsul": "Reviss is preparing the answer",
+    "mesajPentruChatAi": "Message for AI Chat",
+    "scrieUnMesaj": "Write a message...",
+    "trimite": "Send",
+    "galben": "Yellow",
+    "verde": "Green",
+    "albastru": "Blue",
+    "roz": "Pink",
+    "mov": "Purple",
+    "paragraful": "→ paragraph",
+    "deschideParagrafulInRezumat": "Open the paragraph in the summary ↗",
+    "apasaPentruAStergeHighlight": "Press to delete the highlight",
+    "veziNotita": "View note",
+    "culoareHighlight": "Highlight color",
+    "reseteazaHighlight": "Reset highlight",
+    "instrumente": "Tools",
+    "evidentiaza": "Highlight",
+    "aplica": "Apply",
+    "sterge": "Delete",
+    "notita": "Note",
+    "stergeInstrument": "Remove tool",
+    "explicatiaNuEsteDisponibilaMomentan": "The explanation is not available right now",
+    "nuAmPututGeneraExplicatia": "I could not generate the explanation. Try again in a few moments.",
+    "verificaDacaAiSelectatUn": "Check that you selected a clear fragment from the summary.",
+    "potiContinuaStudiulSiPoti": "You can continue studying and return to the explanation later.",
+    "rezumatulNuEsteGeneratInca": "The summary has not been generated yet.",
+    "revissGenereazaAutomatRezumatulDupa": "Reviss generates the summary automatically after materials are uploaded. If generation failed, try again from the project page.",
+    "selecteazaUnFragmentApoiApasa": "Select a fragment, then press Apply to selection.",
+    "apasaPeUnTextEvidentiat": "Click highlighted text to delete it.",
+    "selecteazaUnFragmentApoiConfirma": "Select a fragment, then confirm with Ask.",
+    "selecteazaUnFragmentCaSa": "Select a fragment to add a note.",
+    "evidentiere": "Highlight",
+    "textSelectatPentruAi": "Text selected for AI",
+    "intrebareaTa": "Your question",
+    "exExplicaPeScurtPentru": "E.g. explain briefly for the exam, or compare with Kant's theory.",
+    "optional": "Optional",
+    "intreaba": "Ask",
+    "anuleaza": "Cancel",
+    "stergeNotita": "Delete note",
+    "inchide": "Close",
+    "scrieONotitaAici": "Write a note here...",
+    "cuvinteCheieDinRezumat": "Summary keywords",
+    "alegeModulDeLucru": "Choose the working mode.",
+    "inchideInstrumentele": "Close tools",
+    "revissAi": "Reviss AI",
+    "generezExplicatia": "Generating explanation",
+    "aiIntrebatDespre": "You asked about",
+    "analizezFragmentul": "Analyzing the fragment...",
+    "cautLegaturaCuRezumatulExtrag": "I am linking this to the summary, extracting the exam-useful idea and phrasing it briefly.",
+    "cumSaRetii": "How to remember",
+    "sigurVreiSaReseteziToate": "Are you sure you want to reset every highlight in the summary?",
+    "toateHighlightUrileAplicateIn": "Every highlight applied in this summary will be permanently removed. Notes are not affected.",
+    "seReseteaza": "Resetting...",
+    "reseteazaHighlightUrile": "Reset highlights",
+    "generateInitial": "Initially generated",
+    "flashcardurileNuSuntGenerateInca": "Flashcards are not generated yet",
+    "pachetulGeneratAutomatDinMaterialele": "The pack automatically generated from uploaded materials, ready for active review.",
+    "flashcardurileAparAiciDupaCe": "Flashcards appear here after Reviss finishes generating the study pack.",
+    "dinQuizUrileTale": "From your quizzes",
+    "intrebarileGresiteTransformateInFlashcar": "Wrong answers turned into flashcards",
+    "aiciAparIntrebarileGresiteSalvate": "Your saved wrong answers appear here",
+    "greselilePeCareLeAi": "The mistakes you saved from quizzes, with the correct answer.",
+    "faUnQuizCandGresesti": "Take a quiz. When you get one wrong, press \"Save as flashcard\" and the question lands here.",
+    "createDeTine": "Created by you",
+    "flashcardurileTale": "Your flashcards",
+    "creeazaPrimulFlashcard": "Create first flashcard",
+    "flashcardurileCreateManualRamanSeparate": "Manually created flashcards stay separate from automatically generated ones.",
+    "durataEst": "est. duration",
+    "continua": "Continue",
+    "veziIntrebarea": "Show question",
+    "veziRaspunsul": "Show answer",
+    "scoateFlashcardulDinRecapitulare": "Remove flashcard from review",
+    "marcheazaFlashcardulPentruRecapitulare": "Mark flashcard for review",
+    "verificaDacaAiSelectatUn2": "Check that you selected a clear fragment from the flashcard.",
+    "potiContinuaRecapitulareaSiPoti": "You can continue reviewing and return to the explanation later.",
+    "inapoiLaPachete": "Back to packs",
+    "marcate": "Marked",
+    "interactiune": "Interaction",
+    "selecteazaTextPentruAi": "Select text for AI",
+    "aiIndisponibil": "AI unavailable",
+    "textSelectatDin": "Text selected from",
+    "intrebare": "question",
+    "raspuns": "answer",
+    "exExplicaDeCeRaspunsul": "E.g. explain why the answer is correct, or give me a simple example.",
+    "nuAiFlashcarduriMarcatePentru": "You have no flashcards marked for review.",
+    "apasaPeIconitaCuCreierul": "Press the brain icon on a flashcard to add it here.",
+    "incaNuAiFlashcarduriDin": "You do not have quiz flashcards yet.",
+    "intraIntrUnQuizSi": "Open a quiz and answer. When you get one wrong, press \"Save as flashcard\" and the question lands here.",
+    "flashcardAnterior": "Previous flashcard",
+    "flashcardUrmator": "Next flashcard",
+    "amesteca": "Shuffle",
+    "flashcardAi": "AI flashcard",
+    "analizezFlashcardul": "Analyzing the flashcard...",
+    "cautConceptulLegaturaCuRaspunsul": "I look for the concept, its link to the answer and the shortest useful explanation for review.",
+    "cumSaLInveti": "How to learn it",
+    "usor": "Easy",
+    "mediu": "Medium",
+    "greu": "Hard",
+    "flashcardManual": "Manual flashcard",
+    "creeazaFlashcard": "Create flashcard.",
+    "categorie": "Category",
+    "dificultate": "Difficulty",
+    "intrebare2": "Question",
+    "fata": "Front",
+    "scrieIntrebareaAici": "Write the question here...",
+    "raspuns2": "Answer",
+    "spate": "Back",
+    "scrieRaspunsul": "Write the answer...",
+    "anulare": "Cancel",
+    "seSalveaza": "Saving...",
+    "salvare": "Save",
+    "adaugaImagine": "Add image",
+    "pachetulGeneratDinMaterialeleIncarcate": "The pack generated from uploaded materials, useful for the first structured review.",
+    "t8Min": "8 min",
+    "dinRezumatulInitial": "from the initial summary",
+    "recapitulareAdaptiva": "Adaptive review",
+    "t1FlashcardDinGreseli": "1 flashcard from mistakes",
+    "quizmistakecountFlashcardUriDinGreseli": "{quizMistakeCount} flashcards from mistakes",
+    "intrebarilePeCareAiAles": "The questions you chose to save, with the correct answer.",
+    "candGresestiOIntrebareDe": "When you get a quiz question wrong, you can save the question and the correct answer here.",
+    "t0Min": "0 min",
+    "dinGreseliReale": "from real mistakes",
+    "creeazaFlashcard2": "Create flashcard",
+    "explicatiaNuAFostInclusa": "The explanation was not included in the JSON, but the correct answer is marked.",
+    "explicaRaspunsulDinMemorieSi": "Explain the answer from memory and compare it with the closest options.",
+    "quizGeneratName": "Generated quiz · {name}",
+    "quizGeneratDinMaterialeleAcestui": "Quiz generated from this project's materials.",
+    "veziExplicatia": "see the explanation",
+    "generareaQuizuluiAFostAnulata": "Quiz generation was cancelled.",
+    "aiAtinsLimitaDeMaxquizzesperproject": "You have reached the limit of {maxQuizzesPerProject} {value} for this project.",
+    "treciLaUnPlanSuperior": "Upgrade to a higher plan to generate more.",
+    "alegeToateRaspunsurileCorecte": "Pick every correct answer",
+    "asociazaFiecareElementCuPerechea": "Match each item with its pair",
+    "asazaCuvinteleInOrdineaCorecta": "Put the words in the right order",
+    "completeazaGolurileDinPropozitie": "Fill in the gaps in the sentence",
+    "alegeUnSingurRaspuns": "Pick a single answer",
+    "inapoiLaQuizUri": "Back to quizzes",
+    "quizActiv": "Active quiz",
+    "raspunse": "answered",
+    "intrebareaValueDinLength": "Question {value} of {length}",
+    "verificaRaspunsul": "Check answer",
+    "deRevizuit": "To review",
+    "acestQuizNuAreO": "This quiz has no verifiable reference to the summary.",
+    "sursa": "Source:",
+    "salvatInFlashcardUriPachetul": "Saved to Flashcards, in the From your quizzes deck.",
+    "nuAmPututSalvaFlashcard": "The flashcard could not be saved. Try again.",
+    "vreiSaRetiiIntrebareaAsta": "Do you want to keep this question as a flashcard?",
+    "reincearca": "Try again",
+    "salveazaCaFlashcard": "Save as flashcard",
+    "rezultatulNuAFostSalvat": "The result was not saved to your history. Retry before leaving the quiz.",
+    "reincearcaSalvarea": "Retry saving",
+    "seSalveazaRezultatulInIstoric": "Saving the result to your history...",
+    "veziGreselileInProgres": "See your mistakes in Progress →",
+    "inapoi": "Back",
+    "veziSumarul": "View summary",
+    "urmatoareaIntrebare": "Next question",
+    "hartaQuiz": "Quiz map",
+    "corecte": "Correct",
+    "acuratete": "Accuracy",
+    "concepteSlabe": "Weak concepts",
+    "istoric": "History",
+    "veziIncercareaDinValueIn": "See the attempt from {value} in Progress",
+    "sumarFinal": "Final summary",
+    "aiObtinut": "You got",
+    "raspunsuriCorecte": "correct answers.",
+    "inchideSumarul": "Close summary",
+    "greselileSalvateTeAsteaptaIn": "The mistakes you saved are waiting in your flashcards.",
+    "potiSalvaCaFlashcardIntrebarile": "You can save wrong single-answer questions as flashcards.",
+    "scorQuiz": "Quiz score",
+    "flashcardUriSalvate": "Saved flashcards",
+    "concepteDeRevizuit": "Concepts to review",
+    "reiaQuizUl": "Retake quiz",
+    "quizNou": "New quiz",
+    "genereazaTesteleCandVrei": "Generate tests when you want.",
+    "alegiDificultateaCateIntrebariVrei": "Pick the difficulty, how many questions you want and which answer types, and we generate a quiz to match. Your plan allows",
+    "inAcestProiect": "in this project.",
+    "seAnuleaza": "Cancelling...",
+    "anulareGenerareQuiz": "Cancel quiz generation",
+    "alegeTestulPotrivit": "Choose the right test.",
+    "recapitulareAplicareSiSimulareDe": "Review, application and exam simulation, separated so you know exactly what you are practicing.",
+    "neincercat": "Not attempted",
+    "intrebari": "Questions",
+    "durata": "Duration",
+    "rezultat": "Result",
+    "reintra": "Re-enter",
+    "incepe": "Start",
+    "inchideCursulSiIncearcaSa": "Close the course and try to answer",
+    "dupaFiecareSectiuneSpunePe": "After each section, briefly say the main idea without looking at the material.",
+    "revinoMainePesteIdeileImportante": "Review the important ideas tomorrow",
+    "oRecapitulareScurtaDupaO": "A short review after one day helps you keep concepts that would otherwise fade quickly.",
+    "explicaSimpluCuExemple": "Explain simply, with examples",
+    "dacaPotiLegaTeoriaDe": "If you can connect the theory to a concrete example, you are much more likely to remember it in the exam.",
+    "strategiiAi": "AI strategies",
+    "planDeStudiuPentru": "Study plan for",
+    "pasiiSuntGeneratiDinMaterialul": "The steps are generated from the project material and designed for active review, not passive reading.",
+    "context": "Context",
+    "ritmRecomandat": "Recommended pace",
+    "t2030MinPeSesiune": "20-30 min per session, then quick quiz check.",
+    "baza": "Foundation",
+    "buneDeFolositLaOrice": "Useful for any course.",
+    "greselileDinTitleValue": "Mistakes from \"{title}\", {value}.",
+    "greselileDinUltimaIncercareA": "Mistakes from the latest attempt of each quiz, grouped by concept.",
+    "afiseaza": "Show",
+    "ultimeleIncercari": "Recent attempts",
+    "incercareIndisponibila": "Attempt unavailable",
+    "raspunsuriCorecte2": "correct answers",
+    "incercareaNuMaiEsteDisponibila": "That attempt is no longer available for this project. Choose \"Latest attempts\".",
+    "uneleIncercariAuDoarScorul": "Some attempts only have the score saved, without the details of the wrong questions. Retake those quizzes to include them in \"To review\".",
+    "nuExistaRaspunsuriGresiteIn": "There are no wrong answers in the attempts with details shown.",
+    "recomandarileVorApareaAiciDupa": "Recommendations will appear here after a new attempt.",
+    "finalizeazaUnQuizPentruA": "Finish a quiz to see the concepts to review here.",
+    "intrebari2": "questions",
+    "aceastaIntrebareNuAreO": "This question has no verifiable reference to the summary.",
+    "marti": "Tuesday",
+    "sambata": "Saturday",
+    "duminica": "Sunday",
+    "deLaPrimaIncercare": "since the first attempt",
+    "dinMaterial": "from the material",
+    "adaugateDeTine": "added by you",
+    "dinGreseli": "From mistakes",
+    "salvateLaQuiz": "saved from quizzes",
+    "scorDePregatire": "Readiness score",
+    "scoruriSiQuizUriFinalizate": "Scores and completed quizzes, combined",
+    "apareDupaPrimulQuizRezolvat": "Appears after your first completed quiz",
+    "scorMediu": "Average score",
+    "incercare": "attempt",
+    "incercari": "attempts",
+    "nicioIncercareInca": "No attempts yet",
+    "genereazaPrimulQuizDinTab": "Generate your first quiz from the Quiz tab",
+    "deReluat": "To review",
+    "repetaGreselile": "Review your mistakes",
+    "nicioGresealaRecurenta": "No recurring mistakes",
+    "evolutiaScorurilor": "Score evolution",
+    "liniaApareDupaPrimulQuiz": "the line appears after your first quiz",
+    "graficulApareDupaPrimulQuiz": "The chart appears after your first quiz.",
+    "fiecareIncercareAdaugaUnPunct": "Every attempt adds a point to the line, so you can see whether your scores are rising.",
+    "pregatirePentruExamen": "Exam readiness",
+    "tintaProgressReadinessTarget": "target: {PROGRESS_READINESS_TARGET}%",
+    "rezolvaUnQuizCaSa": "Complete a quiz so we can see how ready you are.",
+    "estiPesteTintaMaiRepeta": "You are above the target. Go over the concepts you got wrong once more before the exam.",
+    "concentreazaTePeFocustext": "Focus on: {focusText}.",
+    "continuaCuQuizUrileNeincercate": "Continue with the untried quizzes to raise your score.",
+    "incepeUrmatorulQuiz": "Start the next quiz",
+    "repetaUnQuiz": "Retake a quiz",
+    "zileActive": "Active days",
+    "incercariPeZileleSaptamanii": "attempts by weekday",
+    "invetiCelMaiDesName": "You study most often on {name}.",
+    "aiciVeiVedeaInCe": "Here you will see which days you study the most.",
+    "niciunQuizGenerat": "no quiz generated",
+    "toate": "All",
+    "concepteDeReluat": "Concepts to review",
+    "dinRaspunsurileGresite": "from wrong answers",
+    "seIncarcaRecomandarile": "Loading recommendations...",
+    "constanta": "Consistency",
+    "ultimele4Saptamani": "last 4 weeks",
+    "stapanirePeSubiecte": "Mastery by subject",
+    "materialeDeStudiu": "Study materials",
+    "ceAiInProiect": "what is in the project",
+    "concepteCheie": "Key concepts",
+    "highlightUriInRezumat": "Summary highlights",
+    "notite": "Notes",
+    "incercariLaQuizUri": "Quiz attempts",
+    "scorDePregatirePercentDin": "Readiness score {percent}% of the {PROGRESS_READINESS_TARGET}% target",
+    "tinta": "Target",
+    "pregatit": "ready",
+    "incercariLaQuizUriPe": "Quiz attempts by weekday",
+    "quizUrileNuSuntGenerate": "No quizzes generated yet.",
+    "dupaCeGenereziPrimulQuiz": "Once you generate your first quiz, you will see it here with its score and attempts.",
+    "incercari2": "Attempts",
+    "nimicDeReluatInca": "Nothing to review yet.",
+    "greselileDinQuizUriSe": "Quiz mistakes are grouped here by concept, so you can review them quickly.",
+    "greseala": "mistake",
+    "greseli": "mistakes",
+    "repetaCardurileDinGreseli": "Review the cards from mistakes",
+    "inTotal": "in total",
+    "evolutiaScorurilorLaQuizUri": "Quiz score evolution over time",
+    "radarulSeActiveazaDupaMai": "The radar activates after more results.",
+    "aiNevoieDeCelPutin": "You need at least three assessed subjects for a readable map.",
+    "radarulCompetentelorPeSubiecte": "Competency radar by subject",
+    "labelCountIncercari": "{label}: {count} attempts",
+    "maiPutin": "Less",
+    "maiMult": "More",
+    "incarcaUnCurs": "Upload a course.",
+    "cumIlVeiGasiIn": "How you will find it in your account.",
+    "exFarmaSem2": "Ex: Pharma sem. 2",
+    "materie": "Subject",
+    "contextPentruAi": "Context for AI.",
+    "exImunologie": "Ex: Immunology",
+    "scoala": "School",
+    "facultateScoalaSauNivel": "Faculty, school or level.",
+    "exUmfUtcn": "Ex: UMF / UTCN",
+    "lengthMaterialeSelectate": "{length} materials selected",
+    "adaugaMaterialele": "Add materials",
+    "valueInTotal": "{value} in total",
+    "trageFisiereAiciSauApasa": "Drag files here or click to select.",
+    "alegeFisiere": "Choose files",
+    "limitePlan": "Plan limits",
+    "luna": "/month,",
+    "fisiereProiect": "files/project,",
+    "mbFisier": "MB/file,",
+    "mbProiectCotaLunara": "MB/project. Monthly quota:",
+    "materialeSi": "materials and",
+    "veziPlanuri": "View plans",
+    "elimina": "Remove",
+    "pregatire": "Preparation",
+    "progresPregatire": "Preparation progress",
+    "amDreptulSaFolosescAceste": "I have the right to use these materials.",
+    "genereazaPachetul": "Generate pack",
+    "seGenereazaRezumatulCuvinteleCheie": "The summary, keywords, strategies and flashcards are being generated. Quizzes are started separately from their dedicated tab.",
+    "nuIncarcaDateSensibileSau": "Do not upload sensitive data or materials you do not have the right to use.",
+    "pachetulEstePregatit": "The pack is prepared",
+    "generamPachetul": "Generating pack",
+    "rezumatulCuvinteleCheieStrategiileSi": "The summary, keywords, strategies and flashcards have been saved to the project.",
+    "pregatimMaterialeleSiCreamPrimul": "We are preparing the materials and creating your first study pack.",
+    "proiectulEstePregatitPentruStudiu": "The project is ready for study. Quizzes are generated separately from the Quizzes tab when you want to start testing.",
+    "countMateriale": "{count} materials",
+    "eroare": "error",
+    "flashcardUriPentruName": "Flashcards for {name}",
+    "luni": "Monday",
+    "miercuri": "Wednesday",
+    "joi": "Thursday",
+    "vineri": "Friday",
+    "portocaliu": "Orange",
+    "serviciulDeGenerare": "the generation service",
+    "continutGeneric": "content",
+    "pachetulGenerat": "the generated pack",
+    "pachetGenerat": "generated pack",
+    "quizulNuAPututFiGenerat": "The quiz could not be generated.",
+    "quizulNuAPututFiGeneratIncearca": "The quiz could not be generated. Try again.",
+    "generareaQuizurilorDureazaPreaMult": "Quiz generation is taking too long. Reload the page.",
+    "planulPermiteMaximumFisiere": "The {planName} plan allows at most {count} files in a project.",
+    "auFostPastrateDoarPrimele": "Only the first {count} files allowed by the plan were kept.",
+    "unFisierPoateAveaCelMult": "A file can be at most {size} MB on the {planName} plan.",
+    "materialeleProiectuluiPotAvea": "The project materials can be at most {size} MB in total.",
+    "generareaDureazaPreaMult": "Generation is taking too long. Reload the page in a few minutes.",
+    "numeleProiectuluiMinim": "The project name must have at least 2 characters.",
+    "proiectulNuAPututFiRedenumit": "The project could not be renamed.",
+    "proiectulNuAPututFiArhivat": "The project could not be archived.",
+    "stareaProiectuluiNuAPututFi": "The project status could not be changed.",
+    "proiectulNuAPututFiSters": "The project could not be deleted.",
+    "createManual": "Created manually",
+    "flashcardUriCreateDeTine": "{count} flashcards created by you",
+    "cardurileAdaugateManual": "The cards you added manually, kept apart from the auto-generated decks.",
+    "createManualMetric": "created manually",
+    "nMin": "{count} min",
+    "rezultatulQuizuluiNuAPututFiSalvat": "The quiz result could not be saved.",
+    "reincearcaSalvareaInainte": "Retry saving before leaving the quiz.",
+    "conjunctieSi": "and",
+    "complexityUsor": "Easy",
+    "complexityMediu": "Medium",
+    "complexityGreu": "Hard",
+    "complexityExamen": "Exam"
+  },
+  "accountShell": {
+    "acasa": "Home",
+    "setariAdmin": "Admin settings",
+    "cont": "Account",
+    "studiu": "Study",
+    "aspect": "Appearance",
+    "culori": "Colors",
+    "notificari": "Notifications",
+    "securitate": "Security",
+    "date": "Date",
+    "planuri": "Plans",
+    "facturi": "Invoices",
+    "inchideMeniul": "Close menu",
+    "meniuPrincipal": "Main menu",
+    "extindeMeniul": "Expand the menu",
+    "restrangeMeniul": "Collapse the menu",
+    "proiectNou": "New project",
+    "setari": "Settings",
+    "abonament": "Subscription",
+    "iesiDinCont": "Log out"
+  },
+  "compliance": {
+    "categorie": "Category",
+    "continut": "Content",
+    "declaratie": "Declaration",
+    "descriere": "Description",
+    "numeComplet": "Full name",
+    "mesaj": "Message",
+    "nume": "Name",
+    "numarulComenzii": "Order number",
+    "tip": "Type",
+    "subiect": "Subject",
+    "abonamentSauComanda": "Subscription or order",
+    "verificaFormularulSiIncearcaDin": "Check the form and try again.",
+    "solicitareaAFostBlocataDin": "The request was blocked for security reasons. Reload the page and try again.",
+    "verificaDateleDinFormularUnele": "Check the form data. Some fields are not filled in correctly.",
+    "aiTrimisPreaMulteSolicitari": "You have sent too many requests in a short time. Try again later.",
+    "serverulNuPoateProcesaSolicitarea": "The server cannot process the request right now. Try again in a few minutes.",
+    "solicitareaNuAPututFi": "The request could not be sent.",
+    "valoareInvalida": "Invalid value.",
+    "prefixCampObligatoriuLipsa": "{prefix}required field missing.",
+    "prefixTrebuieSaAibaCel": "{prefix}must have at least {minLength} characters.",
+    "prefixTextulEstePreaScurt": "{prefix}the text is too short.",
+    "prefixTrebuieSaAibaCel2": "{prefix}must have at most {maxLength} characters.",
+    "prefixTextulEstePreaLung": "{prefix}the text is too long.",
+    "valueAdresaDeEMail": "{value}the email address is not valid.",
+    "prefixAlegeOOptiuneValida": "{prefix}choose a valid option.",
+    "declaratieConfirmareaEsteObligatorie": "Declaration: confirmation is required.",
+    "introduCelPutinMinlengthCaractere": "Enter at least {minLength} characters.",
+    "introduCelMultMaxlengthCaractere": "Enter at most {maxLength} characters.",
+    "introduOAdresaDeE": "Enter a valid email address.",
+    "introduNumeleTau": "Enter your name.",
+    "numeleTrebuieSaAibaCel": "The name must have at least 2 characters.",
+    "numelePoateAveaCelMult": "The name can have at most 120 characters.",
+    "alegeCategoriaMesajului": "Choose the message category.",
+    "introduSubiectulMesajului": "Enter the message subject.",
+    "subiectulTrebuieSaAibaCel": "The subject must have at least 3 characters.",
+    "subiectulPoateAveaCelMult": "The subject can have at most 160 characters.",
+    "scrieMesajul": "Write the message.",
+    "mesajulTrebuieSaAibaCel": "The message must have at least 10 characters.",
+    "mesajulPoateAveaCelMult": "The message can have at most 5000 characters.",
+    "introduNumeleComplet": "Enter your full name.",
+    "numeleCompletTrebuieSaAiba": "The full name must have at least 2 characters.",
+    "numeleCompletPoateAveaCel": "The full name can have at most 120 characters.",
+    "introduAbonamentulSauComandaVizata": "Enter the subscription or order concerned.",
+    "abonamentulSauComandaTrebuieSa": "The subscription or order must have at least 2 characters.",
+    "abonamentulSauComandaPoateAvea": "The subscription or order can have at most 160 characters.",
+    "numarulComenziiPoateAveaCel": "The order number can have at most 80 characters.",
+    "motivulPoateAveaCelMult": "The reason can have at most 5000 characters.",
+    "confirmaSolicitareaDeRetragereInainte": "Confirm the withdrawal request before sending.",
+    "alegeTipulSesizarii": "Choose the report type.",
+    "adaugaLinkulSauIdentificatorulContinutul": "Add the link or identifier of the content.",
+    "continutulTrebuieSaAibaCel": "The content must have at least 3 characters.",
+    "continutulPoateAveaCelMult": "The content can have at most 400 characters.",
+    "descrieProblemaRaportata": "Describe the reported problem.",
+    "descriereaTrebuieSaAibaCel": "The description must have at least 10 characters.",
+    "descriereaPoateAveaCelMult": "The description can have at most 5000 characters.",
+    "dovezilePotAveaCelMult": "The evidence can have at most 5000 characters.",
+    "confirmaDeclaratiaPrivindCorectitudineaI": "Confirm the declaration about the accuracy of the information.",
+    "numarDeInregistrareRegistrationnumber": "Registration number: {registrationNumber}",
+    "seVerificaSetarileRecaptcha": "Checking the reCAPTCHA settings...",
+    "recaptchaNuEsteConfiguratPe": "reCAPTCHA is not configured on the frontend.",
+    "protectieAntiSpam": "Anti-spam protection.",
+    "seIncarcaVerificareaAntiSpam": "Loading the anti-spam check...",
+    "potiAtasaCelMultContentreportmaxattachme": "You can attach at most {contentReportMaxAttachmentFiles} documents.",
+    "ataseazaDoarPdfDocDocx": "Attach only PDF, DOC, DOCX, TXT, RTF, JPG, PNG or WEBP.",
+    "documentulNameDepasesteLimitaDe": "The document {name} exceeds the 10MB limit.",
+    "recaptchaNuSAPutut": "reCAPTCHA could not load. Check the domain and the site key.",
+    "scriptulRecaptchaNuSA": "The reCAPTCHA script could not load. Try again.",
+    "corecteazaCampurileMarcateInainteDe": "Fix the highlighted fields before sending.",
+    "recaptchaNuEsteConfiguratPe2": "reCAPTCHA is not configured on the frontend. Add the public key and restart the app.",
+    "protectiaAntiSpamIncaSe": "The anti-spam protection is still loading. Try again.",
+    "confirmaVerificareaAntiSpamInainte": "Complete the anti-spam check before sending.",
+    "mesajulAFostTrimisIti": "The message was sent. We will reply by email.",
+    "mesajulNuAPututFi": "The message could not be sent.",
+    "cumTePutemIdentifica": "How we can identify you.",
+    "numeleTau": "Your name",
+    "aiciItiTrimitemRaspunsul": "We send the reply here.",
+    "directionamMesajulCorect": "We route the message correctly.",
+    "alegeCategoria": "Choose category",
+    "suport": "Support",
+    "facturare": "Billing",
+    "confidentialitate": "Privacy",
+    "raportareContinut": "Content report",
+    "peScurtDespreCeEste": "In short, what it is about.",
+    "includeDetaliileUtile": "Include the useful details.",
+    "scrieMesajulAici": "Write the message here...",
+    "trimiteAltMesaj": "Send another message",
+    "seTrimite": "Sending...",
+    "trimiteMesajul": "Send message",
+    "solicitareaDeRetragereAFost": "The withdrawal request was registered and the confirmation was queued for email.",
+    "cumApareInContSau": "As it appears in the account or order.",
+    "numeleTauComplet": "Your full name",
+    "adresaAsociataContului": "The address linked to the account.",
+    "abonament": "Subscription",
+    "planulSauComandaVizata": "The plan or order concerned.",
+    "comanda": "Order",
+    "optionalDacaExista": "Optional, if any.",
+    "numarComandaSauFactura": "Order or invoice number",
+    "optionalContextUtil": "Optional, useful context.",
+    "potiAdaugaDetaliiDespreSolicitare": "You can add details about the request...",
+    "confirmareObligatorie": "Confirmation required.",
+    "confirmCaDorescRetragereaDin": "I confirm that I want to withdraw from the contract for the indicated subscription or order.",
+    "trimiteAltaSolicitare": "Send another request",
+    "seInregistreaza": "Registering...",
+    "confirmaRetragerea": "Confirm withdrawal",
+    "amAdaugatLengthDinSelectia": "We added {length} from the current selection.",
+    "sesizareaAFostInregistrataSi": "The report was registered and will be reviewed.",
+    "sesizareaNuAPututFi": "The report could not be sent.",
+    "aiciItiTrimitemConfirmarea": "We send the confirmation here.",
+    "alegemFluxulPotrivit": "We pick the right flow.",
+    "alegeTipul": "Choose type",
+    "drepturiDeAutor": "Copyright",
+    "datePersonale": "Personal data",
+    "continutIncorect": "Incorrect content",
+    "altMotiv": "Other reason",
+    "linkSauIdentificator": "Link or identifier.",
+    "urlTitluProiectSauIdentificator": "URL, project title or identifier",
+    "explicaProblema": "Explain the problem.",
+    "descrieCeTrebuieAnalizat": "Describe what needs to be reviewed...",
+    "linkuriExplicatiiSiDocumente": "Links, explanations and documents.",
+    "linkuriSauExplicatiiSuplimentare": "Additional links or explanations...",
+    "adaugaDocumente": "Add documents",
+    "pdfDocDocxTxtRtf": "PDF, DOC, DOCX, TXT, RTF, JPG, PNG or WEBP. 10MB each.",
+    "sterge": "Delete",
+    "declarCaInformatiileFurnizateSunt": "I declare the provided information is correct and the request is made in good faith.",
+    "trimiteAltaSesizare": "Send another report",
+    "trimiteSesizarea": "Send report",
+    "operator": "Operator",
+    "sediuSocial": "Registered office",
+    "nrRegistrulComertului": "Trade Register no.",
+    "telefon": "Phone",
+    "dateFirma": "Company details",
+    "urmaresteNe": "Follow us",
+    "documente": "Documents",
+    "eMail": "Email",
+    "formular": "Form",
+    "verificareAntiSpam": "Anti-spam check",
+    "motiv": "Reason",
+    "dovezi": "Evidence",
+    "verificare": "Verification",
+    "introduAdresaDeEMail": "Enter your email address.",
+    "attachmentErrorTokens": "document, documents, attach"
+  },
+  "upgrade": {
+    "ronLuna": "RON / month",
+    "ronAn": "RON / year",
+    "pentruInceput": "To get started",
+    "studiuActiv": "Active Study",
+    "sesiunePro": "Pro Session",
+    "ronPermanent": "RON / lifetime",
+    "finalulPerioadeiPlatite": "the end of the paid period",
+    "astazi": "today",
+    "maine": "tomorrow",
+    "abonamentulNuAPututFi": "The subscription could not be updated right now.",
+    "abonamentulCurrentplannameExpiraPeAccess": "The {currentPlanName} subscription expires on {accessUntilLabel}",
+    "maiAiAccesRenewalcountdownDupa": "You still have access {renewalCountdown}. After that date the account switches automatically to the free plan.",
+    "dupaAceastaDataContulTrece": "After that date the account switches automatically to the free plan.",
+    "abonamentulCurrentplannameSeReinnoiesteP": "The {currentPlanName} subscription renews on {accessUntilLabel}",
+    "urmatoareaPlataAreLocRenewalcountdown": "The next payment happens {renewalCountdown}. You can stop the renewal at any time before then.",
+    "potiOpriReinnoireaOricandPana": "You can stop the renewal at any time before then.",
+    "reinnoireaEsteAnulataAiAcces": "The renewal is cancelled. You have access until {value}.",
+    "reinnoireaAbonamentuluiEsteActivaDin": "Subscription renewal is active again.",
+    "abonament": "Subscription",
+    "alegePlanulPotrivit": "Choose the right plan.",
+    "planuriSimpleTransparenteCuReinnoire": "Simple, transparent plans with monthly renewal.",
+    "activ": "active",
+    "seOpresteLa": "stops on",
+    "seReinnoieste": "renews",
+    "facturi": "Invoices",
+    "activ2": "Active",
+    "recomandat": "Recommended",
+    "activPanaLaAccessuntillabel": "Active until {accessUntilLabel}",
+    "planActual": "Current plan",
+    "seActualizeaza": "Updating...",
+    "reactiveazaReinnoirea": "Reactivate renewal",
+    "anuleazaReinnoirea": "Cancel renewal",
+    "programatPe": "Scheduled for",
+    "trecePePlanulGratuit": "Switch to the free plan",
+    "veziDetaliilePlanului": "View plan details",
+    "anulareReinnoire": "Cancel renewal",
+    "oprestiPlataLunaraPentru": "You are stopping the monthly payment for",
+    "nuVeiMaiFiTaxat": "You will not be charged at the next renewal. The plan stays active until",
+    "apoiContulTreceAutomatPe": ", then the account switches automatically to the free plan.",
+    "renunta": "Cancel",
+    "seAnuleaza": "Cancelling...",
+    "nZile": "{days} days"
+  },
+  "checkout": {
+    "lunarReinnoireAutomata": "Monthly, automatic renewal",
+    "anualReinnoireAutomata": "Yearly, automatic renewal",
+    "intervalReinnoireAutomata": "{interval}, automatic renewal",
+    "trebuieSaFiiAutentificatCa": "You must be logged in to activate a subscription.",
+    "plataNuAPututFi": "The payment could not be started right now.",
+    "inapoiLaAbonamente": "Back to subscriptions",
+    "confirmareAbonament": "Subscription confirmation",
+    "verificaPlanulInainteDePlata": "Review your plan before payment.",
+    "planulAlesPretulSiBeneficiile": "The selected plan, the price and the included benefits. Payment is secured through Stripe.",
+    "ronLuna": "RON / month",
+    "sumarPlata": "Payment summary",
+    "planSelectat": "Selected plan",
+    "monedaPlata": "Payment currency",
+    "tvaInclus": "VAT included",
+    "daDacaEsteAplicabil": "Yes, if applicable",
+    "frecventaPlata": "Payment frequency",
+    "pretTotal": "Total price",
+    "ceUrmeaza": "What happens next?",
+    "dupaPlataPlanulDevineActiv": "After payment, the plan becomes active immediately. You can change or cancel it from your account.",
+    "planulNuAreIncaUn": "The plan does not have a Stripe Price ID configured in admin yet.",
+    "continuaInCont": "Continue to account",
+    "sePregatesteCheckoutUl": "Preparing checkout...",
+    "continuaCatrePlataSecurizata": "Continue to secure payment →",
+    "prinApasareaButonuluiEstiDe": "By pressing the button, you agree to the",
+    "termeniiSiConditiile": "Terms and Conditions",
+    "informatiiDespreRetragereSuntIn": ". Withdrawal information is available in the contract withdrawal policy.",
+    "lunar": "Monthly",
+    "anual": "Yearly"
+  },
+  "invoices": {
+    "inAsteptare": "Pending",
+    "platita": "Paid",
+    "deschisa": "Open",
+    "anulata": "Voided",
+    "neincasabila": "Uncollectible",
+    "facturi": "Invoices",
+    "istoricPlati": "Payment history.",
+    "facturileStripePentruAbonamentulTau": "Stripe invoices for your subscription.",
+    "planuri": "Plans",
+    "reincarca": "Reload",
+    "seIncarcaFacturile": "Loading invoices...",
+    "listaNuAPututFi": "The list could not be loaded. Press \"Reload\" to try again.",
+    "nuExistaIncaFacturiPentru": "There are no invoices for your account yet.",
+    "factura": "Invoice",
+    "valoare": "Amount",
+    "status": "Status",
+    "actiuni": "Actions",
+    "veziFactura": "View invoice",
+    "ciorna": "Draft",
+    "necunoscut": "Unknown",
+    "facturileNuAuPututFi": "The invoices could not be loaded right now."
+  },
+  "cancellation": {
+    "t24Iulie2026": "24 July 2026",
+    "reinnoireaAutomataAFostOprita": "Automatic renewal has been stopped. Access stays active until the end of the paid period.",
+    "anulareaNuAPututFi": "Cancellation could not be processed.",
+    "abonament": "Subscription",
+    "anulareAbonament": "Subscription cancellation.",
+    "potiOpriReinnoireaAutomataDirect": "You can stop automatic renewal directly from your account, without sending an email. Access stays active until the end of the paid period.",
+    "planActiv": "Active plan",
+    "pret": "Price",
+    "t29RonLuna": "29 RON / month",
+    "urmatoareaDataDeFacturare": "Next billing date",
+    "reinnoireAutomata": "Automatic renewal",
+    "oprita": "Stopped",
+    "activa": "Active",
+    "dacaOprestiReinnoireaAccesulRamane": "If you stop the renewal, access stays active until",
+    "dupaAceastaDataPlanulRevine": ". After this date, the plan returns to Beginner if you do not reactivate the subscription.",
+    "seProceseaza": "Processing...",
+    "reinnoireAutomataOprita": "Automatic renewal stopped",
+    "opresteReinnoireaAutomata": "Stop automatic renewal",
+    "ceSeIntamplaDupaAnulare": "What happens after cancellation",
+    "nuVeiMaiFiTaxat": "You will not be charged at the next billing date.",
+    "materialeleSiProgresulRamanIn": "Materials and progress stay in the account.",
+    "potiReactivaUnPlanOricand": "You can reactivate a plan anytime from the Subscription page."
+  },
+  "notifications": {
+    "notificarileNuAuPututFi": "The notifications could not be loaded.",
+    "notificari": "Notifications",
+    "inchideNotificarile": "Close notifications",
+    "marcheazaTotCaCitit": "Mark all as read",
+    "seIncarca": "Loading...",
+    "nuAiNicioNotificareInca": "You have no notifications yet.",
+    "stergeNotificarea": "Delete notification"
+  },
+  "quizAnswers": {
+    "asocierileTale": "Your matches",
+    "alegeUnElementDinStanga": "Pick an item on the left",
+    "acumAlegePerecheaDinDreapta": "Now pick its match on the right",
+    "propozitiaTa": "Your sentence",
+    "trageSauApasaCuvinteleDe": "Drag or tap the words below to build the sentence.",
+    "apasaPentruAScoateCuvantul": "Press to remove the word",
+    "cuvinteDisponibile": "Available words",
+    "aiFolositToateCuvintele": "You have used every word.",
+    "propozitiaCorecta": "The correct sentence:",
+    "propozitia": "The sentence"
+  },
+  "projectSlots": {
+    "planulSASchimbat": "Your plan changed",
+    "alegeCeProiecteRamanActive": "Choose which projects stay active",
+    "proiectActiv": "active project",
+    "proiecteActive": "active projects",
+    "iarTuAi": ", and you have",
+    "restulRamanInContSi": ". The rest stay in your account and are not deleted — they just cannot be studied until you return to a higher plan.",
+    "potiAlegeIncaRemaining": "You can pick {remaining} more.",
+    "aiFolositToateSloturile": "You have used every slot.",
+    "proiectVaFiDezactivat": "project will be deactivated",
+    "proiecteVorFiDezactivate": "projects will be deactivated",
+    "seSalveaza": "Saving...",
+    "confirmaSelectia": "Confirm selection",
+    "nuAmPututSalvaSelectia": "We could not save the selection. Try again."
+  },
+  "checkoutDisclosure": {
+    "lunara": "monthly",
+    "lunarCuReinnoireAutomata": "Monthly, with automatic renewal",
+    "informatiiInainteDePlata": "Information before payment",
+    "plan": "Plan",
+    "pretTotal": "Total price",
+    "moneda": "Currency",
+    "tva": "VAT",
+    "inclusDacaEsteAplicabil": "Included, if applicable",
+    "perioadaAbonament": "Subscription period",
+    "frecventaPlatii": "Payment frequency",
+    "anulare": "Cancel",
+    "dinPagina": "From the page",
+    "anulareAbonament": "Cancel subscription",
+    "intrareInVigoare": "Effective date",
+    "anulareaOpresteUrmatoareaReinnoire": "Cancellation stops the next renewal.",
+    "informatiiDespreDreptulDeRetragere": "Information about the right of withdrawal is available on the page",
+    "retragereDinContract": "Contract withdrawal",
+    "prinApasareaButonuluiDePlata": ". By pressing the payment button you accept the",
+    "termeniiSiConditiile": "Terms and Conditions"
+  },
+  "themeToggle": {
+    "luminoasa": "light",
+    "intunecata": "dark",
+    "activeazaTemaNexttheme": "Switch to the {nextTheme} theme"
+  },
+  "pagination": {
+    "inregistrari": "records",
+    "inapoi": "Back",
+    "inainte": "Previous",
+    "intervalDinTotal": "{start}-{end} of {total} {label}"
+  },
+  "toasts": {
+    "inchideNotificarea": "Close notification"
+  },
+  "quizConfig": {
+    "quizNou": "New quiz",
+    "configureazaQuizul": "Configure the quiz",
+    "generamUnSingurQuiz": "We generate a single quiz, exactly the way you ask for it. It uses your plan's AI credits.",
+    "dificultate": "Difficulty",
+    "complexity": {
+      "low": {
+        "label": "Easy",
+        "detail": "Definitions and recognition"
+      },
+      "medium": {
+        "label": "Medium",
+        "detail": "Understanding and comparisons"
+      },
+      "high": {
+        "label": "Hard",
+        "detail": "Two-step reasoning"
+      },
+      "exam": {
+        "label": "Exam",
+        "detail": "Combined topics, trick questions"
+      }
+    },
+    "types": {
+      "single_choice": {
+        "label": "Single answer",
+        "detail": "Four options, one correct answer"
+      },
+      "multiple_choice": {
+        "label": "Multiple answers",
+        "detail": "Several correct answers"
+      },
+      "matching": {
+        "label": "Matching",
+        "detail": "Connect each item with its pair"
+      },
+      "ordering": {
+        "label": "Build the sentence",
+        "detail": "Put the words in the right order"
+      },
+      "cloze": {
+        "label": "Fill in the blanks",
+        "detail": "Pick the terms missing from the sentence"
+      }
+    },
+    "tipuriDeIntrebari": "Question types",
+    "alegeCelPutinUnTip": "Choose at least one question type.",
+    "numarDeIntrebari": "Number of questions",
+    "planulPermiteMaximum": "Your plan allows at most {cap} {cap, plural, one {question} other {questions}} in a quiz.",
+    "tipurileAleseSeImpart": "The {count} chosen types share the questions between them.",
+    "renunta": "Cancel",
+    "seGenereaza": "Generating...",
+    "genereazaQuizul": "Generate the quiz"
+  },
+  "common": {
+    "home": "Home",
+    "loadingPage": "Loading the page",
+    "loadingProjectTab": "Loading the project tab"
+  },
+  "apiRoutes": {
+    "googleNotConfigured": "Google sign-in is not configured.",
+    "authRouteMissing": "The authentication route does not exist.",
+    "complianceRouteMissing": "The compliance route does not exist.",
+    "visitsRouteMissing": "The visits route does not exist."
+  },
+  "seo": {
+    "title": "Reviss | AI platform for summaries, flashcards and quizzes",
+    "description": "Reviss helps students turn lectures, PDFs, documents and presentations into clear summaries, flashcards, quizzes and study plans.",
+    "ogAlt": "Reviss - AI platform for active studying",
+    "keywords": "Reviss, AI summaries, AI summaries for students, PDF summary, PDF summary generator, AI flashcards, flashcards from lectures, flashcard generator, exam quizzes, quizzes from lectures, active learning, spaced repetition, exam preparation, university exam preparation, study app, AI education platform, AI tools for students, organising university courses, learning with flashcards, exam simulation"
+  },
+  "meta": {
+    "myaccount": {
+      "title": "My account",
+      "description": "Manage your Reviss account and activity."
+    },
+    "chatAi": {
+      "title": "AI Chat",
+      "description": "Contextual AI chat for your Reviss project."
+    },
+    "flashcards": {
+      "title": "Flashcards",
+      "description": "The flashcards generated for your Reviss project."
+    },
+    "createFlashcard": {
+      "title": "Create flashcard",
+      "description": "Create flashcards manually for your Reviss project."
+    },
+    "progress": {
+      "title": "Progress",
+      "description": "The progress of your Reviss project."
+    },
+    "quizzes": {
+      "title": "Quizzes",
+      "description": "The quizzes of your Reviss project."
+    },
+    "summary": {
+      "title": "Summary",
+      "description": "The full summary of your Reviss project."
+    },
+    "strategies": {
+      "title": "Strategies",
+      "description": "The learning strategies for your Reviss project."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Configure your Reviss account preferences."
+    },
+    "changeEmail": {
+      "title": "Change email",
+      "description": "Update the email address of your Reviss account."
+    },
+    "changeName": {
+      "title": "Change name",
+      "description": "Update the name on your Reviss account."
+    },
+    "changePassword": {
+      "title": "Change password",
+      "description": "Update the password of your Reviss account."
+    },
+    "checkout": {
+      "title": "Subscription confirmation",
+      "description": "Check the plan details before paying."
+    },
+    "upgrade": {
+      "title": "Subscription",
+      "description": "Choose the Reviss plan that fits your studies."
+    },
+    "cancelSubscription": {
+      "title": "Cancel subscription",
+      "description": "Stop the automatic renewal of your Reviss subscription right from your account."
+    },
+    "cookiePolicy": {
+      "title": "Cookie policy",
+      "description": "Information about the cookie categories used by Reviss and how consent is managed."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "description": "The Reviss privacy policy on personal data and how it is processed."
+    },
+    "terms": {
+      "title": "Terms and conditions",
+      "description": "The terms and conditions of use for the Reviss platform."
+    },
+    "contentReport": {
+      "title": "Report content",
+      "description": "Report incorrect content, content that includes personal data or possible rights violations."
+    },
+    "withdrawal": {
+      "title": "Contract withdrawal",
+      "description": "Form for exercising the right of withdrawal for Reviss subscriptions or orders."
+    }
+  },
+  "legal": {
+    "home": "Home",
+    "cookiePolicy": {
+      "eyebrow": "Cookies",
+      "title": "Cookie policy.",
+      "description": "Optional cookies are not loaded before consent. You can accept, reject or customise your preferences at any time.",
+      "categoriesTitle": "Cookie categories",
+      "alwaysActive": "always active",
+      "consentOnly": "only with consent",
+      "preferences": "Preferences",
+      "consentVersion": "Consent version: {version}. You can change your consent without losing access to the platform."
+    },
+    "privacy": {
+      "eyebrow": "Privacy",
+      "summary": "Details about the personal data processed in Reviss, the purposes of its use, users' rights and the protection measures applied."
+    },
+    "terms": {
+      "eyebrow": "Legal terms",
+      "summary": "The rules for using the Reviss platform, and the rights and responsibilities that apply to the account, uploaded materials and available features."
+    },
+    "contentReport": {
+      "eyebrow": "Reports",
+      "title": "Report content.",
+      "description": "Send details about the material or generated content that the Reviss team should review."
+    },
+    "withdrawal": {
+      "eyebrow": "Right of withdrawal",
+      "title": "Contract withdrawal.",
+      "description": "Fill in the form to register a withdrawal request. You will receive a registration number after sending it."
+    }
+  }
+}

@@ -3,8 +3,10 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routes.admin_account_deletion_requests import (
     router as admin_account_deletion_requests_router,
@@ -33,6 +35,14 @@ from app.api.routes.plans import router as plans_router
 from app.api.routes.projects import router as projects_router
 from app.api.routes.visitors import router as visitors_router
 from app.core.config import get_settings
+from app.core.i18n import (
+    LANGUAGE_COOKIE_NAME,
+    resolve_request_language,
+    set_request_language,
+    t,
+    translate_detail,
+    translate_message,
+)
 from app.core.rate_limit import (
     close_rate_limit_backend,
     configure_rate_limit_backend,
@@ -43,6 +53,62 @@ from app.services.plan_errors import PlanLimitError
 
 logger = logging.getLogger("revizzio")
 settings = get_settings()
+
+
+class RequestLanguageMiddleware:
+    """Pick the response language before any handler runs.
+
+    The UI language cookie wins (it is what the visitor is looking at), then
+    Accept-Language, then Romanian. Signed-in requests refine this with the
+    account preference in ``get_current_user`` when no cookie was sent.
+    """
+
+    def __init__(self, app) -> None:  # type: ignore[no-untyped-def]
+        self.app = app
+
+    async def __call__(self, scope, receive, send) -> None:  # type: ignore[no-untyped-def]
+        if scope["type"] == "http":
+            headers = {
+                key.decode("latin-1").lower(): value.decode("latin-1")
+                for key, value in scope.get("headers", [])
+            }
+            cookie_language = None
+            for part in headers.get("cookie", "").split(";"):
+                name, _, value = part.strip().partition("=")
+                if name == LANGUAGE_COOKIE_NAME:
+                    cookie_language = value
+                    break
+            resolved = resolve_request_language(
+                cookie=cookie_language,
+                accept_language=headers.get("accept-language"),
+            )
+            set_request_language(resolved.language, explicit=resolved.explicit)
+        await self.app(scope, receive, send)
+
+
+def _localized_validation_message(error: dict) -> str:  # type: ignore[type-arg]
+    """One Pydantic error in the request language.
+
+    Custom validators raise Romanian ``ValueError`` text, which Pydantic
+    prefixes with "Value error, "; that text goes through the message catalog.
+    Pydantic's own English messages are mapped by error type.
+    """
+    error_type = str(error.get("type") or "")
+    message = str(error.get("msg") or "")
+    context = error.get("ctx") or {}
+
+    if error_type == "value_error":
+        prefix = "Value error, "
+        custom = message[len(prefix) :] if message.startswith(prefix) else message
+        if custom.startswith("value is not a valid email address"):
+            return t("validation.email")
+        return translate_message(custom)
+
+    key = f"validation.{error_type}"
+    localized = t(key, **context)
+    if localized == key:
+        return t("validation.default")
+    return localized
 
 
 @asynccontextmanager
@@ -86,6 +152,7 @@ app = FastAPI(
     openapi_url=None if settings.environment == "production" else "/openapi.json",
 )
 
+app.add_middleware(RequestLanguageMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -112,7 +179,45 @@ async def plan_limit_error_handler(
     logger.warning("Plan limit hit: %s (%s)", exc, exc.code)
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={"detail": {"code": exc.code, "message": str(exc)}},
+        content={
+            "detail": {"code": exc.code, "message": translate_message(str(exc))}
+        },
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(
+    _: Request,
+    exc: StarletteHTTPException,
+) -> JSONResponse:
+    """Every ``HTTPException`` detail leaves in the request language.
+
+    The routes keep raising Romanian text; the catalog translates it here, so
+    one place covers all of them (see ``app.core.i18n_inventory``).
+    """
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": translate_detail(exc.detail)},
+        headers=exc.headers,
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    _: Request,
+    exc: RequestValidationError,
+) -> JSONResponse:
+    errors = [
+        {
+            "loc": list(error.get("loc", ())),
+            "msg": _localized_validation_message(error),
+            "type": error.get("type"),
+        }
+        for error in exc.errors()
+    ]
+    return JSONResponse(
+        status_code=422,
+        content={"detail": errors},
     )
 
 

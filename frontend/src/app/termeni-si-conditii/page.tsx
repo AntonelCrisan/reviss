@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { LegalDocument } from "@/components/legal/legal-document";
 import { readLegalDocument } from "@/lib/legal-content";
 import { getServerLegalDocument } from "@/lib/server-legal";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Termeni și condiții | Reviss",
-  description: "Termenii și condițiile de utilizare pentru platforma Reviss.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.terms");
+  return { title: t("title"), description: t("description") };
+}
 
 export default async function TermsPage() {
+  const t = await getTranslations("legal.terms");
   const document = await getServerLegalDocument("terms_conditions");
   const contentHtml =
     document?.rendered_content_html ?? (await readLegalDocument("terms.html"));
@@ -18,8 +20,8 @@ export default async function TermsPage() {
   return (
     <LegalDocument
       contentHtml={contentHtml}
-      eyebrow="Termeni legali"
-      summary="Regulile de utilizare ale platformei Reviss, drepturile și responsabilitățile aplicabile contului, materialelor încărcate și funcționalităților disponibile."
+      eyebrow={t("eyebrow")}
+      summary={t("summary")}
     />
   );
 }

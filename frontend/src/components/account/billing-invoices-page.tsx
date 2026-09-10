@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
@@ -14,31 +15,37 @@ import { InvoicesPageSkeletonBody } from "@/components/account/account-page-skel
 
 const INVOICES_PAGE_SIZE = 8;
 
-function formatInvoiceAmount(invoice: SubscriptionInvoice) {
+type InvoicesTranslator = ReturnType<typeof useTranslations<"invoices">>;
+
+function formatInvoiceAmount(locale: string, invoice: SubscriptionInvoice) {
   const amount = invoice.amount_paid || invoice.amount_due;
-  return new Intl.NumberFormat("ro-RO", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: invoice.currency || "RON",
   }).format(amount / 100);
 }
 
-function formatInvoiceDate(value: string | null) {
-  if (!value) return "În așteptare";
-  return new Intl.DateTimeFormat("ro-RO", {
+function formatInvoiceDate(
+  t: InvoicesTranslator,
+  locale: string,
+  value: string | null,
+) {
+  if (!value) return t("inAsteptare");
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
   }).format(new Date(value));
 }
 
-function statusLabel(status: string) {
+function statusLabel(t: InvoicesTranslator, status: string) {
   const normalized = status.toLowerCase();
-  if (normalized === "paid") return "Plătită";
-  if (normalized === "open") return "Deschisă";
-  if (normalized === "draft") return "Draft";
-  if (normalized === "void") return "Anulată";
-  if (normalized === "uncollectible") return "Neîncasabilă";
-  return status || "Necunoscut";
+  if (normalized === "paid") return t("platita");
+  if (normalized === "open") return t("deschisa");
+  if (normalized === "draft") return t("ciorna");
+  if (normalized === "void") return t("anulata");
+  if (normalized === "uncollectible") return t("neincasabila");
+  return status || t("necunoscut");
 }
 
 function statusClass(status: string) {
@@ -56,6 +63,8 @@ function statusClass(status: string) {
 }
 
 export function BillingInvoicesPage() {
+  const t = useTranslations("invoices");
+  const locale = useLocale();
   const { user, isLoading: isAuthLoading } = useAuth();
   const [invoices, setInvoices] = useState<SubscriptionInvoice[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,12 +89,12 @@ export function BillingInvoicesPage() {
       .then(setInvoices)
       .catch(() => {
         setHasLoadFailed(true);
-        toast.error("Facturile nu au putut fi încărcate momentan.");
+        toast.error(t("facturileNuAuPututFi"));
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [user]);
+  }, [t, user]);
 
   useEffect(() => {
     if (isAuthLoading || !user) return;
@@ -100,7 +109,7 @@ export function BillingInvoicesPage() {
       .catch(() => {
         if (!isMounted) return;
         setHasLoadFailed(true);
-        toast.error("Facturile nu au putut fi încărcate momentan.");
+        toast.error(t("facturileNuAuPututFi"));
       })
       .finally(() => {
         if (!isMounted) return;
@@ -110,7 +119,7 @@ export function BillingInvoicesPage() {
     return () => {
       isMounted = false;
     };
-  }, [isAuthLoading, user]);
+  }, [isAuthLoading, t, user]);
 
   return (
     <AccountStaticShell activePage="billing-invoices"
@@ -119,13 +128,13 @@ export function BillingInvoicesPage() {
         <div className="flex flex-col gap-5 border-b border-subtle pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              Facturi
+              {t("facturi")}
             </p>
             <h1 className="mt-3 max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-              Istoric plăți.
+              {t("istoricPlati")}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
-              Facturile Stripe pentru abonamentul tău.
+              {t("facturileStripePentruAbonamentulTau")}
             </p>
           </div>
 
@@ -134,14 +143,14 @@ export function BillingInvoicesPage() {
               href="/upgrade"
               className="inline-flex items-center rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-bold text-muted transition hover:bg-surface-hover hover:text-content"
             >
-              Planuri
+              {t("planuri")}
             </Link>
             <button
               type="button"
               onClick={refreshInvoices}
               className="rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-bold text-muted transition hover:bg-surface-hover hover:text-content"
             >
-              Reîncarcă
+              {t("reincarca")}
             </button>
           </div>
         </div>
@@ -149,24 +158,23 @@ export function BillingInvoicesPage() {
         <div className="overflow-hidden border-y border-subtle">
           {isLoading ? (
             <div className="py-6 text-sm font-semibold text-muted">
-              Se încarcă facturile...
+              {t("seIncarcaFacturile")}
             </div>
           ) : hasLoadFailed ? (
             <div className="py-6 text-sm font-semibold text-danger">
-              Lista nu a putut fi încărcată. Apasă „Reîncarcă” ca să încerci
-              din nou.
+              {t("listaNuAPututFi")}
             </div>
           ) : invoices.length === 0 ? (
             <div className="py-6 text-sm text-muted">
-              Nu există încă facturi pentru contul tău.
+              {t("nuExistaIncaFacturiPentru")}
             </div>
           ) : (
             <div className="data-table-scroll max-h-[34rem] overflow-auto divide-y divide-subtle">
               <div className="hidden grid-cols-[1.25fr_0.65fr_0.65fr_auto] gap-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-muted sm:grid">
-                <span>Factură</span>
-                <span>Valoare</span>
-                <span>Status</span>
-                <span className="text-right">Acțiuni</span>
+                <span>{t("factura")}</span>
+                <span>{t("valoare")}</span>
+                <span>{t("status")}</span>
+                <span className="text-right">{t("actiuni")}</span>
               </div>
 
               {paginatedInvoices.map((invoice) => (
@@ -179,18 +187,18 @@ export function BillingInvoicesPage() {
                       {invoice.number ?? invoice.stripe_invoice_id}
                     </p>
                     <p className="mt-1 text-xs text-muted">
-                      {formatInvoiceDate(invoice.paid_at ?? invoice.created_at)}
+                      {formatInvoiceDate(t, locale, invoice.paid_at ?? invoice.created_at)}
                     </p>
                   </div>
                   <p className="text-base font-black">
-                    {formatInvoiceAmount(invoice)}
+                    {formatInvoiceAmount(locale, invoice)}
                   </p>
                   <span
                     className={`w-fit rounded-md border px-3 py-1 text-xs font-black ${statusClass(
                       invoice.status,
                     )}`}
                   >
-                    {statusLabel(invoice.status)}
+                    {statusLabel(t, invoice.status)}
                   </span>
                   <div className="flex flex-wrap gap-2 sm:justify-end">
                     {invoice.hosted_invoice_url ? (
@@ -200,7 +208,7 @@ export function BillingInvoicesPage() {
                         rel="noreferrer"
                         className="rounded-md bg-action px-4 py-2 text-sm font-black text-on-action transition hover:bg-action-hover"
                       >
-                        Vezi factura
+                        {t("veziFactura")}
                       </a>
                     ) : null}
                     {invoice.invoice_pdf_url ? (

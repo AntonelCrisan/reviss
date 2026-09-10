@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 type BrandLogoVariant = "full" | "mark";
@@ -21,6 +22,7 @@ export function BrandLogo({
   logoClassName = "",
   label = "Reviss",
 }: BrandLogoProps) {
+  const t = useTranslations("common");
   const wrapperClassName = `inline-flex items-center ${className || "text-content"}`;
   const logo = (
     <>
@@ -44,7 +46,7 @@ export function BrandLogo({
   return (
     <Link
       href={href}
-      aria-label={`${label} - Acasă`}
+      aria-label={`${label} - ${t("home")}`}
       className={wrapperClassName}
     >
       {logo}

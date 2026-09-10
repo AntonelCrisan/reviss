@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { applyActiveProjectSelection } from "@/lib/projects-api";
 import { toast } from "@/lib/toast-store";
@@ -49,6 +50,7 @@ export function ProjectSlotsModal<TProject extends SlotSelectableProject>({
   planName,
   onResolved,
 }: ProjectSlotsModalProps<TProject>) {
+  const t = useTranslations("projectSlots");
   // Pre-select the most recently updated projects: the likely intent, and it
   // means a user who just wants out can confirm immediately.
   const ordered = useMemo(
@@ -99,7 +101,7 @@ export function ProjectSlotsModal<TProject extends SlotSelectableProject>({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Nu am putut salva selecția. Încearcă din nou.",
+          : t("nuAmPututSalvaSelectia"),
       );
       setIsSaving(false);
     }
@@ -115,21 +117,20 @@ export function ProjectSlotsModal<TProject extends SlotSelectableProject>({
       <section className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-md border border-subtle bg-surface text-content shadow-2xl shadow-black/30">
         <div className="shrink-0 border-b border-subtle p-6">
           <p className="inline-flex rounded-md border border-warning-border bg-warning-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-warning">
-            Planul s-a schimbat
+            {t("planulSASchimbat")}
           </p>
           <h2
             id="project-slots-title"
             className="mt-4 font-serif text-2xl font-semibold leading-tight sm:text-3xl"
           >
-            Alege ce proiecte rămân active
+            {t("alegeCeProiecteRamanActive")}
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted">
             Planul {planName} permite{" "}
             <strong className="text-content">
-              {slots} {slots === 1 ? "proiect activ" : "proiecte active"}
+              {slots} {slots === 1 ? t("proiectActiv") : t("proiecteActive")}
             </strong>
-            , iar tu ai {ordered.length}. Restul rămân în cont și nu se șterg —
-            doar nu mai pot fi studiate până revii la un plan superior.
+            {t("iarTuAi")} {ordered.length}{t("restulRamanInContSi")}
           </p>
         </div>
 
@@ -183,13 +184,13 @@ export function ProjectSlotsModal<TProject extends SlotSelectableProject>({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-muted">
               {remaining > 0
-                ? `Poți alege încă ${remaining}.`
-                : "Ai folosit toate sloturile."}
+                ? t("potiAlegeIncaRemaining", { remaining })
+                : t("aiFolositToateSloturile")}
               {deactivatedCount > 0
                 ? ` ${deactivatedCount} ${
                     deactivatedCount === 1
-                      ? "proiect va fi dezactivat"
-                      : "proiecte vor fi dezactivate"
+                      ? t("proiectVaFiDezactivat")
+                      : t("proiecteVorFiDezactivate")
                   }.`
                 : ""}
             </p>
@@ -199,7 +200,7 @@ export function ProjectSlotsModal<TProject extends SlotSelectableProject>({
               disabled={isSaving || keptIds.length === 0}
               className="inline-flex cursor-pointer items-center justify-center rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSaving ? "Se salvează..." : "Confirmă selecția"}
+              {isSaving ? t("seSalveaza") : t("confirmaSelectia")}
             </button>
           </div>
         </div>

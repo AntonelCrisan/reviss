@@ -21,33 +21,9 @@ export const siteUrl = normalizeSiteUrl(
 export const defaultLocale = "ro_RO";
 export const openGraphImagePath = "/opengraph-image";
 
-export const defaultSeoTitle =
-  "Reviss | Platformă AI pentru rezumate, flashcard-uri și quiz-uri";
 export const defaultSeoDescription =
   "Reviss ajută studenții să transforme cursuri, PDF-uri, documente și prezentări în rezumate clare, flashcard-uri, quiz-uri și planuri de învățare.";
 
-export const seoKeywords = [
-  "Reviss",
-  "rezumate AI",
-  "rezumate AI pentru studenți",
-  "rezumat PDF",
-  "generator rezumat PDF",
-  "flashcard-uri AI",
-  "flashcard-uri din cursuri",
-  "generator flashcarduri",
-  "quiz-uri pentru examen",
-  "quiz-uri din cursuri",
-  "învățare activă",
-  "repetiție inteligentă",
-  "pregătire examen",
-  "pregătire examen facultate",
-  "aplicație de studiu",
-  "platformă educațională AI",
-  "instrumente AI pentru studenți",
-  "organizare cursuri facultate",
-  "învățare cu flashcarduri",
-  "simulare examen",
-];
 
 export const publicSitemapRoutes = [
   { path: "/", changeFrequency: "weekly", priority: 1 },

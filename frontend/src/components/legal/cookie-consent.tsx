@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   createContext,
   type ReactNode,
@@ -88,6 +89,7 @@ function getInitialDraft(): CookieConsentCategories {
 }
 
 export function CookieConsentProvider({ children }: { children: ReactNode }) {
+  const t = useTranslations("cookies");
   const [consent, setConsent] = useState<StoredCookieConsent | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -172,15 +174,13 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
       {shouldShowBanner ? (
         <section
           className="fixed inset-x-3 bottom-3 z-[80] mx-auto max-w-5xl rounded-[1.75rem] border border-subtle bg-surface p-4 text-content shadow-2xl shadow-black/15 sm:bottom-5 sm:p-5"
-          aria-label="Consimțământ cookie"
+          aria-label={t("bannerLabel")}
         >
           <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <p className="text-sm font-black">Setări cookie Reviss</p>
+              <p className="text-sm font-black">{t("bannerTitle")}</p>
               <p className="mt-1 max-w-3xl text-xs leading-5 text-muted sm:text-sm sm:leading-6">
-                Folosim cookie-uri necesare pentru funcționare. Cookie-urile
-                funcționale, de analiză și marketing sunt opționale și nu se
-                activează fără acordul tău.
+                {t("bannerDescription")}
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[36rem]">
@@ -189,7 +189,7 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
                 onClick={() => saveConsent("accept_all", allCookieConsent)}
                 className="rounded-md bg-action px-4 py-3 text-xs font-black text-on-action transition hover:bg-action-hover"
               >
-                Acceptă toate
+                {t("acceptAll")}
               </button>
               <button
                 type="button"
@@ -198,14 +198,14 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
                 }
                 className="rounded-md border border-action px-4 py-3 text-xs font-black text-content transition hover:bg-action-soft"
               >
-                Respinge cookie-urile opționale
+                {t("rejectOptionalLong")}
               </button>
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
                 className="rounded-md border border-subtle bg-app px-4 py-3 text-xs font-black text-content transition hover:bg-surface-hover"
               >
-                Personalizează
+                {t("customize")}
               </button>
             </div>
           </div>
@@ -223,24 +223,23 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-                  Preferințe cookie
+                  {t("settingsEyebrow")}
                 </p>
                 <h2
                   id="cookie-settings-title"
                   className="mt-2 font-serif text-3xl font-semibold"
                 >
-                  Alege ce cookie-uri accepți.
+                  {t("settingsTitle")}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Poți modifica oricând aceste setări din footer. Cookie-urile
-                  necesare rămân active pentru autentificare și securitate.
+                  {t("settingsDescription")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(false)}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-subtle text-muted transition hover:bg-surface-hover hover:text-content"
-                aria-label="Închide setările cookie"
+                aria-label={t("closeSettings")}
               >
                 ×
               </button>
@@ -263,15 +262,15 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
                     />
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2 text-sm font-black">
-                        {category.label}
+                        {t(`categories.${category.id}.label`)}
                         {category.alwaysActive ? (
                           <span className="rounded-md bg-success-soft px-2 py-0.5 text-[10px] font-bold text-success">
-                            mereu active
+                            {t("alwaysActive")}
                           </span>
                         ) : null}
                       </span>
                       <span className="mt-1 block text-xs leading-5 text-muted">
-                        {category.description}
+                        {t(`categories.${category.id}.description`)}
                       </span>
                     </span>
                   </label>
@@ -285,14 +284,14 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
                 onClick={() => saveConsent("save_custom", draft)}
                 className="rounded-md bg-action px-4 py-3 text-xs font-black text-on-action transition hover:bg-action-hover"
               >
-                Salvează preferințele
+                {t("savePreferences")}
               </button>
               <button
                 type="button"
                 onClick={() => saveConsent("accept_all", allCookieConsent)}
                 className="rounded-md border border-action px-4 py-3 text-xs font-black text-content transition hover:bg-action-soft"
               >
-                Acceptă toate
+                {t("acceptAll")}
               </button>
               <button
                 type="button"
@@ -301,7 +300,7 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
                 }
                 className="rounded-md border border-subtle bg-app px-4 py-3 text-xs font-black text-content transition hover:bg-surface-hover"
               >
-                Respinge opționalele
+                {t("rejectOptional")}
               </button>
             </div>
           </div>
@@ -316,6 +315,7 @@ export function CookieSettingsButton({
 }: {
   className?: string;
 }) {
+  const t = useTranslations("cookies");
   const context = useContext(CookieSettingsContext);
 
   return (
@@ -330,7 +330,7 @@ export function CookieSettingsButton({
       }}
       className={className}
     >
-      Setări cookie
+      {t("settingsButton")}
     </button>
   );
 }

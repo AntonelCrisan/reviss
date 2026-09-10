@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AccountTabRoutePage } from "@/components/account/account-tab-route-page";
 
-export const metadata: Metadata = {
-  title: "Flashcard-uri | Reviss",
-  description: "Flashcard-urile generate pentru proiectul tău Reviss.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.flashcards");
+  return { title: t("title"), description: t("description") };
+}
 
 export default function FlashcarduriPage({
   searchParams,

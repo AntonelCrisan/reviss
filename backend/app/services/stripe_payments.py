@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.config import Settings
+from app.core.i18n import normalize_language, t
 from app.models import (
     StripeEvent,
     StudyProject,
@@ -1103,6 +1104,9 @@ class StripePaymentService:
             plan = await self._session.get(SubscriptionPlan, invoice.plan_id)
             plan_name = plan.name if plan is not None else None
 
+        # Sent from a webhook too, where no request language exists: the
+        # account preference is the only signal.
+        language = normalize_language(user.language_preference)
         html, text = invoice_paid_email(
             invoice_url=invoice_url,
             invoice_pdf_url=invoice.invoice_pdf_url,
@@ -1112,15 +1116,17 @@ class StripePaymentService:
             plan_name=plan_name,
             logo_html=email_logo_html(self._settings.email_logo_url, app_name="Reviss"),
             app_name="Reviss",
+            language=language,
         )
 
         try:
             await self._email.send(
                 EmailMessage(
                     to=user.email,
-                    subject=(
-                        f"Factura Reviss "
-                        f"{invoice.number or invoice.stripe_invoice_id}"
+                    subject=t(
+                        "email.invoice_paid.subject",
+                        language,
+                        number=invoice.number or invoice.stripe_invoice_id,
                     ),
                     html=html,
                     text=text,

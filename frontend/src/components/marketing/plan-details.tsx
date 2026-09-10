@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { SubscriptionPlanPublic } from "@/lib/plans-api";
 import { plansIndexPath } from "@/lib/seo";
 import { PlanTryButton } from "@/components/marketing/plan-try-button";
+
+type PlansTranslator = Awaited<ReturnType<typeof getTranslations<"marketing.plans">>>;
 
 function CheckIcon() {
   return (
@@ -26,11 +29,16 @@ export function formatPlanPrice(value: SubscriptionPlanPublic["price_ron"]) {
     : numericValue.toFixed(2).replace(".", ",");
 }
 
-export function billingSuffix(interval: string) {
+/** "RON / month" and friends; the interval itself comes from the plan record. */
+export function billingSuffix(t: PlansTranslator, interval: string) {
   const normalized = interval.trim().toLowerCase();
-  if (normalized.includes("lun")) return "RON / lună";
-  if (normalized.includes("an")) return "RON / an";
-  return `RON / ${interval}`;
+  if (normalized.includes("lun") || normalized.includes("month")) {
+    return t("perMonth");
+  }
+  if (normalized.includes("an") || normalized.includes("year")) {
+    return t("perYear");
+  }
+  return t("perInterval", { interval });
 }
 
 export function planFeatureLabels(plan: SubscriptionPlanPublic) {
@@ -55,31 +63,43 @@ export function planFeatureLabels(plan: SubscriptionPlanPublic) {
  * cost per cycle never reach this page -- they are not even fetched, since the
  * public API no longer returns them.
  */
-function planLimitRows(plan: SubscriptionPlanPublic) {
+function planLimitRows(t: PlansTranslator, plan: SubscriptionPlanPublic) {
   return [
+    { label: t("limitRows.activeSlots"), value: String(plan.active_project_slots) },
+    { label: t("limitRows.newPerMonth"), value: String(plan.active_project_limit) },
     {
-      label: "Proiecte active simultan",
-      value: String(plan.active_project_slots),
+      label: t("limitRows.materialsPerMonth"),
+      value: String(plan.monthly_material_limit),
     },
-    { label: "Proiecte noi pe lună", value: String(plan.active_project_limit) },
-    { label: "Materiale pe lună", value: String(plan.monthly_material_limit) },
-    { label: "Fișiere pe proiect", value: String(plan.files_per_project_limit) },
-    { label: "Mărime maximă fișier", value: `${plan.file_size_limit_mb} MB` },
-    { label: "Pagini pe material", value: String(plan.estimated_page_limit) },
     {
-      label: "Flashcard-uri generate inițial",
+      label: t("limitRows.filesPerProject"),
+      value: String(plan.files_per_project_limit),
+    },
+    { label: t("limitRows.maxFileSize"), value: `${plan.file_size_limit_mb} MB` },
+    {
+      label: t("limitRows.pagesPerMaterial"),
+      value: String(plan.estimated_page_limit),
+    },
+    {
+      label: t("limitRows.initialFlashcards"),
       value: String(plan.initial_flashcard_limit),
     },
-    { label: "Întrebări pe quiz", value: String(plan.quiz_questions_per_quiz) },
     {
-      label: "Quiz-uri pe proiect",
+      label: t("limitRows.questionsPerQuiz"),
+      value: String(plan.quiz_questions_per_quiz),
+    },
+    {
+      label: t("limitRows.quizzesPerProject"),
       value: String(plan.quizzes_per_project_limit),
     },
     {
-      label: "Documente scanate (OCR)",
-      value: plan.allow_scanned_documents ? "Incluse" : "Neincluse",
+      label: t("limitRows.ocr"),
+      value: plan.allow_scanned_documents ? t("included") : t("notIncluded"),
     },
-    { label: "Chat AI pe proiect", value: plan.ai_chat_enabled ? "Inclus" : "Neinclus" },
+    {
+      label: t("limitRows.aiChat"),
+      value: plan.ai_chat_enabled ? t("includedOne") : t("notIncludedOne"),
+    },
   ];
 }
 
@@ -88,25 +108,36 @@ function badgeDuplicatesFeatured(badge: string | null) {
   return (badge ?? "").trim().toLowerCase() === "recomandat";
 }
 
-export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
+export async function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
+  const t = await getTranslations("marketing.plans");
   const isFree = Number(plan.price_ron) === 0;
   const price = formatPlanPrice(plan.price_ron);
   const oldPrice = plan.old_price_ron ? formatPlanPrice(plan.old_price_ron) : "";
   const features = planFeatureLabels(plan);
-  const limitRows = planLimitRows(plan);
-  const ctaLabel = isFree ? "Începe gratuit" : `Încearcă planul ${plan.name}`;
+  const limitRows = planLimitRows(t, plan);
+  const ctaLabel = isFree ? t("ctaFree") : t("ctaTry", { name: plan.name });
+  const summaryCards = [
+    { label: t("materials"), value: plan.material_limit },
+    { label: t("aiLevel"), value: plan.ai_level },
+    { label: t("history"), value: plan.storage },
+  ];
+  const billingRows = [
+    [t("billing"), isFree ? t("noPayment") : t("autoRenew")],
+    [t("currencyLabel"), "RON"],
+    [t("cancellation"), t("cancelAnytime")],
+  ];
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
-      <nav aria-label="Navigare" className="text-sm font-bold text-muted">
+      <nav aria-label={t("breadcrumbLabel")} className="text-sm font-bold text-muted">
         <Link href="/" className="transition hover:text-content">
-          Acasă
+          {t("breadcrumbHome")}
         </Link>
         <span aria-hidden="true" className="px-2">
           /
         </span>
         <Link href={plansIndexPath} className="transition hover:text-content">
-          Abonamente
+          {t("breadcrumbPlans")}
         </Link>
         <span aria-hidden="true" className="px-2">
           /
@@ -124,24 +155,20 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
             ) : null}
             {plan.is_featured ? (
               <span className="inline-flex rounded-md bg-action px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-on-action">
-                Recomandat
+                {t("recommended")}
               </span>
             ) : null}
           </div>
 
           <h1 className="mt-4 max-w-3xl font-serif text-3xl font-semibold leading-[1.1] tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-            {`Planul ${plan.name}`}
+            {t("planTitle", { name: plan.name })}
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-muted sm:text-base">
             {plan.description}
           </p>
 
           <dl className="mt-8 grid gap-4 sm:grid-cols-3">
-            {[
-              { label: "Materiale", value: plan.material_limit },
-              { label: "Nivel AI", value: plan.ai_level },
-              { label: "Istoric", value: plan.storage },
-            ].map((item) => (
+            {summaryCards.map((item) => (
               <div
                 key={item.label}
                 className="rounded-md border border-subtle bg-surface p-4"
@@ -157,7 +184,7 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
           </dl>
 
           <section className="mt-10">
-            <h2 className="font-serif text-2xl font-semibold">Ce include</h2>
+            <h2 className="font-serif text-2xl font-semibold">{t("includes")}</h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {features.map((feature) => (
                 <li
@@ -174,7 +201,7 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
           </section>
 
           <section className="mt-10">
-            <h2 className="font-serif text-2xl font-semibold">Limitele planului</h2>
+            <h2 className="font-serif text-2xl font-semibold">{t("limits")}</h2>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[22rem] border-collapse text-sm">
                 <tbody>
@@ -198,9 +225,7 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
 
           {plan.conditions ? (
             <section className="mt-10 rounded-md border border-subtle bg-surface p-5">
-              <h2 className="text-sm font-black text-content">
-                Condiții de utilizare
-              </h2>
+              <h2 className="text-sm font-black text-content">{t("conditions")}</h2>
               <p className="mt-2 text-sm leading-7 text-muted">{plan.conditions}</p>
             </section>
           ) : null}
@@ -212,7 +237,7 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
               {price}
             </span>
             <span className="pb-1 text-sm text-muted">
-              {isFree ? "RON / permanent" : billingSuffix(plan.billing_interval)}
+              {isFree ? t("permanent") : billingSuffix(t, plan.billing_interval)}
             </span>
           </p>
 
@@ -231,11 +256,7 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
           <div className="my-6 h-px bg-subtle" />
 
           <dl className="space-y-0 text-sm">
-            {[
-              ["Facturare", isFree ? "Fără plată" : "Reînnoire automată"],
-              ["Monedă", "RON"],
-              ["Anulare", "Oricând, din cont"],
-            ].map(([label, value]) => (
+            {billingRows.map(([label, value]) => (
               <div
                 key={label}
                 className="flex items-center justify-between gap-4 border-b border-subtle py-3"
@@ -251,11 +272,13 @@ export function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
           </div>
 
           <p className="mt-5 text-center text-[10px] leading-5 text-muted">
-            Plata se procesează securizat prin Stripe. Vezi{" "}
-            <Link href="/termeni-si-conditii" className="underline">
-              Termenii și Condițiile
-            </Link>
-            .
+            {t.rich("stripeNote", {
+              terms: (chunks) => (
+                <Link href="/termeni-si-conditii" className="underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </aside>
       </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import {
@@ -37,29 +38,42 @@ async function findPlan(slug: string): Promise<SubscriptionPlanPublic | null> {
   );
 }
 
-function planSeoDescription(plan: SubscriptionPlanPublic) {
+const openGraphLocales = { ro: "ro_RO", en: "en_US", fr: "fr_FR" } as const;
+const localeTags = { ro: "ro-RO", en: "en-US", fr: "fr-FR" } as const;
+
+type PlansTranslator = Awaited<ReturnType<typeof getTranslations<"marketing.plans">>>;
+
+function planSeoDescription(t: PlansTranslator, plan: SubscriptionPlanPublic) {
   const price = formatPlanPrice(plan.price_ron);
   const priceLabel =
-    Number(plan.price_ron) === 0 ? "gratuit" : `${price} RON pe lună`;
+    Number(plan.price_ron) === 0
+      ? t("priceFree")
+      : t("pricePerMonth", { price });
 
-  return `Planul ${plan.name} de la ${siteName}: ${priceLabel}. ${plan.description} Vezi limitele, ce include și condițiile de utilizare.`.slice(
-    0,
-    300,
-  );
+  return t("metaDescription", {
+    name: plan.name,
+    site: siteName,
+    price: priceLabel,
+    description: plan.description,
+  }).slice(0, 300);
 }
 
 export async function generateMetadata({
   params,
 }: PlanRouteProps): Promise<Metadata> {
   const { slug } = await params;
-  const plan = await findPlan(slug);
+  const [plan, t, locale] = await Promise.all([
+    findPlan(slug),
+    getTranslations("marketing.plans"),
+    getLocale(),
+  ]);
 
   if (!plan) {
-    return { title: "Plan inexistent" };
+    return { title: t("notFound") };
   }
 
-  const title = `Planul ${plan.name} — preț, limite și beneficii`;
-  const description = planSeoDescription(plan);
+  const title = t("metaTitle", { name: plan.name });
+  const description = planSeoDescription(t, plan);
   const url = absoluteUrl(planDetailPath(plan.slug));
 
   return {
@@ -72,7 +86,9 @@ export async function generateMetadata({
       title,
       description,
       siteName,
-      locale: "ro_RO",
+      locale:
+        openGraphLocales[locale as keyof typeof openGraphLocales] ??
+        openGraphLocales.ro,
     },
     twitter: { card: "summary_large_image", title, description },
   };
@@ -80,13 +96,19 @@ export async function generateMetadata({
 
 export default async function PlanRoute({ params }: PlanRouteProps) {
   const { slug } = await params;
-  const plan = await findPlan(slug);
+  const [plan, t, locale] = await Promise.all([
+    findPlan(slug),
+    getTranslations("marketing.plans"),
+    getLocale(),
+  ]);
 
   if (!plan) {
     notFound();
   }
 
   const url = absoluteUrl(planDetailPath(plan.slug));
+  const inLanguage =
+    localeTags[locale as keyof typeof localeTags] ?? localeTags.ro;
   const isFree = Number(plan.price_ron) === 0;
 
   const structuredData = {
@@ -94,6 +116,7 @@ export default async function PlanRoute({ params }: PlanRouteProps) {
     "@graph": [
       {
         "@type": "Product",
+        inLanguage,
         name: `${siteName} ${plan.name}`,
         description: plan.description,
         url,
@@ -120,18 +143,23 @@ export default async function PlanRoute({ params }: PlanRouteProps) {
         },
         additionalProperty: planFeatureLabels(plan).map((feature) => ({
           "@type": "PropertyValue",
-          name: "Include",
+          name: t("includesLabel"),
           value: feature,
         })),
       },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Acasă", item: siteUrl },
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: t("breadcrumbHome"),
+            item: siteUrl,
+          },
           {
             "@type": "ListItem",
             position: 2,
-            name: "Abonamente",
+            name: t("breadcrumbPlans"),
             item: absoluteUrl(plansIndexPath),
           },
           { "@type": "ListItem", position: 3, name: plan.name, item: url },

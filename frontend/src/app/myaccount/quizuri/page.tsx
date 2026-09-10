@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AccountTabRoutePage } from "@/components/account/account-tab-route-page";
 
-export const metadata: Metadata = {
-  title: "Quiz-uri | Reviss",
-  description: "Quiz-urile proiectului tău Reviss.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.quizzes");
+  return { title: t("title"), description: t("description") };
+}
 
 export default function QuizuriPage({
   searchParams,

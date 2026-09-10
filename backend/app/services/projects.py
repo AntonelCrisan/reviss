@@ -30,6 +30,7 @@ from sqlalchemy.orm import selectinload
 from starlette.concurrency import run_in_threadpool
 
 from app.core.config import Settings
+from app.core.i18n import language_for_user, t, translate_message
 from app.db.session import AsyncSessionFactory
 from app.models import (
     Notification,
@@ -1713,16 +1714,18 @@ class StudyProjectService:
             if not study_preferences.preferences.notify_alert_project_ready:
                 return
 
+            language = language_for_user(user.language_preference)
             if job_type == "study_pack":
-                title = "Proiectul tău e gata"
-                body = (
-                    f'Rezumatul și materialele pentru "{project.name}" sunt '
-                    "gata de studiat."
+                title = t("notification.project_ready.title", language)
+                body = t(
+                    "notification.project_ready.body", language, project=project.name
                 )
             else:
                 # One quiz per request since the batch flow was dropped.
-                title = "Quizul e gata"
-                body = f'Quizul nou pentru "{project.name}" a fost generat.'
+                title = t("notification.quiz_ready.title", language)
+                body = t(
+                    "notification.quiz_ready.body", language, project=project.name
+                )
 
             await NotificationService(self.session, self.settings).notify(
                 user,
@@ -1763,7 +1766,8 @@ class StudyProjectService:
             if int(mistake_count or 0) < WEAK_CONCEPT_ALERT_THRESHOLD:
                 return
 
-            title = f"Concept de repetat: {category}"
+            language = language_for_user(user.language_preference)
+            title = t("notification.weak_concepts.title", language, category=category)
             recent_cutoff = datetime.now(UTC) - timedelta(
                 days=WEAK_CONCEPT_ALERT_COOLDOWN_DAYS
             )
@@ -1783,9 +1787,12 @@ class StudyProjectService:
                 user,
                 type="weak_concepts",
                 title=title,
-                body=(
-                    f'Ai acumulat {mistake_count} greșeli la "{category}" în '
-                    f'proiectul "{project.name}". Merită o recapitulare.'
+                body=t(
+                    "notification.weak_concepts.body",
+                    language,
+                    count=mistake_count,
+                    category=category,
+                    project=project.name,
                 ),
                 project_id=project.id,
             )
@@ -4176,7 +4183,9 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
             generation_language=_normalize_generation_language(
                 project.generation_language
             ),
-            error_message=project.error_message,
+            # Stored in Romanian (it doubles as the AI retry hint); shown
+            # in the request language.
+            error_message=translate_message(project.error_message),
             created_at=project.created_at,
             updated_at=project.updated_at,
             is_archived=project.archive is not None,

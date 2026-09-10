@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { LanguageProvider } from "@/components/language-provider";
 import { GlobalNotificationBell } from "@/components/global-notification-bell";
@@ -10,10 +12,7 @@ import { ToastCenter } from "@/components/toast-center";
 import { VisitorPing } from "@/components/visitor-ping";
 import {
   defaultLocale,
-  defaultSeoDescription,
-  defaultSeoTitle,
   openGraphImagePath,
-  seoKeywords,
   siteName,
   siteUrl,
 } from "@/lib/seo";
@@ -94,97 +93,98 @@ const themeScript = `
 
 const languageScript = `
 (() => {
-  try {
-    const stored = localStorage.getItem("reviss-language");
-    const language = stored === "en" || stored === "fr" || stored === "ro"
-      ? stored
-      : "ro";
-    document.documentElement.lang = language;
-    document.documentElement.dataset.language = language;
-  } catch {
-    document.documentElement.lang = "ro";
-  }
+  document.documentElement.dataset.language = document.documentElement.lang || "ro";
 })();
 `;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: defaultSeoTitle,
-    template: `%s | ${siteName}`,
-  },
-  description: defaultSeoDescription,
-  applicationName: siteName,
-  category: "education",
-  creator: siteName,
-  publisher: siteName,
-  keywords: seoKeywords,
-  alternates: {
-    canonical: "/",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("seo");
+  const title = t("title");
+  const description = t("description");
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: title,
+      template: `%s | ${siteName}`,
+    },
+    description: description,
+    applicationName: siteName,
+    category: "education",
+    creator: siteName,
+    publisher: siteName,
+    keywords: t("keywords").split(", "),
+    alternates: {
+      canonical: "/",
+    },
+    formatDetection: {
+      telephone: false,
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
-  },
-  icons: {
-    icon: [
-      // Stable, theme-independent URLs for crawlers and older browsers.
-      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
-      { url: "/favicon-48x48.png", type: "image/png", sizes: "48x48" },
-      {
-        url: "/assets/logos/Reviss_favicon_dark.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/assets/logos/Reviss_favicon_light.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
-  },
-  openGraph: {
-    title: defaultSeoTitle,
-    description: defaultSeoDescription,
-    url: "/",
-    siteName,
-    locale: defaultLocale,
-    type: "website",
-    images: [
-      {
-        url: openGraphImagePath,
-        width: 1200,
-        height: 630,
-        alt: "Reviss - platformă AI pentru studiu activ",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: defaultSeoTitle,
-    description: defaultSeoDescription,
-    images: [openGraphImagePath],
-  },
-};
+    icons: {
+      icon: [
+        // Stable, theme-independent URLs for crawlers and older browsers.
+        { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+        { url: "/favicon-48x48.png", type: "image/png", sizes: "48x48" },
+        {
+          url: "/assets/logos/Reviss_favicon_dark.svg",
+          type: "image/svg+xml",
+          media: "(prefers-color-scheme: light)",
+        },
+        {
+          url: "/assets/logos/Reviss_favicon_light.svg",
+          type: "image/svg+xml",
+          media: "(prefers-color-scheme: dark)",
+        },
+      ],
+    },
+    openGraph: {
+      title: title,
+      description: description,
+      url: "/",
+      siteName,
+      locale: defaultLocale,
+      type: "website",
+      images: [
+        {
+          url: openGraphImagePath,
+          width: 1200,
+          height: 630,
+          alt: t("ogAlt"),
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: [openGraphImagePath],
+    },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // From the language cookie (or Accept-Language): the page is served in
+  // the visitor's language instead of being rewritten after hydration.
+  const locale = await getLocale();
+
   return (
     <html
-      lang="ro"
+      lang={locale}
       className="h-full antialiased"
       suppressHydrationWarning
     >
@@ -209,24 +209,28 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-full flex-col">
         <VisitorPing />
-        <ThemeProvider>
-          <CookieConsentProvider>
-            <LanguageProvider>
-              <AuthProvider>
-                <AccountTopBarPresenceProvider>
-                  <GlobalNotificationBell />
-                  {children}
-                </AccountTopBarPresenceProvider>
-              </AuthProvider>
-            </LanguageProvider>
-          </CookieConsentProvider>
-        </ThemeProvider>
-        {/*
-          Outside every provider and last in the body: the toast viewport is
-          `fixed`, and it reads its messages from a plain module store rather
-          than a context, so it needs no ancestor other than the body itself.
-        */}
-        <ToastCenter />
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <CookieConsentProvider>
+              <LanguageProvider>
+                <AuthProvider>
+                  <AccountTopBarPresenceProvider>
+                    <GlobalNotificationBell />
+                    {children}
+                  </AccountTopBarPresenceProvider>
+                </AuthProvider>
+              </LanguageProvider>
+            </CookieConsentProvider>
+          </ThemeProvider>
+          {/*
+            Last in the body and outside the app's own providers: the toast
+            viewport is `fixed` and reads its cards from a plain module store,
+            so it needs no theme, language or session context. It stays inside
+            NextIntlClientProvider because the card itself is localised, and a
+            toast can be raised from anywhere in the app.
+          */}
+          <ToastCenter />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

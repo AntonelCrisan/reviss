@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { toast } from "@/lib/toast-store";
@@ -9,9 +10,7 @@ type CancellationState =
   | { status: "success"; message: string; activeUntil: string }
   | { status: "error"; message: string; activeUntil: string };
 
-const activeUntil = "24 iulie 2026";
-
-async function requestCancellation() {
+async function requestCancellation(fallbackError: string) {
   const response = await fetch("/api/compliance/subscription-cancel", {
     method: "POST",
     headers: {
@@ -33,13 +32,15 @@ async function requestCancellation() {
   };
 
   if (!response.ok) {
-    throw new Error(body.detail || "Anularea nu a putut fi procesată.");
+    throw new Error(body.detail || fallbackError);
   }
 
   return body;
 }
 
 export function SubscriptionCancellationPage() {
+  const t = useTranslations("cancellation");
+  const activeUntil = t("t24Iulie2026");
   const [state, setState] = useState<CancellationState>({
     status: "idle",
     message: null,
@@ -51,10 +52,10 @@ export function SubscriptionCancellationPage() {
     setIsSubmitting(true);
     setState({ status: "idle", message: null, activeUntil });
     try {
-      const response = await requestCancellation();
+      const response = await requestCancellation(t("anulareaNuAPututFi"));
       const successMessage =
         response.message ||
-        "Reînnoirea automată a fost oprită. Accesul rămâne activ până la finalul perioadei plătite.";
+        t("reinnoireaAutomataAFostOprita");
       setState({
         status: "success",
         message: successMessage,
@@ -65,7 +66,7 @@ export function SubscriptionCancellationPage() {
       const failureMessage =
         error instanceof Error
           ? error.message
-          : "Anularea nu a putut fi procesată.";
+          : t("anulareaNuAPututFi");
       setState({ status: "error", message: failureMessage, activeUntil });
       toast.error(failureMessage);
     } finally {
@@ -78,36 +79,34 @@ export function SubscriptionCancellationPage() {
       <section className="space-y-5">
         <div className="rounded-[2rem] border border-subtle bg-surface p-6 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-            Abonament
+            {t("abonament")}
           </p>
           <h1 className="mt-3 font-serif text-4xl font-semibold leading-tight">
-            Anulare abonament.
+            {t("anulareAbonament")}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">
-            Poți opri reînnoirea automată direct din cont, fără să trimiți
-            e-mail. Accesul rămâne activ până la finalul perioadei deja plătite.
+            {t("potiOpriReinnoireaAutomataDirect")}
           </p>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
           <section className="rounded-[2rem] border border-subtle bg-surface p-5 sm:p-6">
             <div className="divide-y divide-subtle border-y border-subtle">
-              <SubscriptionDetail label="Plan activ" value="Focus" />
-              <SubscriptionDetail label="Preț" value="29 RON / lună" />
+              <SubscriptionDetail label={t("planActiv")} value="Focus" />
+              <SubscriptionDetail label={t("pret")} value={t("t29RonLuna")} />
               <SubscriptionDetail
-                label="Următoarea dată de facturare"
-                value="24 iulie 2026"
+                label={t("urmatoareaDataDeFacturare")}
+                value={t("t24Iulie2026")}
               />
               <SubscriptionDetail
-                label="Reînnoire automată"
-                value={state.status === "success" ? "Oprită" : "Activă"}
+                label={t("reinnoireAutomata")}
+                value={state.status === "success" ? t("oprita") : t("activa")}
               />
             </div>
 
             <div className="mt-5 rounded-2xl border border-info-border bg-info-soft p-4 text-sm leading-6 text-info">
-              Dacă oprești reînnoirea, accesul rămâne activ până la{" "}
-              <strong>{state.activeUntil}</strong>. După această dată, planul
-              revine la Beginner dacă nu reactivezi abonamentul.
+              {t("dacaOprestiReinnoireaAccesulRamane")}{" "}
+              <strong>{state.activeUntil}</strong>{t("dupaAceastaDataPlanulRevine")}
             </div>
 
             <button
@@ -117,21 +116,21 @@ export function SubscriptionCancellationPage() {
               className="mt-5 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting
-                ? "Se procesează..."
+                ? t("seProceseaza")
                 : state.status === "success"
-                  ? "Reînnoire automată oprită"
-                  : "Oprește reînnoirea automată"}
+                  ? t("reinnoireAutomataOprita")
+                  : t("opresteReinnoireaAutomata")}
             </button>
           </section>
 
           <aside className="h-fit rounded-[2rem] border border-subtle bg-surface p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-              Ce se întâmplă după anulare
+              {t("ceSeIntamplaDupaAnulare")}
             </p>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-muted">
-              <li>Nu vei mai fi taxat la următoarea dată de facturare.</li>
-              <li>Materialele și progresul rămân în cont.</li>
-              <li>Poți reactiva un plan oricând din pagina Abonament.</li>
+              <li>{t("nuVeiMaiFiTaxat")}</li>
+              <li>{t("materialeleSiProgresulRamanIn")}</li>
+              <li>{t("potiReactivaUnPlanOricand")}</li>
             </ul>
           </aside>
         </div>

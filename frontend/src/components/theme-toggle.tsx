@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   type ThemePreference,
   useTheme,
@@ -52,9 +53,10 @@ export function ThemeToggle({
   disabled = false,
   onChange,
 }: ThemeToggleProps) {
+  const t = useTranslations("themeToggle");
   const { resolvedTheme, setTheme } = useTheme();
   const nextPreference = resolvedTheme === "dark" ? "light" : "dark";
-  const nextTheme = resolvedTheme === "dark" ? "luminoasă" : "întunecată";
+  const nextTheme = resolvedTheme === "dark" ? t("luminoasa") : t("intunecata");
 
   function handleClick() {
     if (onChange) {
@@ -70,8 +72,8 @@ export function ThemeToggle({
       onClick={handleClick}
       disabled={disabled}
       className="flex h-10 w-10 items-center justify-center rounded-md border border-subtle bg-surface text-content shadow-sm transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
-      aria-label={`Activează tema ${nextTheme}`}
-      title={`Activează tema ${nextTheme}`}
+      aria-label={t("activeazaTemaNexttheme", { nextTheme })}
+      title={t("activeazaTemaNexttheme", { nextTheme })}
     >
       {resolvedTheme === "dark" ? <SunIcon /> : <MoonIcon />}
     </button>

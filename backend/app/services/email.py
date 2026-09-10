@@ -12,6 +12,7 @@ from pathlib import Path
 from anyio import to_thread
 
 from app.core.config import Settings
+from app.core.i18n import plural_key, t
 
 RESEND_EMAILS_URL = "https://api.resend.com/emails"
 PROJECT_DIR = Path(__file__).resolve().parents[3]
@@ -178,6 +179,7 @@ def _email_shell(
     details_title: str | None = None,
     footer_note: str | None = None,
     preheader: str | None = None,
+    language: str = "ro",
 ) -> str:
     safe_app_name = escape(app_name)
     safe_action_url = escape(action_url, quote=True)
@@ -233,13 +235,14 @@ def _email_shell(
                 </tr>
         """
 
-    footer_text = footer_note or (
-        f"Acest email a fost trimis automat de {app_name} către adresa ta de cont."
+    footer_text = footer_note or t(
+        "email.shell.footer_default", language, app_name=app_name
     )
+    link_fallback = t("email.shell.link_fallback", language)
 
     return f"""
     <!doctype html>
-    <html lang="ro">
+    <html lang="{language}">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -287,7 +290,7 @@ def _email_shell(
                       {escape(cta_label)}
                     </a>
                     <p style="margin: 14px 0 0; word-break: break-all; color: #6e6b65; font-size: 12px; line-height: 1.6;">
-                      Dacă butonul nu se deschide, copiază acest link în browser:
+                      {escape(link_fallback)}
                       <a href="{safe_action_url}" style="color: #6e6b65; text-decoration: underline;">{safe_action_url}</a>
                     </p>
                   </td>
@@ -319,82 +322,74 @@ def _email_shell(
     """
 
 
+def _strings(prefix: str, language: str):
+    """``s("key", **params)`` -> the ``prefix.key`` string in ``language``."""
+
+    def lookup(key: str, **params: object) -> str:
+        return t(f"{prefix}.{key}", language, **params)
+
+    return lookup
+
+
 def verification_email(
-    *, verification_url: str, logo_html: str, app_name: str = "Reviss"
+    *,
+    verification_url: str,
+    logo_html: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
-    text = (
-        f"Bine ai venit în {app_name}.\n\n"
-        "Contul tău se creează abia după ce confirmi că această adresă de email "
-        "îți aparține. Deschide linkul de mai jos și intri direct în cont.\n\n"
-        f"Confirmă adresa de email: {verification_url}\n\n"
-        "Linkul poate fi folosit o singură dată și expiră automat.\n"
-        "Dacă nu ai cerut tu contul, ignoră acest email: fără confirmare nu se "
-        "creează nimic."
-    )
+    s = _strings("email.verification", language)
+    text = s("text", app_name=app_name, url=verification_url)
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Confirmare cont",
-        title="Confirmă adresa de email",
-        intro=(
-            "Contul tău se creează abia după ce confirmăm că această adresă de "
-            "email îți aparține. Apasă butonul de mai jos și intri direct în "
-            "spațiul tău de studiu, unde cursurile devin rezumate, "
-            "flashcard-uri și quiz-uri."
-        ),
-        preheader="Un singur clic și contul tău este activ.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro"),
+        preheader=s("preheader"),
         logo_html=logo_html,
-        cta_label="Confirmă adresa de email",
+        cta_label=s("cta"),
         action_url=verification_url,
-        details_title="Ce trebuie să știi",
+        details_title=s("details_title"),
         details=[
-            "Valabilitate: linkul poate fi folosit o singură dată și expiră automat.",
-            "După confirmare: intri direct în cont, fără să mai introduci parola.",
-            "Nu ai cerut tu contul: ignoră acest email, fără confirmare nu se creează nimic.",
+            s("detail_validity"),
+            s("detail_after"),
+            s("detail_not_you"),
         ],
-        footer_note=(
-            f"Acest email a fost trimis automat de {app_name} pentru că adresa "
-            "a fost folosită la înregistrare."
-        ),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
 
 def email_change_confirmation_email(
-    *, confirmation_url: str, logo_html: str, new_email: str, app_name: str = "Reviss"
+    *,
+    confirmation_url: str,
+    logo_html: str,
+    new_email: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
-    text = (
-        f"Ai cerut ca adresa de email a contului {app_name} să devină "
-        f"{new_email}.\n\n"
-        f"Confirmă noua adresă: {confirmation_url}\n\n"
-        "Până la confirmare contul rămâne pe adresa veche, cu care te poți "
-        "autentifica normal.\n"
-        "Linkul poate fi folosit o singură dată și expiră automat.\n"
-        "Dacă nu ai cerut tu schimbarea, ignoră acest email."
-    )
+    s = _strings("email.email_change", language)
+    text = s("text", app_name=app_name, new_email=new_email, url=confirmation_url)
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Schimbare email",
-        title="Confirmă noua adresă de email",
-        intro=(
-            "Am primit o cerere de schimbare a adresei contului tău în "
-            f"{new_email}. Apasă butonul de mai jos ca să finalizăm schimbarea."
-        ),
-        preheader=f"Confirmă mutarea contului pe {new_email}.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro", new_email=new_email),
+        preheader=s("preheader", new_email=new_email),
         logo_html=logo_html,
-        cta_label="Confirmă noua adresă",
+        cta_label=s("cta"),
         action_url=confirmation_url,
-        details_title="Ce se întâmplă mai departe",
+        details_title=s("details_title"),
         details=[
-            f"Adresă nouă: {new_email}",
-            "Până la confirmare: contul rămâne pe adresa veche, cu care te poți autentifica normal.",
-            "După confirmare: te autentifici doar cu adresa nouă și acolo primești notificările.",
-            "Valabilitate: linkul poate fi folosit o singură dată și expiră automat.",
+            s("detail_new", new_email=new_email),
+            s("detail_until"),
+            s("detail_after"),
+            s("detail_validity"),
         ],
-        note_title="Nu ai cerut tu schimbarea?",
-        note=(
-            "Ignoră acest email și nu deschide linkul. Dacă bănuiești că "
-            "altcineva are acces la contul tău, schimbă-ți parola."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        language=language,
     )
     return html, text
 
@@ -405,109 +400,94 @@ def notification_digest_email(
     app_url: str,
     logo_html: str,
     app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
     """items: (title, body, project_url) tuples. project_url links straight to
     the relevant project when the notification is about one (None otherwise).
     """
+    s = _strings("email.digest", language)
     is_digest = len(items) > 1
     details: list[tuple[str, str | None]] = []
     details_title: str | None = None
 
     if is_digest:
-        title = f"Ai {len(items)} noutăți în contul tău"
-        intro = (
-            "De la ultima ta vizită s-au strâns câteva actualizări. Le găsești "
-            "pe toate mai jos, iar butonul te duce direct în cont."
-        )
+        title = s("title_many", count=len(items))
+        intro = s("intro_many")
         details = [
             (f"{item_title}: {item_body}", href)
             for item_title, item_body, href in items
         ]
-        details_title = "Ce s-a întâmplat"
+        details_title = s("details_title")
         text = (
             f"{title}\n\n{intro}\n\n"
             + "\n".join(
                 f"- {item_title}: {item_body}" + (f" ({href})" if href else "")
                 for item_title, item_body, href in items
             )
-            + f"\n\nDeschide {app_name}: {app_url}"
+            + "\n\n"
+            + s("open_app", app_name=app_name, url=app_url)
         )
-        preheader = f"{len(items)} actualizări noi în contul tău."
+        preheader = s("preheader_many", count=len(items))
     else:
         item_title, item_body, item_url = items[0]
         title = item_title
         intro = item_body
         text = (
             f"{item_title}\n\n{item_body}\n\n"
-            f"Deschide în {app_name}: {item_url or app_url}"
+            + s("open_in_app", app_name=app_name, url=item_url or app_url)
         )
         preheader = item_body
 
     single_project_url = items[0][2] if not is_digest else None
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Rezumat notificări" if is_digest else "Notificare",
+        eyebrow=s("eyebrow_many") if is_digest else s("eyebrow_single"),
         title=title,
         intro=intro,
         preheader=preheader,
         logo_html=logo_html,
         cta_label=(
-            "Deschide proiectul" if single_project_url else f"Deschide {app_name}"
+            s("cta_project") if single_project_url else s("cta_app", app_name=app_name)
         ),
         action_url=single_project_url or app_url,
         details_title=details_title,
         details=details,
-        note_title="Primești prea multe email-uri?",
-        note=(
-            "Poți alege exact ce notificări îți trimitem pe email din Setări → "
-            "Notificări. În aplicație rămân vizibile toate."
-        ),
-        footer_note=(
-            f"Acest email a fost trimis automat de {app_name} pentru "
-            "notificările pe care le-ai activat."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
 
 def password_reset_email(
-    *, reset_url: str, logo_html: str, app_name: str = "Reviss"
+    *,
+    reset_url: str,
+    logo_html: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
-    text = (
-        f"Ai cerut resetarea parolei pentru contul tău {app_name}.\n\n"
-        f"Setează o parolă nouă: {reset_url}\n\n"
-        "Parola actuală rămâne valabilă până când o schimbi din acest link.\n"
-        "După schimbare, sesiunile deschise pe alte dispozitive se închid.\n"
-        "Linkul poate fi folosit o singură dată și expiră automat.\n"
-        "Dacă nu ai cerut tu resetarea, ignoră acest email."
-    )
+    s = _strings("email.password_reset", language)
+    text = s("text", app_name=app_name, url=reset_url)
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Securitate cont",
-        title="Setează o parolă nouă",
-        intro=(
-            "Am primit o cerere de resetare a parolei pentru contul tău. Apasă "
-            "butonul de mai jos ca să îți alegi o parolă nouă."
-        ),
-        preheader="Linkul pentru resetarea parolei tale.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro"),
+        preheader=s("preheader"),
         logo_html=logo_html,
-        cta_label="Setează parola nouă",
+        cta_label=s("cta"),
         action_url=reset_url,
-        details_title="Ce trebuie să știi",
+        details_title=s("details_title"),
         details=[
-            "Până schimbi parola: parola actuală rămâne valabilă.",
-            "După schimbare: sesiunile deschise pe alte dispozitive se închid.",
-            "Valabilitate: linkul poate fi folosit o singură dată și expiră automat.",
+            s("detail_until"),
+            s("detail_after"),
+            s("detail_validity"),
         ],
-        note_title="Nu ai cerut tu resetarea?",
-        note=(
-            "Ignoră acest email și nu deschide linkul. Nimeni nu îți poate "
-            "schimba parola fără linkul primit în acest inbox."
-        ),
-        footer_note=(
-            f"Acest email a fost trimis automat de {app_name} pentru cererea de "
-            "resetare făcută pe această adresă."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
@@ -520,43 +500,36 @@ def contact_confirmation_email(
     subject: str,
     logo_html: str,
     app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
-    text = (
-        f"Am primit mesajul tău către {app_name} și l-am înregistrat.\n\n"
-        f"Referință: {reference}\n"
-        f"Categorie: {category_label}\n"
-        f"Subiect: {subject}\n\n"
-        "Îți răspundem pe adresa completată în formular. Dacă revii cu detalii, "
-        "menționează numărul de referință.\n\n"
-        f"Deschide {app_name}: {app_url}"
+    s = _strings("email.contact_confirmation", language)
+    text = s(
+        "text",
+        app_name=app_name,
+        reference=reference,
+        category=category_label,
+        subject=subject,
+        url=app_url,
     )
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Mesaj primit",
-        title="Am primit mesajul tău",
-        intro=(
-            "Mulțumim că ne-ai scris. Solicitarea a fost înregistrată cu datele "
-            "de mai jos și a ajuns la echipa de suport."
-        ),
-        preheader=f"Solicitarea {reference} a fost înregistrată.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro"),
+        preheader=s("preheader", reference=reference),
         logo_html=logo_html,
-        cta_label=f"Deschide {app_name}",
+        cta_label=t("email.digest.cta_app", language, app_name=app_name),
         action_url=app_url,
-        details_title="Datele solicitării tale",
+        details_title=s("details_title"),
         details=[
-            f"Referință: {reference}",
-            f"Categorie: {category_label}",
-            f"Subiect: {subject}",
+            f"{s('label_reference')}: {reference}",
+            f"{s('label_category')}: {category_label}",
+            f"{s('label_subject')}: {subject}",
         ],
-        note_title="Ce urmează",
-        note=(
-            "Îți răspundem pe adresa completată în formular. Dacă revii cu "
-            "detalii, menționează numărul de referință ca să legăm mesajele."
-        ),
-        footer_note=(
-            "Acest email confirmă primirea mesajului trimis prin formularul de "
-            f"contact {app_name}."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
@@ -628,52 +601,47 @@ def content_report_confirmation_email(
     attachment_names: list[str] | None,
     logo_html: str,
     app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
+    s = _strings("email.content_report_confirmation", language)
     attachment_count = len(attachment_names or [])
     if attachment_count == 0:
-        attachment_label = "niciun document"
-    elif attachment_count == 1:
-        attachment_label = "1 document"
+        attachment_label = s("attachments_none")
     else:
-        attachment_label = f"{attachment_count} documente"
-    text = (
-        "Am primit raportarea ta de conținut și am înregistrat-o.\n\n"
-        f"Număr de înregistrare: {reference}\n"
-        f"Tip raportare: {report_type_label}\n"
-        f"Conținut raportat: {content_reference}\n"
-        f"Documente atașate: {attachment_label}\n\n"
-        "Analizăm sesizarea și îți scriem pe adresa din formular dacă avem "
-        "nevoie de clarificări.\n\n"
-        f"Deschide {app_name}: {app_url}"
+        attachment_label = t(
+            plural_key("email.content_report_confirmation.attachments", attachment_count),
+            language,
+            count=attachment_count,
+        )
+    text = s(
+        "text",
+        app_name=app_name,
+        reference=reference,
+        report_type=report_type_label,
+        content_reference=content_reference,
+        attachments=attachment_label,
+        url=app_url,
     )
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Raportare primită",
-        title="Am înregistrat sesizarea ta",
-        intro=(
-            "Mulțumim pentru detalii. Raportarea a fost salvată cu datele de "
-            "mai jos și intră în analiză conform procedurilor interne."
-        ),
-        preheader=f"Sesizarea {reference} a fost înregistrată.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro"),
+        preheader=s("preheader", reference=reference),
         logo_html=logo_html,
-        cta_label=f"Deschide {app_name}",
+        cta_label=t("email.digest.cta_app", language, app_name=app_name),
         action_url=app_url,
-        details_title="Datele sesizării tale",
+        details_title=s("details_title"),
         details=[
-            f"Număr de înregistrare: {reference}",
-            f"Tip raportare: {report_type_label}",
-            f"Conținut raportat: {content_reference}",
-            f"Documente atașate: {attachment_label}",
+            f"{s('label_reference')}: {reference}",
+            f"{s('label_type')}: {report_type_label}",
+            f"{s('label_content')}: {content_reference}",
+            f"{s('label_attachments')}: {attachment_label}",
         ],
-        note_title="Ce urmează",
-        note=(
-            "Dacă avem nevoie de clarificări, îți scriem pe adresa folosită în "
-            "formular. Păstrează numărul de înregistrare pentru orice revenire."
-        ),
-        footer_note=(
-            "Acest email confirmă primirea raportării trimise prin formularul "
-            f"{app_name}."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
@@ -754,45 +722,37 @@ def withdrawal_confirmation_email(
     order_number: str | None,
     logo_html: str,
     app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
+    s = _strings("email.withdrawal_confirmation", language)
     order_label = order_number.strip() if order_number else "-"
-    text = (
-        "Am primit solicitarea ta de retragere din contract și am "
-        "înregistrat-o.\n\n"
-        f"Număr de înregistrare: {reference}\n"
-        f"Abonament sau comandă: {subscription_or_order}\n"
-        f"Număr comandă: {order_label}\n\n"
-        "Verificăm solicitarea și îți scriem pe adresa din formular cu pașii "
-        "următori.\n\n"
-        f"Deschide {app_name}: {app_url}"
+    text = s(
+        "text",
+        app_name=app_name,
+        reference=reference,
+        subscription_or_order=subscription_or_order,
+        order_number=order_label,
+        url=app_url,
     )
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Retragere primită",
-        title="Am primit solicitarea de retragere",
-        intro=(
-            "Cererea ta de retragere din contract a fost înregistrată cu datele "
-            "de mai jos și intră în verificare."
-        ),
-        preheader=f"Solicitarea {reference} a fost înregistrată.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro"),
+        preheader=s("preheader", reference=reference),
         logo_html=logo_html,
-        cta_label=f"Deschide {app_name}",
+        cta_label=t("email.digest.cta_app", language, app_name=app_name),
         action_url=app_url,
-        details_title="Datele solicitării tale",
+        details_title=s("details_title"),
         details=[
-            f"Număr de înregistrare: {reference}",
-            f"Abonament sau comandă: {subscription_or_order}",
-            f"Număr comandă: {order_label}",
+            f"{s('label_reference')}: {reference}",
+            f"{s('label_subscription')}: {subscription_or_order}",
+            f"{s('label_order')}: {order_label}",
         ],
-        note_title="Ce urmează",
-        note=(
-            "Îți scriem pe adresa din formular cu pașii următori. Păstrează "
-            "numărul de înregistrare pentru orice revenire."
-        ),
-        footer_note=(
-            "Acest email confirmă primirea solicitării trimise prin formularul "
-            f"{app_name}."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
@@ -862,47 +822,33 @@ def account_deleted_email(
     full_name: str,
     logo_html: str,
     app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
+    s = _strings("email.account_deleted", language)
     first_name = full_name.strip().split(" ", 1)[0] if full_name.strip() else ""
-    greeting = f"Bună, {first_name}." if first_name else "Bună."
-    text = (
-        f"{greeting}\n\n"
-        f"Un administrator a șters contul tău {app_name}. Nu te mai poți "
-        "autentifica, iar proiectele, rezumatele, flashcard-urile și quiz-urile "
-        "din cont nu mai pot fi accesate.\n\n"
-        "Sesiunile deschise au fost închise, iar din datele tale rămân doar "
-        "informațiile pe care legea ne obligă să le arhivăm.\n\n"
-        "Dacă ai întrebări despre această decizie, scrie-ne prin formularul de "
-        f"contact: {app_url}"
+    greeting = (
+        s("greeting_named", first_name=first_name) if first_name else s("greeting")
     )
+    text = s("text", greeting=greeting, app_name=app_name, url=app_url)
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Cont șters",
-        title="Contul tău a fost șters",
-        intro=(
-            f"{greeting} Un administrator a șters contul tău {app_name}, așa că "
-            "autentificarea nu mai este posibilă și materialele din cont nu mai "
-            "pot fi accesate."
-        ),
-        preheader="Autentificarea în cont nu mai este posibilă.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro", greeting=greeting, app_name=app_name),
+        preheader=s("preheader"),
         logo_html=logo_html,
-        cta_label="Contactează-ne",
+        cta_label=s("cta"),
         action_url=app_url,
-        details_title="Ce s-a întâmplat cu datele tale",
+        details_title=s("details_title"),
         details=[
-            "Acces: nu te mai poți autentifica, iar sesiunile deschise au fost închise.",
-            "Materiale: proiectele, rezumatele, flashcard-urile și quiz-urile nu mai sunt disponibile.",
-            "Date păstrate: rămân doar informațiile pe care legea ne obligă să le arhivăm.",
+            s("detail_access"),
+            s("detail_materials"),
+            s("detail_retained"),
         ],
-        note_title="Ai întrebări despre această decizie?",
-        note=(
-            "Scrie-ne prin formularul de contact de pe site și îți explicăm "
-            "motivul ștergerii."
-        ),
-        footer_note=(
-            f"Acest email a fost trimis automat de {app_name} ca să te informeze "
-            "despre ștergerea contului."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text
 
@@ -917,54 +863,47 @@ def invoice_paid_email(
     plan_name: str | None,
     logo_html: str,
     app_name: str = "Reviss",
+    language: str = "ro",
 ) -> tuple[str, str]:
+    s = _strings("email.invoice_paid", language)
     invoice_label = invoice_number or "-"
-    plan_label = plan_name or f"abonamentul {app_name}"
-    paid_label = paid_at_label or "astăzi"
-    pdf_line = f"Descarcă PDF-ul: {invoice_pdf_url}\n" if invoice_pdf_url else ""
+    plan_label = plan_name or s("plan_fallback", app_name=app_name)
+    paid_label = paid_at_label or s("paid_today")
+    pdf_line = s("pdf_line", url=invoice_pdf_url) if invoice_pdf_url else ""
 
-    text = (
-        f"Plata pentru {plan_label} a fost confirmată.\n\n"
-        f"Plan: {plan_label}\n"
-        f"Total plătit: {amount_label}\n"
-        f"Data plății: {paid_label}\n"
-        f"Număr factură: {invoice_label}\n\n"
-        f"Vezi factura: {invoice_url}\n"
-        f"{pdf_line}\n"
-        "Abonamentul rămâne activ, nu trebuie să faci nimic.\n\n"
-        f"Mulțumim că folosești {app_name}."
+    text = s(
+        "text",
+        plan=plan_label,
+        amount=amount_label,
+        paid_at=paid_label,
+        number=invoice_label,
+        url=invoice_url,
+        pdf_line=pdf_line,
+        app_name=app_name,
     )
     details: list[tuple[str, str | None]] = [
-        (f"Plan: {plan_label}", None),
-        (f"Total plătit: {amount_label}", None),
-        (f"Data plății: {paid_label}", None),
-        (f"Număr factură: {invoice_label}", None),
+        (f"{s('label_plan')}: {plan_label}", None),
+        (f"{s('label_total')}: {amount_label}", None),
+        (f"{s('label_date')}: {paid_label}", None),
+        (f"{s('label_number')}: {invoice_label}", None),
     ]
     if invoice_pdf_url:
-        details.append(("Factură PDF: descarcă documentul", invoice_pdf_url))
+        details.append((s("pdf_detail"), invoice_pdf_url))
 
     html = _email_shell(
         app_name=app_name,
-        eyebrow="Factură abonament",
-        title="Plata ta a fost confirmată",
-        intro=(
-            f"Am înregistrat plata de {amount_label} pentru {plan_label}. "
-            "Abonamentul rămâne activ, nu trebuie să faci nimic."
-        ),
-        preheader=f"{amount_label} pentru {plan_label} — plată confirmată.",
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro", amount=amount_label, plan=plan_label),
+        preheader=s("preheader", amount=amount_label, plan=plan_label),
         logo_html=logo_html,
-        cta_label="Vezi factura",
+        cta_label=s("cta"),
         action_url=invoice_url,
-        details_title="Detaliile plății",
+        details_title=s("details_title"),
         details=details,
-        note_title="Despre factură",
-        note=(
-            "Factura este găzduită securizat de Stripe, procesatorul nostru de "
-            "plăți, de unde o poți vedea și descărca oricând."
-        ),
-        footer_note=(
-            f"Acest email a fost trimis automat de {app_name} după încasarea "
-            "plății pentru abonamentul tău."
-        ),
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
     )
     return html, text

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { AuthApiError, verifyEmail } from "@/lib/auth-api";
@@ -11,12 +12,11 @@ type VerifyEmailClientProps = {
 };
 
 export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
+  const t = useTranslations("auth.verify");
   const router = useRouter();
   const { setUser } = useAuth();
   const [message, setMessage] = useState(
-    token
-      ? "Verificăm adresa de email..."
-      : "Linkul de confirmare lipsește sau este incomplet.",
+    token ? t("checking") : t("missingToken"),
   );
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     token ? "loading" : "error",
@@ -35,20 +35,18 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
         const user = await verifyEmail(verificationToken);
         setUser(user);
         setStatus("success");
-        setMessage("Email confirmat. Contul tău a fost creat.");
+        setMessage(t("confirmed"));
         window.setTimeout(() => router.replace("/myaccount"), 900);
       } catch (error) {
         setStatus("error");
         setMessage(
-          error instanceof AuthApiError
-            ? error.message
-            : "Nu am putut confirma emailul momentan.",
+          error instanceof AuthApiError ? error.message : t("failed"),
         );
       }
     }
 
     void confirmEmail();
-  }, [router, setUser, token]);
+  }, [router, setUser, t, token]);
 
   return (
     <div className="space-y-4">
@@ -81,7 +79,7 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
           href="/myaccount"
           className="theme-shadow-action flex h-11 w-full items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover"
         >
-          Mergi în cont
+          {t("goToAccount")}
         </Link>
       ) : null}
 
@@ -91,13 +89,13 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
             href="/register"
             className="flex h-11 items-center justify-center rounded-md border border-subtle bg-surface px-5 text-sm font-bold text-content transition hover:border-action"
           >
-            Creează cont din nou
+            {t("registerAgain")}
           </Link>
           <Link
             href="/login"
             className="theme-shadow-action flex h-11 items-center justify-center rounded-md bg-action px-5 text-sm font-bold text-on-action transition hover:-translate-y-0.5 hover:bg-action-hover"
           >
-            Înapoi la autentificare
+            {t("backToLogin")}
           </Link>
         </div>
       ) : null}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/auth-provider";
 
 type PlanTryButtonProps = {
@@ -21,6 +22,7 @@ type PlanTryButtonProps = {
  * dropping the user in /myaccount where nothing would happen.
  */
 export function PlanTryButton({ slug, label, isFree }: PlanTryButtonProps) {
+  const t = useTranslations("marketing.plans.try");
   const { user, isLoading } = useAuth();
 
   const currentPlanSlug = user?.current_plan?.slug ?? null;
@@ -30,23 +32,19 @@ export function PlanTryButton({ slug, label, isFree }: PlanTryButtonProps) {
   function resolve(): { href: string; text: string; hint: string | null } {
     if (!user) {
       return isFree
-        ? {
-            href: "/register",
-            text: label,
-            hint: "Îți creezi contul în câțiva pași, fără card.",
-          }
+        ? { href: "/register", text: label, hint: t("createHint") }
         : {
             href: `/login?next=${encodeURIComponent(`/checkout/${slug}`)}`,
             text: label,
-            hint: "Îți cerem întâi autentificarea, apoi continui direct spre plată.",
+            hint: t("loginHint"),
           };
     }
 
     if (isOnThisPlan) {
       return {
         href: "/myaccount",
-        text: "Acesta este planul tău",
-        hint: "Mergi în cont pentru a-ți continua studiul.",
+        text: t("currentPlan"),
+        hint: t("currentHint"),
       };
     }
 
@@ -54,8 +52,8 @@ export function PlanTryButton({ slug, label, isFree }: PlanTryButtonProps) {
       return hasPaidPlan
         ? {
             href: "/upgrade",
-            text: "Trece pe planul gratuit",
-            hint: "Planul tău actual rămâne activ până la finalul perioadei plătite.",
+            text: t("switchFree"),
+            hint: t("switchFreeHint"),
           }
         : { href: "/myaccount", text: label, hint: null };
     }

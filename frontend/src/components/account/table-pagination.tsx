@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 type TablePaginationProps = {
   currentPage: number;
   pageCount: number;
@@ -33,10 +34,13 @@ export function TablePagination({
   pageCount,
   pageSize,
   totalItems,
-  itemLabel = "înregistrări",
+  itemLabel,
   onPageChange,
 }: TablePaginationProps) {
+  const t = useTranslations("pagination");
   if (totalItems === 0) return null;
+
+  const label = itemLabel ?? t("inregistrari");
 
   const safePageCount = Math.max(pageCount, 1);
   const safeCurrentPage = clampPage(currentPage, safePageCount);
@@ -48,7 +52,12 @@ export function TablePagination({
   return (
     <div className="flex flex-col gap-3 border-t border-subtle px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
       <p className="font-semibold text-muted">
-        {startItem}-{endItem} din {totalItems} {itemLabel}
+        {t("intervalDinTotal", {
+          start: startItem,
+          end: endItem,
+          total: totalItems,
+          label,
+        })}
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -58,7 +67,7 @@ export function TablePagination({
           disabled={!canGoBack}
           className="rounded-md border border-subtle bg-app px-4 py-2 text-xs font-black text-content transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-45"
         >
-          Înapoi
+          {t("inapoi")}
         </button>
 
         {pageNumbers(safeCurrentPage, safePageCount).map((page) => {
@@ -86,7 +95,7 @@ export function TablePagination({
           disabled={!canGoForward}
           className="rounded-md border border-subtle bg-app px-4 py-2 text-xs font-black text-content transition hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-45"
         >
-          Înainte
+          {t("inainte")}
         </button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 const allowedRoutes = new Map([
   ["POST:cookie-consent", "/api/compliance/cookie-consent"],
   ["POST:contact", "/api/compliance/contact"],
@@ -20,7 +21,7 @@ async function proxyComplianceRequest(
 
   if (!backendPath) {
     return Response.json(
-      { detail: "Ruta de conformitate nu există." },
+      { detail: (await getTranslations("apiRoutes"))("complianceRouteMissing") },
       { status: 404 },
     );
   }

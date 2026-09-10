@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type {
   QuizComplexity,
@@ -15,47 +16,14 @@ type QuizConfigModalProps = {
   onConfirm: (config: QuizGenerationConfig) => void;
 };
 
-const COMPLEXITIES: Array<{
-  value: QuizComplexity;
-  label: string;
-  detail: string;
-}> = [
-  { value: "low", label: "Ușor", detail: "Definiții și recunoaștere" },
-  { value: "medium", label: "Mediu", detail: "Înțelegere și comparații" },
-  { value: "high", label: "Greu", detail: "Raționament în doi pași" },
-  { value: "exam", label: "Examen", detail: "Subiecte combinate, capcane" },
-];
+const COMPLEXITIES: QuizComplexity[] = ["low", "medium", "high", "exam"];
 
-const QUESTION_TYPES: Array<{
-  value: QuizQuestionType;
-  label: string;
-  detail: string;
-}> = [
-  {
-    value: "single_choice",
-    label: "O singură variantă",
-    detail: "Patru opțiuni, un răspuns corect",
-  },
-  {
-    value: "multiple_choice",
-    label: "Mai multe variante",
-    detail: "Mai multe răspunsuri corecte",
-  },
-  {
-    value: "matching",
-    label: "Asociere",
-    detail: "Conectezi fiecare element cu perechea lui",
-  },
-  {
-    value: "ordering",
-    label: "Formează fraza",
-    detail: "Așezi cuvintele în ordinea corectă",
-  },
-  {
-    value: "cloze",
-    label: "Completează golurile",
-    detail: "Alegi termenii care lipsesc din propoziție",
-  },
+const QUESTION_TYPES: QuizQuestionType[] = [
+  "single_choice",
+  "multiple_choice",
+  "matching",
+  "ordering",
+  "cloze",
 ];
 
 function CheckIcon() {
@@ -85,6 +53,7 @@ export function QuizConfigModal({
   onCancel,
   onConfirm,
 }: QuizConfigModalProps) {
+  const t = useTranslations("quizConfig");
   const cap = Math.max(1, maxQuestions);
   const [complexity, setComplexity] = useState<QuizComplexity>("medium");
   const [questionTypes, setQuestionTypes] = useState<QuizQuestionType[]>([
@@ -118,33 +87,32 @@ export function QuizConfigModal({
       <section className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-md border border-subtle bg-surface text-content shadow-2xl shadow-black/30">
         <div className="shrink-0 border-b border-subtle p-6">
           <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-            Quiz nou
+            {t("quizNou")}
           </p>
           <h2
             id="quiz-config-title"
             className="mt-4 font-serif text-2xl font-semibold leading-tight sm:text-3xl"
           >
-            Configurează quizul
+            {t("configureazaQuizul")}
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Generăm un singur quiz, exact cum îl ceri. Consumă din creditele AI
-            ale planului tău.
+            {t("generamUnSingurQuiz")}
           </p>
         </div>
 
         <div className="min-h-0 flex-1 space-y-7 overflow-y-auto p-6">
           <fieldset>
             <legend className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-              Dificultate
+              {t("dificultate")}
             </legend>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {COMPLEXITIES.map((option) => {
-                const isActive = complexity === option.value;
+                const isActive = complexity === option;
                 return (
                   <button
-                    key={option.value}
+                    key={option}
                     type="button"
-                    onClick={() => setComplexity(option.value)}
+                    onClick={() => setComplexity(option)}
                     disabled={isSubmitting}
                     aria-pressed={isActive}
                     className={`rounded-md border px-4 py-3 text-left transition disabled:cursor-wait ${
@@ -153,9 +121,11 @@ export function QuizConfigModal({
                         : "border-subtle hover:bg-surface-hover"
                     }`}
                   >
-                    <span className="block text-sm font-bold">{option.label}</span>
+                    <span className="block text-sm font-bold">
+                      {t(`complexity.${option}.label`)}
+                    </span>
                     <span className="mt-0.5 block text-xs leading-5 text-muted">
-                      {option.detail}
+                      {t(`complexity.${option}.detail`)}
                     </span>
                   </button>
                 );
@@ -165,16 +135,16 @@ export function QuizConfigModal({
 
           <fieldset>
             <legend className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-              Tipuri de întrebări
+              {t("tipuriDeIntrebari")}
             </legend>
             <div className="mt-3 space-y-2">
               {QUESTION_TYPES.map((option) => {
-                const isChecked = questionTypes.includes(option.value);
+                const isChecked = questionTypes.includes(option);
                 return (
                   <button
-                    key={option.value}
+                    key={option}
                     type="button"
-                    onClick={() => toggleType(option.value)}
+                    onClick={() => toggleType(option)}
                     disabled={isSubmitting}
                     aria-pressed={isChecked}
                     className={`flex w-full items-start gap-3 rounded-md border px-4 py-3 text-left transition disabled:cursor-wait ${
@@ -195,10 +165,10 @@ export function QuizConfigModal({
                     </span>
                     <span className="min-w-0">
                       <span className="block text-sm font-bold">
-                        {option.label}
+                        {t(`types.${option}.label`)}
                       </span>
                       <span className="mt-0.5 block text-xs leading-5 text-muted">
-                        {option.detail}
+                        {t(`types.${option}.detail`)}
                       </span>
                     </span>
                   </button>
@@ -207,14 +177,14 @@ export function QuizConfigModal({
             </div>
             {questionTypes.length === 0 ? (
               <p className="mt-3 text-xs font-bold text-danger">
-                Alege cel puțin un tip de întrebare.
+                {t("alegeCelPutinUnTip")}
               </p>
             ) : null}
           </fieldset>
 
           <fieldset>
             <legend className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-              Număr de întrebări
+              {t("numarDeIntrebari")}
             </legend>
             <div className="mt-3 flex items-center gap-4">
               <input
@@ -228,17 +198,16 @@ export function QuizConfigModal({
                   setQuestionCount(Number(event.target.value))
                 }
                 className="h-2 w-full cursor-pointer appearance-none rounded-md bg-surface-hover accent-action disabled:cursor-not-allowed"
-                aria-label="Număr de întrebări"
+                aria-label={t("numarDeIntrebari")}
               />
               <span className="min-w-14 rounded-md border border-subtle bg-app px-3 py-2 text-center text-sm font-black">
                 {effectiveCount}
               </span>
             </div>
             <p className="mt-2 text-xs leading-5 text-muted">
-              Planul tău permite maximum {cap}{" "}
-              {cap === 1 ? "întrebare" : "întrebări"} într-un quiz.
+              {t("planulPermiteMaximum", { cap })}
               {questionTypes.length > 1
-                ? ` Cele ${questionTypes.length} tipuri alese se împart între ele.`
+                ? ` ${t("tipurileAleseSeImpart", { count: questionTypes.length })}`
                 : ""}
             </p>
           </fieldset>
@@ -252,7 +221,7 @@ export function QuizConfigModal({
               disabled={isSubmitting}
               className="cursor-pointer rounded-md border border-subtle px-5 py-3 text-sm font-black transition hover:bg-surface-hover disabled:cursor-wait disabled:opacity-60"
             >
-              Renunță
+              {t("renunta")}
             </button>
             <button
               type="button"
@@ -266,7 +235,7 @@ export function QuizConfigModal({
               disabled={isSubmitting || !canSubmit}
               className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Se generează..." : "Generează quizul"}
+              {isSubmitting ? t("seGenereaza") : t("genereazaQuizul")}
             </button>
           </div>
         </div>

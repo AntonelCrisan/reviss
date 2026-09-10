@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { AuthApiError, changePassword } from "@/lib/auth-api";
@@ -73,6 +74,7 @@ function PasswordField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations("settings.password");
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -91,9 +93,7 @@ function PasswordField({
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={
-              autoComplete === "new-password"
-                ? "Minimum 10 caractere"
-                : "Parola curentă"
+              autoComplete === "new-password" ? t("newPlaceholder") : t("current")
             }
             className={`${inputClassName} pr-12`}
           />
@@ -101,7 +101,7 @@ function PasswordField({
             type="button"
             onClick={() => setIsVisible((visible) => !visible)}
             className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center text-muted transition hover:text-content"
-            aria-label={isVisible ? "Ascunde parola" : "Afișează parola"}
+            aria-label={isVisible ? t("hide") : t("show")}
           >
             <EyeIcon crossed={isVisible} />
           </button>
@@ -111,21 +111,20 @@ function PasswordField({
   );
 }
 
-function validateNewPassword(password: string) {
-  if (password.length < 10) return "Parola nouă trebuie să aibă minimum 10 caractere.";
-  if (password !== password.trim()) {
-    return "Parola nouă nu poate începe sau termina cu spații.";
-  }
-  if (!/[a-zA-ZăâîșțĂÂÎȘȚ]/.test(password)) {
-    return "Parola nouă trebuie să conțină cel puțin o literă.";
-  }
-  if (!/\d/.test(password)) {
-    return "Parola nouă trebuie să conțină cel puțin o cifră.";
-  }
+type PasswordRule = "tooShort" | "noSpaces" | "needsLetter" | "needsDigit";
+
+function validateNewPassword(password: string): PasswordRule | null {
+  if (password.length < 10) return "tooShort";
+  if (password !== password.trim()) return "noSpaces";
+  if (!/[a-zA-ZăâîșțĂÂÎȘȚ]/.test(password)) return "needsLetter";
+  if (!/\d/.test(password)) return "needsDigit";
   return null;
 }
 
 export function ChangePasswordPage() {
+  const t = useTranslations("settings.changePassword");
+  const tSecurity = useTranslations("settings.security");
+  const tPassword = useTranslations("settings.password");
   const formRef = useRef<HTMLFormElement | null>(null);
   const submitLockRef = useRef(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -150,20 +149,20 @@ export function ChangePasswordPage() {
 
     if (!currentPassword) {
       setSubmitState("idle");
-      toast.error("Introdu parola curentă.");
+      toast.error(tPassword("enterCurrent"));
       return;
     }
 
     if (currentPassword === newPassword) {
       setSubmitState("idle");
-      toast.error("Parola nouă trebuie să fie diferită de parola curentă.");
+      toast.error(t("mustDiffer"));
       return;
     }
 
-    const validationMessage = validateNewPassword(newPassword);
-    if (validationMessage) {
+    const rule = validateNewPassword(newPassword);
+    if (rule) {
       setSubmitState("idle");
-      toast.error(validationMessage);
+      toast.error(t(`rules.${rule}`));
       return;
     }
 
@@ -185,9 +184,7 @@ export function ChangePasswordPage() {
     } catch (error) {
       setSubmitState("idle");
       toast.error(
-        error instanceof AuthApiError
-          ? error.message
-          : "Parola nu a putut fi actualizată momentan.",
+        error instanceof AuthApiError ? error.message : t("updateFailed"),
       );
     } finally {
       submitLockRef.current = false;
@@ -208,18 +205,17 @@ export function ChangePasswordPage() {
                 className="inline-flex w-fit items-center gap-2 rounded-md border border-subtle bg-surface px-4 py-2 text-sm font-semibold text-muted transition hover:bg-surface-hover hover:text-content"
               >
                 <ArrowLeftIcon />
-                Securitate
+                {tSecurity("tabLabel")}
               </Link>
               <p className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-                Parolă
+                {t("eyebrow")}
               </p>
             </div>
             <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-[0.95] text-content sm:text-5xl">
-              Schimbă parola.
+              {t("title")}
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-              Actualizează parola contului. După salvare, celelalte sesiuni
-              active sunt revocate automat.
+              {t("description")}
             </p>
           </div>
         </div>
@@ -233,15 +229,15 @@ export function ChangePasswordPage() {
           <div className="grid gap-5 border-b border-subtle p-5 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Parola curentă
+                {tPassword("current")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Verificăm că ești tu.
+                {tPassword("currentHint")}
               </p>
             </div>
             <PasswordField
               id="currentPassword"
-              label="Parola curentă"
+              label={tPassword("current")}
               autoComplete="current-password"
               value={currentPassword}
               onChange={setCurrentPassword}
@@ -251,15 +247,15 @@ export function ChangePasswordPage() {
           <div className="grid gap-5 border-b border-subtle p-5 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
             <div className="min-w-0">
               <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted">
-                Parola nouă
+                {t("newPassword")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Minimum 10 caractere, cu literă și cifră.
+                {t("newPasswordHint")}
               </p>
             </div>
             <PasswordField
               id="newPassword"
-              label="Parola nouă"
+              label={t("newPassword")}
               autoComplete="new-password"
               value={newPassword}
               onChange={setNewPassword}
@@ -271,7 +267,7 @@ export function ChangePasswordPage() {
               href="/settings#security"
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-subtle bg-app px-5 py-3 text-sm font-bold text-content transition hover:bg-surface-hover"
             >
-              {isSuccess ? "Înapoi la securitate" : "Renunță"}
+              {isSuccess ? tSecurity("backToSecurity") : tSecurity("cancel")}
             </Link>
             {isSuccess ? (
               <button
@@ -280,7 +276,7 @@ export function ChangePasswordPage() {
                 onClick={resetForAnotherChange}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover"
               >
-                Schimbă din nou
+                {t("changeAgain")}
                 <ArrowRightIcon />
               </button>
             ) : (
@@ -290,7 +286,7 @@ export function ChangePasswordPage() {
                 disabled={isSubmitting}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60"
               >
-                {isSubmitting ? "Se salvează..." : "Salvează parola"}
+                {isSubmitting ? t("saving") : t("save")}
                 <ArrowRightIcon />
               </button>
             )}

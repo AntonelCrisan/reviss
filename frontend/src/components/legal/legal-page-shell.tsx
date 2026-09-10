@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BrandLogo } from "@/components/brand-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
 
@@ -9,12 +10,14 @@ type LegalPageShellProps = {
   children: React.ReactNode;
 };
 
-export function LegalPageShell({
+export async function LegalPageShell({
   eyebrow,
   title,
   description,
   children,
 }: LegalPageShellProps) {
+  const t = await getTranslations("marketing.plans");
+
   return (
     <>
       <main className="min-h-screen bg-app text-content">
@@ -29,7 +32,7 @@ export function LegalPageShell({
             href="/"
             className="rounded-md border border-subtle bg-surface px-4 py-2 text-xs font-bold text-muted shadow-sm transition hover:text-content"
           >
-            Acasă
+            {t("breadcrumbHome")}
           </Link>
         </header>
 

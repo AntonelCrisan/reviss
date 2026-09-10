@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { CheckoutPlanPage } from "@/components/account/checkout-plan-page";
 import {
@@ -6,10 +7,10 @@ import {
   getServerPublicPlans,
 } from "@/lib/server-plans";
 
-export const metadata: Metadata = {
-  title: "Confirmare abonament | Reviss",
-  description: "Verifică informațiile planului înainte de plată.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.checkout");
+  return { title: t("title"), description: t("description") };
+}
 
 type CheckoutRouteProps = {
   params: Promise<{ slug: string }>;

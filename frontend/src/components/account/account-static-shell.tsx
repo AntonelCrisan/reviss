@@ -1,10 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useOpenCloseTransition } from "@/components/use-open-close-transition";
 import { AccountMobileTopBar } from "@/components/account/account-mobile-top-bar";
 import Link from "next/link";
 import { AccountShellSkeleton } from "@/components/account/account-page-skeletons";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type MouseEvent, type ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { BrandLogo } from "@/components/brand-logo";
@@ -39,6 +40,7 @@ type SettingsSectionId =
 type SidebarGroupId = "settings" | "billing";
 
 const settingsSectionChangeEvent = "revizzio:settings-section-change";
+const settingsPagePath = "/settings";
 
 type AccountStaticShellProps = {
   activePage: AccountPageId;
@@ -49,44 +51,47 @@ type AccountStaticShellProps = {
   onSettingsSectionChange?: (section: SettingsSectionId) => void;
 };
 
+type ShellTranslator = ReturnType<typeof useTranslations<"accountShell">>;
+type ShellKey = Parameters<ShellTranslator>[0];
+
 type NavigationItem = {
   href: string;
-  label: string;
+  labelKey: ShellKey;
   page: AccountPageId;
   adminOnly?: boolean;
 };
 
 const navigationItems = [
-  { href: "/myaccount", label: "Acasă", page: "dashboard" },
+  { href: "/myaccount", labelKey: "acasa", page: "dashboard" },
 ] satisfies NavigationItem[];
 
 const adminNavigationItem = {
   href: "/admin/settings",
-  label: "Setări admin",
+  labelKey: "setariAdmin",
   page: "admin-settings",
 } satisfies NavigationItem;
 
 const settingsItems = [
-  { href: "/settings#account", label: "Cont", section: "account" },
-  { href: "/settings#study", label: "Studiu", section: "study" },
-  { href: "/settings#appearance", label: "Aspect", section: "appearance" },
-  { href: "/settings#colors", label: "Culori", section: "colors" },
+  { href: "/settings#account", labelKey: "cont", section: "account" },
+  { href: "/settings#study", labelKey: "studiu", section: "study" },
+  { href: "/settings#appearance", labelKey: "aspect", section: "appearance" },
+  { href: "/settings#colors", labelKey: "culori", section: "colors" },
   {
     href: "/settings#notifications",
-    label: "Notificări",
+    labelKey: "notificari",
     section: "notifications",
   },
-  { href: "/settings#security", label: "Securitate", section: "security" },
-  { href: "/settings#privacy", label: "Date", section: "privacy" },
+  { href: "/settings#security", labelKey: "securitate", section: "security" },
+  { href: "/settings#privacy", labelKey: "date", section: "privacy" },
 ] satisfies Array<{
   href: string;
-  label: string;
+  labelKey: ShellKey;
   section: SettingsSectionId;
 }>;
 
 const billingItems = [
-  { href: "/upgrade", label: "Planuri", page: "upgrade" },
-  { href: "/upgrade/facturi", label: "Facturi", page: "billing-invoices" },
+  { href: "/upgrade", labelKey: "planuri", page: "upgrade" },
+  { href: "/upgrade/facturi", labelKey: "facturi", page: "billing-invoices" },
 ] satisfies NavigationItem[];
 
 function isSettingsSection(value: string): value is SettingsSectionId {
@@ -191,7 +196,9 @@ export function AccountStaticShell({
   settingsSection,
   onSettingsSectionChange,
 }: AccountStaticShellProps) {
+  const t = useTranslations("accountShell");
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isLoading, logout } = useAuth();
   const [openNavGroup, setOpenNavGroup] = useState<SidebarGroupId | null>(() => {
     if (activePage === "settings") return "settings";
@@ -268,7 +275,11 @@ export function AccountStaticShell({
     event: MouseEvent<HTMLAnchorElement>,
     section: SettingsSectionId,
   ) {
-    if (activePage !== "settings") return;
+    // Only the settings page itself switches section in place. The pages
+    // under it (/settings/schimba-numele and friends) share this shell with
+    // activePage="settings" so the sidebar highlights correctly, but they have
+    // no section to switch to -- there the link has to navigate.
+    if (pathname !== settingsPagePath) return;
 
     event.preventDefault();
     setActiveSettingsSection(section);
@@ -316,7 +327,7 @@ export function AccountStaticShell({
       {isBackdropMounted ? (
         <button
           type="button"
-          aria-label="Închide meniul"
+          aria-label={t("inchideMeniul")}
           onClick={() => setSidebarOpen(false)}
           // Fades with the drawer instead of snapping in and out.
           className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 lg:hidden ${
@@ -327,7 +338,7 @@ export function AccountStaticShell({
 
       <aside
         className={getAccountSidebarShellClass(sidebarOpen, isSidebarCollapsed)}
-        aria-label="Meniu principal"
+        aria-label={t("meniuPrincipal")}
       >
         <div className={getAccountSidebarHeaderClass(isSidebarCollapsed)}>
           <Logo collapsed={isSidebarCollapsed} />
@@ -335,7 +346,7 @@ export function AccountStaticShell({
             type="button"
             onClick={() => setSidebarOpen(false)}
             className="flex h-10 w-10 items-center justify-center rounded-md text-muted transition hover:bg-surface-hover hover:text-content lg:hidden"
-            aria-label="Închide meniul"
+            aria-label={t("inchideMeniul")}
           >
             <Icon className="h-5 w-5">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -345,8 +356,8 @@ export function AccountStaticShell({
             type="button"
             onClick={toggleSidebarCollapsed}
             className="hidden h-9 w-9 items-center justify-center rounded-md text-muted transition hover:bg-action-soft hover:text-content lg:flex"
-            aria-label={isSidebarCollapsed ? "Extinde meniul" : "Restrânge meniul"}
-            title={isSidebarCollapsed ? "Extinde meniul" : "Restrânge meniul"}
+            aria-label={isSidebarCollapsed ? t("extindeMeniul") : t("restrangeMeniul")}
+            title={isSidebarCollapsed ? t("extindeMeniul") : t("restrangeMeniul")}
           >
             <Icon className="h-4 w-4">
               {isSidebarCollapsed ? (
@@ -368,10 +379,10 @@ export function AccountStaticShell({
               <path d="M12 5v14M5 12h14" />
             </Icon>
             <span className={getAccountSidebarActionLabelClass(isSidebarCollapsed)}>
-              Proiect nou
+              {t("proiectNou")}
             </span>
             <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-              Proiect nou
+              {t("proiectNou")}
             </AccountSidebarTooltip>
           </Link>
 
@@ -387,10 +398,10 @@ export function AccountStaticShell({
                 >
                   <PageIcon page={item.page} />
                   <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                    {item.label}
+                    {t(item.labelKey)}
                   </span>
                   <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                    {item.label}
+                    {t(item.labelKey)}
                   </AccountSidebarTooltip>
                 </Link>
               );
@@ -412,7 +423,7 @@ export function AccountStaticShell({
               >
                 <PageIcon page="settings" />
                 <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                  Setări
+                  {t("setari")}
                 </span>
                 <Icon
                   className={getAccountSidebarChevronClass(
@@ -423,7 +434,7 @@ export function AccountStaticShell({
                   <path d="M9 18l6-6-6-6" />
                 </Icon>
                 <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                  Setări
+                  {t("setari")}
                 </AccountSidebarTooltip>
               </button>
 
@@ -450,7 +461,7 @@ export function AccountStaticShell({
                         }
                         className={secondaryNavClass(isActive)}
                       >
-                        {item.label}
+                        {t(item.labelKey)}
                       </Link>
                     );
                   })}
@@ -469,10 +480,10 @@ export function AccountStaticShell({
               >
                 <PageIcon page={adminNavigationItem.page} />
                 <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                  {adminNavigationItem.label}
+                  {t(adminNavigationItem.labelKey)}
                 </span>
                 <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                  {adminNavigationItem.label}
+                  {t(adminNavigationItem.labelKey)}
                 </AccountSidebarTooltip>
               </Link>
             ) : null}
@@ -496,7 +507,7 @@ export function AccountStaticShell({
                   <path d="M12 3l3.2 6.5 7.1 1-5.1 5 1.2 7-6.4-3.4-6.4 3.4 1.2-7-5.1-5 7.1-1L12 3z" />
                 </Icon>
                 <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-                  Abonament
+                  {t("abonament")}
                 </span>
                 <Icon
                   className={getAccountSidebarChevronClass(
@@ -507,7 +518,7 @@ export function AccountStaticShell({
                   <path d="M9 18l6-6-6-6" />
                 </Icon>
                 <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                  Abonament
+                  {t("abonament")}
                 </AccountSidebarTooltip>
               </button>
               <div
@@ -529,7 +540,7 @@ export function AccountStaticShell({
                         onClick={() => setSidebarOpen(false)}
                         className={secondaryNavClass(isActive)}
                       >
-                        {item.label}
+                        {t(item.labelKey)}
                       </Link>
                     );
                   })}
@@ -567,7 +578,7 @@ export function AccountStaticShell({
               className={`group/sidebar-item relative flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-action-soft hover:text-content disabled:cursor-wait disabled:opacity-60 ${
                 isSidebarCollapsed ? "lg:h-10 lg:w-10" : ""
               }`}
-              aria-label="Ieși din cont"
+              aria-label={t("iesiDinCont")}
             >
               <Icon>
                 <path d="M10 17l5-5-5-5" />
@@ -575,7 +586,7 @@ export function AccountStaticShell({
                 <path d="M21 19V5" />
               </Icon>
               <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                Ieși din cont
+                {t("iesiDinCont")}
               </AccountSidebarTooltip>
             </button>
           </div>

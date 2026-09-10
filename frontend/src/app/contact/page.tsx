@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   CompanyDetailsCard,
   ContactForm,
@@ -7,16 +8,19 @@ import {
 import { LegalPageShell } from "@/components/legal/legal-page-shell";
 import { getFallbackCompanyData, getServerCompanyData } from "@/lib/server-legal";
 
-export const metadata: Metadata = {
-  title: "Contact și suport",
-  description:
-    "Trimite o solicitare către Reviss pentru suport, facturare, confidențialitate sau raportare conținut.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("contact");
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+  };
+}
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ContactPage() {
+  const t = await getTranslations("contact");
   const companyData = (await getServerCompanyData()) ?? getFallbackCompanyData();
   const recaptchaSiteKey =
     process.env.RECAPTCHA_SITE_KEY?.trim() ||
@@ -25,9 +29,9 @@ export default async function ContactPage() {
 
   return (
     <LegalPageShell
-      eyebrow="Suport"
-      title="Contact și suport."
-      description="Folosește formularul pentru întrebări despre cont, facturare, date personale sau raportarea conținutului."
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      description={t("description")}
     >
       <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
         <section className="min-w-0">

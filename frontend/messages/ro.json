@@ -1,0 +1,2056 @@
+{
+  "language": {
+    "label": "Limba",
+    "ro": "Română",
+    "en": "Engleză",
+    "fr": "Franceză"
+  },
+  "marketing": {
+    "hero": {
+      "badge": "Cursul tău, transformat într-un plan de învățare",
+      "title": {
+        "main": "Nu mai reciti.",
+        "accent": "Învață activ."
+      },
+      "description": "Reviss transformă suporturile tale de curs în rezumate clare, flashcard-uri și quiz-uri care te ajută să înțelegi, să repeți și să reții.",
+      "cta": {
+        "primary": "Începe să înveți",
+        "secondary": "Vezi cum funcționează"
+      },
+      "feature": {
+        "files": "PDF și notițe",
+        "quiz": "Quiz-uri personalizate",
+        "progress": "Progres măsurabil"
+      }
+    },
+    "nav": {
+      "how": "Cum funcționează",
+      "flashcards": "Flashcard-uri",
+      "benefits": "Beneficii",
+      "pricing": "Prețuri",
+      "questions": "Întrebări"
+    },
+    "account": "Contul meu",
+    "login": "Intră în cont",
+    "register": "Creează cont",
+    "goToAccount": "Mergi la contul meu",
+    "openMenu": "Deschide meniul",
+    "closeMenu": "Închide meniul",
+    "header": {
+      "mainNav": "Navigație principală",
+      "mobileNav": "Navigație mobilă"
+    },
+    "meta": {
+      "title": "Reviss | Rezumate AI, flashcard-uri și quiz-uri pentru studenți",
+      "description": "Încarcă PDF-uri, cursuri sau prezentări, iar Reviss le transformă în rezumate AI, flashcard-uri, quiz-uri și planuri clare pentru examen.",
+      "ogDescription": "Transformă cursurile în pachete de studiu: rezumate clare, flashcard-uri, quiz-uri și progres măsurabil.",
+      "ogAlt": "Reviss - rezumate AI, flashcard-uri și quiz-uri pentru studenți",
+      "appDescription": "Platformă AI pentru studenți care transformă cursuri, PDF-uri, documente și prezentări în rezumate, flashcard-uri, quiz-uri și strategii de învățare.",
+      "keywords": "rezumate cursuri AI, flashcard-uri din cursuri, quiz-uri personalizate pentru examen, rezumate pentru facultate, AI pentru învățare activă, recapitulare inteligentă"
+    },
+    "preview": {
+      "course": "Biologie celulară",
+      "processed": "Curs procesat de Reviss",
+      "ready": "Gata de studiu",
+      "uploaded": "Curs încărcat",
+      "pages": "28 pagini",
+      "generated": "Pachet generat",
+      "summary": "Rezumat",
+      "summaryValue": "6 min",
+      "flashcards": "Flashcard-uri",
+      "quizzes": "Quiz-uri",
+      "concepts": "Concepte",
+      "nextSession": "Următoarea sesiune",
+      "nextSessionDetail": "12 flashcard-uri + quiz de 8 întrebări",
+      "nextSessionTime": "25 min"
+    },
+    "stats": {
+      "1": {
+        "title": "Un singur curs",
+        "text": "rezumat, carduri și test"
+      },
+      "2": {
+        "title": "Învățare activă",
+        "text": "nu citire pasivă"
+      },
+      "3": {
+        "title": "Repetiție ghidată",
+        "text": "exact când ai nevoie"
+      },
+      "4": {
+        "title": "Temă adaptivă",
+        "text": "confort zi și noapte"
+      }
+    },
+    "useCases": {
+      "eyebrow": "Pentru facultate, sesiune și examene",
+      "title": "Când cursurile se adună, Reviss le transformă în pași clari.",
+      "description": "Folosește Reviss când ai nevoie de rezumate AI din PDF-uri, flashcard-uri pentru repetare, quiz-uri personalizate și un mod mai simplu de a pregăti examenele la facultate.",
+      "items": {
+        "1": {
+          "title": "Rezumate AI din PDF-uri și cursuri",
+          "description": "Încarci suporturi de curs, documente Word, prezentări sau notițe, iar Reviss le transformă într-un rezumat structurat pentru recapitulare rapidă."
+        },
+        "2": {
+          "title": "Flashcard-uri pentru învățare activă",
+          "description": "Conceptele importante devin carduri de repetat, astfel încât să verifici ce știi deja și ce trebuie reluat înainte de examen."
+        },
+        "3": {
+          "title": "Quiz-uri personalizate pentru facultate",
+          "description": "Generezi întrebări din materialele tale, cu explicații și feedback, ca să exersezi aplicarea ideilor, nu doar recitirea lor."
+        },
+        "4": {
+          "title": "Plan de recapitulare pentru sesiune",
+          "description": "Reviss adună rezumate, cuvinte-cheie, flashcard-uri și progres într-un flux clar pentru colocvii, examene și licență."
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "Din material brut în progres clar",
+      "title": "Trei pași între curs și înțelegere.",
+      "description": "Fără zeci de tab-uri și fără ore pierdute pregătind materiale. Reviss construiește spațiul de studiu, iar tu te concentrezi pe învățare.",
+      "steps": {
+        "1": {
+          "title": "Încarci materialul",
+          "description": "Adaugi PDF-ul, notițele sau suportul de curs. Fără să rescrii manual capitole întregi."
+        },
+        "2": {
+          "title": "AI-ul îl structurează",
+          "description": "Reviss identifică ideile importante și pregătește rezumatul, flashcard-urile și testele."
+        },
+        "3": {
+          "title": "Înveți activ",
+          "description": "Exersezi, primești explicații și vezi exact ce concepte trebuie recapitulate."
+        }
+      }
+    },
+    "session": {
+      "eyebrow": "O sesiune care știe ce urmează",
+      "title": "De la „am citit” la „pot explica”.",
+      "description": "Platforma combină rezumatul cu testarea activă și progresul vizibil. Fiecare sesiune are un scop clar, nu doar încă o pagină de parcurs.",
+      "cta": "Creează primul pachet",
+      "cards": {
+        "1": "Rezumat esențial",
+        "2": "Întrebări explicate",
+        "3": "Repetiție inteligentă",
+        "4": "Progres vizibil"
+      }
+    },
+    "flashcards": {
+      "eyebrow": "Flashcard-uri care țin pasul cu tine",
+      "title": "Nu doar citești. Îți testezi memoria.",
+      "description": "Încarci cursul, iar Reviss extrage ideile-cheie și le transformă în flashcard-uri. Derulează pentru a răsfoi pachetul în ambele direcții.",
+      "hint": "Apasă pe primul card pentru a-l întoarce și click din nou pentru a reveni la întrebare.",
+      "staticEyebrow": "Flashcard-uri active",
+      "staticTitle": "Din curs direct în memorie.",
+      "seeQuestion": "Vezi întrebarea",
+      "seeAnswer": "Vezi răspunsul",
+      "cards": {
+        "1": {
+          "topic": "Biologie celulară",
+          "question": "Care este rolul principal al ribozomilor?",
+          "answer": "Ribozomii sintetizează proteine prin traducerea informației din ARNm."
+        },
+        "2": {
+          "topic": "Chimie organică",
+          "question": "Ce definește o legătură covalentă?",
+          "answer": "Punerea în comun a uneia sau mai multor perechi de electroni."
+        },
+        "3": {
+          "topic": "Istorie modernă",
+          "question": "În ce an a început Revoluția Franceză?",
+          "answer": "Revoluția Franceză a început în anul 1789."
+        },
+        "4": {
+          "topic": "Programare",
+          "answer": "Bubble sort"
+        }
+      }
+    },
+    "benefits": {
+      "eyebrow": "Tot ce ai nevoie într-un singur loc",
+      "title": "Construit pentru sesiune, colocviu și examen.",
+      "description": "Fiecare instrument este legat de același curs, astfel încât să nu pierzi contextul când treci de la înțelegere la exersare.",
+      "quiz": {
+        "eyebrow": "Quiz-uri cu feedback",
+        "title": "Înțelegi răspunsul, nu doar scorul.",
+        "question": "Care organit produce cea mai mare parte din ATP?",
+        "answers": {
+          "1": "Ribozomul",
+          "2": "Mitocondria",
+          "3": "Aparatul Golgi"
+        },
+        "explanation": "Mitocondria transformă energia nutrienților în ATP, forma de energie folosită de celulă."
+      },
+      "progress": {
+        "title": "Progres fără presupuneri",
+        "description": "Vezi conceptele stăpânite, răspunsurile dificile și ce trebuie repetat în următoarea sesiune."
+      },
+      "source": {
+        "title": "Materialele tale rămân sursa",
+        "description": "Întrebările și explicațiile pornesc din cursul încărcat, ca studiul să rămână relevant pentru materia ta."
+      }
+    },
+    "pricing": {
+      "eyebrow": "Abonamente simple, fără surprize",
+      "title": "Alege cât de intens vrei să înveți.",
+      "description": "Începi gratuit, iar când cursurile se adună poți trece la un plan cu mai mult spațiu, repetiție inteligentă și analiză de progres.",
+      "cancelAnytime": "Poți anula sau schimba planul oricând",
+      "bestChoice": "Cea mai bună alegere",
+      "viewPlan": "Vezi detaliile planului",
+      "monthlyNote": "Plata se face lunar, fără perioadă contractuală.",
+      "free": "gratuit",
+      "perMonth": "/ lună",
+      "perYear": "/ an",
+      "currency": "RON",
+      "fallback": {
+        "start": {
+          "name": "Beginner",
+          "description": "Pentru primul curs și primele sesiuni de studiu activ.",
+          "features": {
+            "1": "3 materiale procesate lunar",
+            "2": "Rezumat, flashcard-uri și quiz",
+            "3": "Maximum 25 de pagini per material",
+            "4": "Istoric pentru ultimele 7 zile"
+          }
+        },
+        "focus": {
+          "name": "Focus",
+          "description": "Tot ce ai nevoie pentru facultate, de la seminar la examen.",
+          "discount": "25% reducere lansare",
+          "features": {
+            "1": "30 de materiale procesate lunar",
+            "2": "Maximum 200 de pagini per material",
+            "3": "Flashcard-uri și quiz-uri nelimitate",
+            "4": "Repetiție inteligentă și explicații AI",
+            "5": "Progres complet pentru fiecare curs"
+          }
+        },
+        "pro": {
+          "name": "Exam Pro",
+          "description": "Pentru sesiuni intense, licență și volume mari de cursuri.",
+          "discount": "20 RON economie",
+          "features": {
+            "1": "100 de materiale procesate lunar",
+            "2": "Maximum 500 de pagini per material",
+            "3": "Generare prioritară în perioade aglomerate",
+            "4": "Simulări de examen și analiză avansată",
+            "5": "Export pentru rezumate și flashcard-uri"
+          }
+        }
+      }
+    },
+    "cta": {
+      "eyebrow": "Începe cu următorul tău curs",
+      "title": "Începe simplu. Învață sigur.",
+      "description": "Creează-ți contul și transformă primul material într-o sesiune de studiu clară și activă.",
+      "primary": "Creează cont gratuit",
+      "secondary": "Am deja un cont"
+    },
+    "faq": {
+      "eyebrow": "Întrebări frecvente",
+      "title": "Înainte să începi.",
+      "items": {
+        "1": {
+          "question": "Ce materiale pot încărca în Reviss?",
+          "answer": "Poți încărca PDF-uri, documente Word, prezentări și notițe text. Pentru documente scanate sau poze cu text, accesul este rezervat planului Pro, unde activăm procesare OCR."
+        },
+        "2": {
+          "question": "Ce generează Reviss dintr-un curs?",
+          "answer": "Mai întâi primești rezumatul, cuvintele-cheie, strategiile de învățare și flashcard-urile. Quiz-urile se generează separat, când ești pregătit să intri în testare activă."
+        },
+        "3": {
+          "question": "Quiz-urile sunt utile pentru examen?",
+          "answer": "Da, întrebările sunt gândite pe niveluri: recapitulare, înțelegere și aplicare, apoi simulare de examen. Nu înlocuiesc subiectele oficiale, dar te ajută să vezi unde trebuie să revii."
+        },
+        "4": {
+          "question": "Pot cere explicații AI pe fragmente din rezumat sau flashcarduri?",
+          "answer": "Da, în planul Pro poți selecta un text care nu este clar și poți cere o explicație contextuală, legată de materia, proiectul și conținutul încărcat."
+        },
+        "5": {
+          "question": "Materialele mele sunt publice?",
+          "answer": "Nu. Materialele sunt asociate contului tău și proiectelor tale. Tu trebuie să ai dreptul să folosești fișierele încărcate, iar conținutul generat trebuie verificat înainte de utilizare."
+        },
+        "6": {
+          "question": "Există un plan gratuit?",
+          "answer": "Da. Planul Beginner este pentru testarea fluxului cu limite mai mici. Planurile plătite adaugă mai multe materiale, documente mai mari, explicații AI și opțiuni avansate pentru studiu."
+        }
+      }
+    },
+    "plans": {
+      "pageTitle": "Abonamente și prețuri",
+      "pageDescription": "Compară planurile Reviss: preț, materiale procesate lunar, limite și beneficii. Începi gratuit și treci la un plan plătit când ai nevoie de mai mult.",
+      "breadcrumbHome": "Acasă",
+      "breadcrumbPlans": "Abonamente",
+      "breadcrumbLabel": "Navigare",
+      "recommended": "Recomandat",
+      "freeSuffix": "RON gratuit",
+      "perMonth": "RON / lună",
+      "perYear": "RON / an",
+      "perInterval": "RON / {interval}",
+      "permanent": "RON / permanent",
+      "viewPlan": "Vezi detaliile planului",
+      "monthlyNote": "Plata se face lunar, fără perioadă contractuală.",
+      "planTitle": "Planul {name}",
+      "metaTitle": "Planul {name} — preț, limite și beneficii",
+      "metaDescription": "Planul {name} de la {site}: {price}. {description} Vezi limitele, ce include și condițiile de utilizare.",
+      "priceFree": "gratuit",
+      "pricePerMonth": "{price} RON pe lună",
+      "notFound": "Plan inexistent",
+      "materials": "Materiale",
+      "aiLevel": "Nivel AI",
+      "history": "Istoric",
+      "includes": "Ce include",
+      "includesLabel": "Include",
+      "limits": "Limitele planului",
+      "limitRows": {
+        "activeSlots": "Proiecte active simultan",
+        "newPerMonth": "Proiecte noi pe lună",
+        "materialsPerMonth": "Materiale pe lună",
+        "filesPerProject": "Fișiere pe proiect",
+        "maxFileSize": "Mărime maximă fișier",
+        "pagesPerMaterial": "Pagini pe material",
+        "initialFlashcards": "Flashcard-uri generate inițial",
+        "questionsPerQuiz": "Întrebări pe quiz",
+        "quizzesPerProject": "Quiz-uri pe proiect",
+        "ocr": "Documente scanate (OCR)",
+        "aiChat": "Chat AI pe proiect"
+      },
+      "included": "Incluse",
+      "notIncluded": "Neincluse",
+      "includedOne": "Inclus",
+      "notIncludedOne": "Neinclus",
+      "conditions": "Condiții de utilizare",
+      "billing": "Facturare",
+      "noPayment": "Fără plată",
+      "autoRenew": "Reînnoire automată",
+      "currencyLabel": "Monedă",
+      "cancellation": "Anulare",
+      "cancelAnytime": "Oricând, din cont",
+      "ctaFree": "Începe gratuit",
+      "ctaTry": "Încearcă planul {name}",
+      "stripeNote": "Plata se procesează securizat prin Stripe. Vezi <terms>Termenii și Condițiile</terms>.",
+      "try": {
+        "createHint": "Îți creezi contul în câțiva pași, fără card.",
+        "loginHint": "Îți cerem întâi autentificarea, apoi continui direct spre plată.",
+        "currentPlan": "Acesta este planul tău",
+        "currentHint": "Mergi în cont pentru a-ți continua studiul.",
+        "switchFree": "Trece pe planul gratuit",
+        "switchFreeHint": "Planul tău actual rămâne activ până la finalul perioadei plătite."
+      }
+    },
+    "footer": {
+      "tagline": "Transformă materialele de studiu în flashcard-uri generate automat.",
+      "disclaimer": "Reviss este un instrument educațional. Conținutul generat automat poate conține erori și trebuie verificat.",
+      "legalHeading": "Linkuri juridice",
+      "supportHeading": "Asistență",
+      "companyHeading": "Datele firmei",
+      "links": {
+        "terms": "Termeni și condiții",
+        "privacy": "Politica de confidențialitate",
+        "cookies": "Politica privind cookie-urile",
+        "contact": "Contact și suport",
+        "withdrawal": "Retragere din contract",
+        "report": "Raportează conținut"
+      },
+      "companyName": "Denumire firmă",
+      "registeredOffice": "Sediu social",
+      "cui": "CUI",
+      "registerNumber": "Nr. Registrul Comerțului",
+      "shareCapital": "Capital social",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "rights": "Toate drepturile rezervate.",
+      "anpcSalAlt": "ANPC Soluționarea Alternativă a Litigiilor",
+      "anpcSolAlt": "Soluționarea Online a Litigiilor"
+    }
+  },
+  "auth": {
+    "googleFailed": "Autentificarea prin Google a eșuat. Încearcă din nou.",
+    "shell": {
+      "asideEyebrow": "Spațiul tău de studiu"
+    },
+    "form": {
+      "continueWithGoogle": "Continuă cu Google",
+      "consent": "Continuând, ești de acord cu <terms>Termenii</terms> și <privacy>Politica de confidențialitate</privacy>.",
+      "or": "sau",
+      "fullName": "Nume complet",
+      "fullNamePlaceholder": "Andrei Mureșan",
+      "email": "Adresă de email",
+      "emailPlaceholder": "student@universitate.ro",
+      "password": "Parolă",
+      "forgotPassword": "Ai uitat parola?",
+      "passwordPlaceholderRegister": "Minimum 10 caractere",
+      "passwordPlaceholderLogin": "Parola ta",
+      "showPassword": "Afișează parola",
+      "hidePassword": "Ascunde parola",
+      "resetHint": "Îți vom trimite un link securizat. Acesta va putea fi folosit o singură dată și va expira automat.",
+      "confirmPassword": "Confirmă parola",
+      "confirmPasswordPlaceholder": "Repetă parola",
+      "remember": "Păstrează-mă conectat pe acest dispozitiv.",
+      "acceptTerms": "Am citit și accept <terms>Termenii și condițiile</terms>.",
+      "privacyInfo": "Informațiile despre prelucrarea datelor sunt disponibile în <privacy>Politica de confidențialitate</privacy>.",
+      "newsletter": "Doresc să primesc noutăți și oferte prin e-mail.",
+      "submit": {
+        "processing": "Se procesează...",
+        "forgot": "Trimite linkul de resetare",
+        "forgotSent": "Linkul a fost trimis",
+        "register": "Creează contul",
+        "login": "Intră în cont"
+      },
+      "errors": {
+        "passwordsMismatch": "Parolele introduse nu coincid.",
+        "unavailable": "Serviciul de autentificare nu este disponibil momentan."
+      },
+      "dialog": {
+        "dismiss": "Am înțeles",
+        "reset": {
+          "eyebrow": "Resetare parolă",
+          "title": "Verifică emailul pentru linkul de resetare.",
+          "helper": "Poți folosi linkul o singură dată. Dacă nu îl vezi, verifică și folderul Spam sau Promotions.",
+          "alreadyTitle": "Linkul de resetare a fost deja solicitat.",
+          "alreadyMessage": "Dacă adresa există în platformă, emailul este deja pe drum.",
+          "alreadyHelper": "Pentru siguranță, poți solicita un nou link după expirarea celui curent."
+        },
+        "register": {
+          "eyebrow": "Verifică emailul",
+          "title": "Linkul de confirmare a fost trimis.",
+          "helper": "Linkul este valabil 30 de minute. Dacă nu îl vezi, verifică și folderul Spam sau Promotions."
+        }
+      }
+    },
+    "reset": {
+      "newPassword": "Parolă nouă",
+      "confirmNewPassword": "Confirmă parola nouă",
+      "submit": "Setează parola nouă",
+      "submitting": "Se actualizează...",
+      "missingToken": "Linkul de resetare lipsește sau este incomplet.",
+      "updateFailed": "Parola nu a putut fi actualizată momentan."
+    },
+    "verify": {
+      "checking": "Verificăm adresa de email...",
+      "missingToken": "Linkul de confirmare lipsește sau este incomplet.",
+      "confirmed": "Email confirmat. Contul tău a fost creat.",
+      "failed": "Nu am putut confirma emailul momentan.",
+      "goToAccount": "Mergi în cont",
+      "registerAgain": "Creează cont din nou",
+      "backToLogin": "Înapoi la autentificare"
+    },
+    "confirmChange": {
+      "checking": "Confirmăm noua adresă de email...",
+      "missingToken": "Linkul de confirmare lipsește sau este incomplet.",
+      "failed": "Nu am putut confirma adresa momentan.",
+      "login": "Autentificare",
+      "goToAccount": "Mergi în cont"
+    },
+    "pages": {
+      "login": {
+        "metaTitle": "Autentificare",
+        "metaDescription": "Intră în contul tău Reviss.",
+        "eyebrow": "Bine ai revenit",
+        "title": "Continuă să construiești pe ce ai învățat.",
+        "description": "Intră în cont pentru a-ți relua sesiunile, quiz-urile și progresul exact de unde ai rămas.",
+        "alternateText": "Nu ai încă un cont?",
+        "alternateLabel": "Înregistrează-te",
+        "asideTitle": "Ritmul tău. Progresul tău.",
+        "asideDescription": "Reviss organizează materialele de curs într-un spațiu calm, clar și ușor de reluat în fiecare zi.",
+        "feature1": "Quiz-uri adaptate nivelului tău",
+        "feature2": "Progres păstrat între sesiuni",
+        "feature3": "Recapitulări programate inteligent"
+      },
+      "register": {
+        "metaTitle": "Înregistrare",
+        "metaDescription": "Creează un cont Reviss.",
+        "eyebrow": "Începe gratuit",
+        "title": "Creează-ți un spațiu de studiu care lucrează cu tine.",
+        "description": "Un singur cont pentru cursuri, flashcard-uri, quiz-uri și o imagine clară asupra progresului tău.",
+        "alternateText": "Ai deja un cont?",
+        "alternateLabel": "Autentifică-te",
+        "asideTitle": "Mai puțin haos. Mai multă claritate.",
+        "asideDescription": "Transformă notițele în pași mici și măsurabili, într-o interfață concepută pentru concentrare.",
+        "feature1": "Plan personal de învățare",
+        "feature2": "Flashcard-uri generate din cursuri",
+        "feature3": "Temă luminoasă și Warm Night"
+      },
+      "forgotPassword": {
+        "metaTitle": "Resetare parolă",
+        "metaDescription": "Solicită un link pentru resetarea parolei Reviss.",
+        "eyebrow": "Recuperează accesul",
+        "title": "Revino la cursurile tale în câteva clipe.",
+        "description": "Introdu adresa asociată contului, iar noi îți trimitem instrucțiunile pentru alegerea unei parole noi.",
+        "alternateText": "Ți-ai amintit parola?",
+        "alternateLabel": "Înapoi la autentificare",
+        "asideTitle": "Progresul tău rămâne aici.",
+        "asideDescription": "Resetarea parolei nu afectează cursurile, flashcard-urile sau istoricul sesiunilor tale.",
+        "feature1": "Link de resetare securizat",
+        "feature2": "Materialele și progresul rămân salvate",
+        "feature3": "Acces rapid înapoi la studiu"
+      },
+      "resetPassword": {
+        "metaTitle": "Parolă nouă",
+        "metaDescription": "Setează o parolă nouă pentru contul tău Reviss.",
+        "eyebrow": "Parolă nouă",
+        "title": "Alege o parolă nouă și revino în cont.",
+        "description": "Linkul de resetare poate fi folosit o singură dată, apoi sesiunile vechi sunt închise automat.",
+        "alternateText": "Ți-ai amintit parola?",
+        "alternateLabel": "Înapoi la autentificare",
+        "asideTitle": "Resetare sigură, fără să pierzi progresul.",
+        "asideDescription": "Materialele, quiz-urile și flashcard-urile rămân salvate în contul tău.",
+        "feature1": "Token cu expirare automată",
+        "feature2": "Sesiunile vechi se închid după resetare",
+        "feature3": "Progresul rămâne neschimbat"
+      },
+      "verifyEmail": {
+        "metaTitle": "Confirmare email",
+        "metaDescription": "Confirmă adresa de email pentru contul tău Reviss.",
+        "eyebrow": "Confirmare email",
+        "title": "Validăm adresa înainte să creăm contul.",
+        "description": "Acest pas păstrează platforma curată și confirmă că adresa îți aparține.",
+        "alternateText": "Ai deja cont confirmat?",
+        "alternateLabel": "Intră în cont",
+        "asideTitle": "Un cont sigur pornește cu o adresă verificată.",
+        "asideDescription": "După confirmare vei fi autentificat automat și trimis în spațiul tău de studiu.",
+        "feature1": "Validare înainte de creare cont",
+        "feature2": "Sesiune creată automat după confirmare",
+        "feature3": "Link cu expirare și utilizare unică"
+      },
+      "confirmEmailChange": {
+        "metaTitle": "Confirmare email nou",
+        "metaDescription": "Confirmă noua adresă de email pentru contul tău Reviss.",
+        "eyebrow": "Confirmare email",
+        "title": "Confirmăm noua ta adresă de email.",
+        "description": "Acest pas ne asigură că adresa nouă îți aparține înainte să o legăm de cont.",
+        "alternateText": "Ți-ai amintit adresa veche?",
+        "alternateLabel": "Intră în cont",
+        "asideTitle": "Contul tău rămâne neschimbat în rest.",
+        "asideDescription": "Materialele, quiz-urile și flashcard-urile rămân salvate. Doar adresa de email se actualizează.",
+        "feature1": "Confirmare din emailul trimis la adresa nouă",
+        "feature2": "Link cu expirare și utilizare unică",
+        "feature3": "Restul contului rămâne neschimbat"
+      }
+    }
+  },
+  "settings": {
+    "tabs": {
+      "account": {
+        "label": "Cont",
+        "eyebrow": "Profil",
+        "title": "Datele contului tău.",
+        "description": "Informațiile de bază, planul curent și sumarul contului."
+      },
+      "study": {
+        "label": "Studiu",
+        "eyebrow": "Învățare",
+        "title": "Cum vrei să lucreze Reviss.",
+        "description": "Preferințe pentru ritmul de studiu și feedback-ul AI."
+      },
+      "appearance": {
+        "label": "Aspect",
+        "eyebrow": "Interfață",
+        "title": "Alege modul de afișare.",
+        "description": "Light, dark sau system, separat de paleta de culori."
+      },
+      "colors": {
+        "label": "Culori",
+        "eyebrow": "Editor temă",
+        "title": "Culorile aplicației.",
+        "description": "Preset-uri ca într-un editor de cod și override-uri fine."
+      },
+      "notifications": {
+        "label": "Notificări",
+        "eyebrow": "Reminder",
+        "title": "Alerte și emailuri.",
+        "description": "Alege ce notificări primești în timpul studiului."
+      },
+      "security": {
+        "label": "Securitate",
+        "eyebrow": "Acces",
+        "title": "Sesiuni și protecție.",
+        "description": "Setări pentru cont, sesiuni și acțiuni critice."
+      },
+      "privacy": {
+        "label": "Date",
+        "eyebrow": "Confidențialitate",
+        "title": "Confidențialitate și date.",
+        "description": "Exportă, șterge sau modifică acordurile legate de datele contului."
+      }
+    },
+    "header": {
+      "section": "Secțiune:"
+    },
+    "dates": {
+      "unknown": "necunoscut",
+      "unknownArchive": "data necunoscută"
+    },
+    "state": {
+      "on": "pornit",
+      "off": "oprit",
+      "active": "activ"
+    },
+    "theme": {
+      "system": "Sistem",
+      "dark": "Dark",
+      "light": "Luminos"
+    },
+    "languages": {
+      "ro": {
+        "title": "Română",
+        "description": "Interfața principală pentru studenții din România."
+      },
+      "en": {
+        "title": "English",
+        "description": "For international students who prefer English."
+      },
+      "fr": {
+        "title": "Français",
+        "description": "Pentru studenții francofoni."
+      }
+    },
+    "themeOptions": {
+      "light": {
+        "title": "Luminos",
+        "description": "Interfață clară pentru studiu ziua."
+      },
+      "dark": {
+        "title": "Dark",
+        "description": "Contrast calm pentru sesiuni seara."
+      },
+      "system": {
+        "title": "System",
+        "description": "Urmează preferința dispozitivului."
+      }
+    },
+    "studyPace": {
+      "light": {
+        "title": "Flexibil",
+        "description": "Pentru zile încărcate, cu recapitulare minimă."
+      },
+      "balanced": {
+        "title": "Structurat",
+        "description": "Sesiuni scurte, dar constante, pentru progres zilnic."
+      },
+      "exam": {
+        "title": "Intensiv",
+        "description": "Ritm intens, cu quiz-uri mai dese și recapitulare activă."
+      }
+    },
+    "aiFeedback": {
+      "short": {
+        "title": "Concis",
+        "description": "Răspunsuri scurte, bune când repeți rapid."
+      },
+      "guided": {
+        "title": "Ghidat",
+        "description": "Explicații pas cu pas, cu exemple simple."
+      },
+      "exam": {
+        "title": "Stil examen",
+        "description": "Feedback orientat pe formulări și capcane de test."
+      }
+    },
+    "automation": {
+      "dailyReview": {
+        "title": "Recapitulare zilnică",
+        "description": "Primești recomandarea de 5-20 minute pentru azi."
+      },
+      "weakConceptAlerts": {
+        "title": "Alerte concepte slabe",
+        "description": "Apar când un concept riscă să fie uitat."
+      },
+      "weeklyProgress": {
+        "title": "Progres săptămânal",
+        "description": "Primești un rezumat cu statistici în fiecare luni."
+      },
+      "inactivityReminder": {
+        "title": "Reminder inactivitate",
+        "description": "Un mesaj de revenire dacă nu mai studiezi de câteva zile."
+      }
+    },
+    "channels": {
+      "email": {
+        "title": "Email",
+        "description": "Reminder-uri și alerte prin email. Confirmările de securitate și facturile ajung mereu, indiferent de acest comutator."
+      },
+      "study": {
+        "title": "Reminder studiu",
+        "description": "Alerte blânde pentru recapitularea zilnică. Aceeași setare ca „Recapitulare zilnică” din tab-ul Studiu."
+      },
+      "product": {
+        "title": "Noutăți produs",
+        "description": "Funcționalități noi și schimbări relevante în aplicație."
+      }
+    },
+    "alerts": {
+      "projectReady": {
+        "title": "Proiect generat",
+        "description": "Când rezumatul, flashcard-urile sau quiz-ul sunt gata."
+      },
+      "weakConcepts": {
+        "title": "Concepte de repetat",
+        "description": "Când Reviss observă zone care scad la retenție. Aceeași setare ca „Alerte concepte slabe” din tab-ul Studiu."
+      },
+      "billing": {
+        "title": "Facturi și abonament",
+        "description": "Confirmarea de plată e mereu trimisă; acest comutator e doar pentru viitoare alerte suplimentare."
+      },
+      "weeklyProgress": {
+        "title": "Progres săptămânal",
+        "description": "Statistici despre studiul tău din ultima săptămână. Aceeași setare ca „Progres săptămânal” din tab-ul Studiu."
+      },
+      "inactivityReminder": {
+        "title": "Reminder inactivitate",
+        "description": "Când nu mai studiezi de câteva zile. Aceeași setare ca „Reminder inactivitate” din tab-ul Studiu."
+      },
+      "streakMilestone": {
+        "title": "Streak și realizări",
+        "description": "Când atingi un număr de zile consecutive de studiu."
+      }
+    },
+    "delivery": {
+      "instant": {
+        "title": "Instant",
+        "description": "Primești alertele imediat ce apar."
+      },
+      "daily": {
+        "title": "Rezumat zilnic",
+        "description": "Un singur email cu ce contează pentru azi."
+      }
+    },
+    "toasts": {
+      "preferencesLoadFailed": "Preferințele nu au putut fi încărcate.",
+      "preferenceSaveFailed": "Preferința nu a putut fi salvată.",
+      "archiveLoadFailed": "Arhiva proiectelor nu a putut fi încărcată.",
+      "projectRestored": "Proiectul a fost restabilit în lista proiectelor active.",
+      "projectRestoreFailed": "Proiectul nu a putut fi restabilit.",
+      "archivedDeleted": "Proiectul arhivat a fost șters definitiv.",
+      "projectDeleteFailed": "Proiectul nu a putut fi șters.",
+      "actionFailed": "Acțiunea nu a putut fi finalizată momentan.",
+      "newsletterWithdrawFailed": "Consimțământul nu a putut fi retras momentan.",
+      "deletionAlreadyPending": "Ai deja o solicitare de ștergere înregistrată. Un administrator o va procesa.",
+      "deletionRequestFailed": "Solicitarea de ștergere nu a putut fi trimisă."
+    },
+    "account": {
+      "section": "Profil",
+      "defaultName": "Student Reviss",
+      "active": "Cont activ",
+      "unverified": "Neverificat",
+      "memberSince": "Membru din",
+      "interface": "Interfață",
+      "language": "Limba",
+      "role": "Rol",
+      "admin": "Admin",
+      "userRole": "Utilizator",
+      "languageTitle": "Limba aplicației",
+      "languageDetail": "Preferința este salvată pe cont și se aplică după autentificare.",
+      "planSection": "Plan și limite",
+      "currentPlan": "Plan curent",
+      "materialLimit": "Limită materiale",
+      "materialLimitDetail": "Stabilită de abonamentul activ",
+      "dataProtection": "Protecție date",
+      "secured": "Securizat",
+      "securedDetail": "Sesiune autentificată și date protejate"
+    },
+    "study": {
+      "paceSection": "Ritmul curent",
+      "choosePace": "Alege ritmul",
+      "aiFeedback": "Feedback AI",
+      "automations": "Automatizări"
+    },
+    "appearance": {
+      "stateSection": "Stare temă",
+      "activeMode": "Mod activ",
+      "displayedAs": "Afișat acum ca {mode}",
+      "palette": "Paletă",
+      "paletteDetail": "Configurată separat în Culori",
+      "sync": "Sincronizare",
+      "saving": "Se salvează",
+      "accountPreference": "Preferință cont",
+      "syncDetail": "Se aplică automat după autentificare",
+      "displayMode": "Mod afișare"
+    },
+    "colors": {
+      "currentSection": "Tema curentă",
+      "customCount": "{count} culori modificate manual",
+      "reset": "Resetează modificările",
+      "presets": "Preseturi",
+      "editor": "Editor culori",
+      "editorDetail": "Modificările suprascriu paleta selectată.",
+      "customMeta": "{count} custom",
+      "preview": "Preview paletă",
+      "previewCourse": "Curs activ",
+      "previewCourseName": "Biologie celulară",
+      "previewContinue": "Continuă",
+      "previewStatus": "Status",
+      "previewStatusValue": "Gata de studiu",
+      "previewChat": "Chat AI",
+      "previewChatValue": "Revizuiește întâi membrana celulară.",
+      "previewWarn": "Atenție",
+      "previewWarnValue": "5 concepte intră în zona de uitare în 48h.",
+      "changeColor": "Schimbă culoarea pentru {label}",
+      "custom": "custom",
+      "modify": "Modifică"
+    },
+    "themePresets": {
+      "classic": {
+        "name": "Reviss Classic",
+        "description": "Paleta caldă actuală, potrivită pentru studiu lung."
+      },
+      "forest": {
+        "name": "Forest Notes",
+        "description": "Verde academic, calm, cu accente de laborator."
+      },
+      "ocean": {
+        "name": "Ocean Focus",
+        "description": "Albastru curat pentru dashboard-uri și sesiuni tehnice."
+      },
+      "rose": {
+        "name": "Rose Paper",
+        "description": "Crem rozaliu, prietenos pentru notițe și recapitulare."
+      },
+      "graphite": {
+        "name": "Graphite IDE",
+        "description": "Neutru, ca un editor de cod, cu contrast mai clar."
+      }
+    },
+    "colorVariables": {
+      "app": {
+        "label": "Fundal aplicație",
+        "description": "Zona mare din spatele paginilor."
+      },
+      "sidebar": {
+        "label": "Meniu lateral",
+        "description": "Fundalul meniului din zona de cont."
+      },
+      "surface": {
+        "label": "Carduri",
+        "description": "Fundalul panourilor și al formularelor."
+      },
+      "border": {
+        "label": "Contururi",
+        "description": "Linii, separatoare și margini."
+      },
+      "content": {
+        "label": "Text principal",
+        "description": "Titluri, iconițe și conținut important."
+      },
+      "muted": {
+        "label": "Text secundar",
+        "description": "Descrieri, metadate și mesaje auxiliare."
+      },
+      "action": {
+        "label": "Accent / butoane",
+        "description": "Acțiuni principale, CTA și elemente active."
+      },
+      "actionSoft": {
+        "label": "Accent discret",
+        "description": "Badge-uri și fundaluri fine pentru accent."
+      },
+      "successText": {
+        "label": "Succes",
+        "description": "Mesaje pozitive și indicatori de progres."
+      },
+      "warningText": {
+        "label": "Atenționare",
+        "description": "Semnale pentru recapitulare sau risc."
+      },
+      "infoText": {
+        "label": "Info / AI",
+        "description": "Chat AI, explicații și elemente informative."
+      }
+    },
+    "notifications": {
+      "summarySection": "Sumar notificări",
+      "frequency": "Frecvență",
+      "daily": "Zilnic",
+      "frequencyDetail": "Cum primești notificările importante",
+      "activeChannels": "Canale active",
+      "channelsDetail": "Email, studiu și noutăți produs",
+      "events": "Evenimente",
+      "eventsDetail": "Tipuri de alerte permise",
+      "delivery": "Livrare",
+      "channels": "Canale"
+    },
+    "security": {
+      "tabLabel": "Securitate",
+      "backToSecurity": "Înapoi la securitate",
+      "cancel": "Renunță",
+      "actions": "Acțiuni securitate",
+      "changeName": "Schimbă numele",
+      "changeNameDesc": "Actualizează numele afișat pe contul tău.",
+      "changeEmail": "Schimbă emailul",
+      "changeEmailDesc": "Adresa nouă trebuie confirmată printr-un email trimis la ea.",
+      "changePassword": "Schimbă parola",
+      "changePasswordDesc": "Actualizează parola contului și revocă celelalte sesiuni active.",
+      "change": "Schimbă",
+      "deleteAccount": "Șterge contul",
+      "deleteAccountDesc": "Trimite o solicitare către administratori. Contul nu este șters automat.",
+      "sending": "Se trimite",
+      "requested": "Solicitat",
+      "request": "Solicită"
+    },
+    "privacy": {
+      "section": "Date și confidențialitate",
+      "download": "Descarcă datele contului",
+      "downloadDesc": "Include profilul, preferințele, proiectele, materialele și flashcard-urile contului tău, într-un document PDF.",
+      "downloadAction": "Descarcă datele",
+      "deleteMaterials": "Șterge materialele încărcate",
+      "deleteMaterialsDesc": "Elimină fișierele sursă asociate tuturor proiectelor tale. Quiz-urile, rezumatele și flashcard-urile rămân neatinse.",
+      "deleteFlashcards": "Șterge flashcard-urile",
+      "deleteFlashcardsDesc": "Elimină cardurile generate automat din toate proiectele tale.",
+      "deleting": "Se șterge",
+      "delete": "Șterge",
+      "withdrawNewsletter": "Retrage consimțământul newsletter",
+      "withdrawNewsletterDesc": "Oprește comunicările comerciale prin e-mail.",
+      "withdrawing": "Se retrage",
+      "withdraw": "Retrage",
+      "cookies": "Setări cookie",
+      "cookiesDesc": "Poți modifica sau retrage acordul pentru cookie-urile opționale oricând.",
+      "archive": "Arhiva proiectelor",
+      "archiveDesc": "Proiectele arhivate sunt ascunse din dashboard și pot fi restabilite dintr-o fereastră separată.",
+      "viewArchive": "Vezi arhiva"
+    },
+    "modals": {
+      "cancel": "Renunță",
+      "deleting": "Se șterge...",
+      "permanentDeletion": "Ștergere definitivă"
+    },
+    "deletionModal": {
+      "eyebrow": "Solicitare ștergere",
+      "title": "Trimiți solicitarea de ștergere a contului?",
+      "description": "Contul nu va fi șters automat. Un administrator va vedea solicitarea în zona de admin și va procesa acțiunea manual.",
+      "warning": "După trimitere, nu vei putea crea o altă solicitare cât timp aceasta este în așteptare.",
+      "submitting": "Se trimite...",
+      "submit": "Trimite solicitarea"
+    },
+    "archiveModal": {
+      "eyebrow": "Arhivă",
+      "title": "Proiecte arhivate",
+      "description": "Restabilește proiectele pe care vrei să le readuci în dashboard sau șterge-le definitiv.",
+      "close": "Închide arhiva",
+      "loading": "Se încarcă arhiva...",
+      "empty": "Nu ai proiecte arhivate.",
+      "restore": "Restabilește",
+      "meta": "{subject} · {count} materiale · arhivat pe {date}"
+    },
+    "archiveDelete": {
+      "title": "Ștergi proiectul arhivat „{name}”?",
+      "description": "Această acțiune elimină proiectul și fișierele lui. Dacă vrei să-l folosești din nou, alege Restabilește.",
+      "confirm": "Șterge definitiv"
+    },
+    "wipe": {
+      "warning": "Această acțiune este permanentă și nu poate fi anulată.",
+      "materials": {
+        "title": "Ștergi toate materialele încărcate?",
+        "description": "Fișierele sursă din toate proiectele tale vor fi eliminate definitiv. Quiz-urile, rezumatele și flashcard-urile deja generate rămân neatinse.",
+        "confirm": "Șterge materialele"
+      },
+      "flashcards": {
+        "title": "Ștergi toate flashcard-urile?",
+        "description": "Cardurile generate din toate proiectele tale vor fi eliminate definitiv.",
+        "confirm": "Șterge flashcard-urile"
+      }
+    },
+    "password": {
+      "current": "Parola curentă",
+      "currentHint": "Verificăm că ești tu.",
+      "newPlaceholder": "Minimum 10 caractere",
+      "show": "Afișează parola",
+      "hide": "Ascunde parola",
+      "enterCurrent": "Introdu parola curentă."
+    },
+    "changeName": {
+      "eyebrow": "Nume",
+      "title": "Schimbă numele.",
+      "description": "Actualizează numele afișat pe contul tău Reviss.",
+      "fieldLabel": "Nume complet",
+      "fieldHint": "Vizibil pe contul și profilul tău.",
+      "placeholder": "Nume și prenume",
+      "saving": "Se salvează...",
+      "save": "Salvează numele",
+      "tooShort": "Numele complet trebuie să aibă minimum 2 caractere.",
+      "sameAsCurrent": "Numele introdus este identic cu cel curent.",
+      "updated": "Numele a fost actualizat.",
+      "updateFailed": "Numele nu a putut fi actualizat momentan."
+    },
+    "changeEmail": {
+      "eyebrow": "Email",
+      "title": "Schimbă emailul.",
+      "description": "Adresa curentă este {email}. Noua adresă devine activă doar după ce o confirmi din emailul primit.",
+      "unknownEmail": "necunoscută",
+      "newAddress": "Adresă nouă",
+      "newAddressHint": "Trimitem un link de confirmare aici.",
+      "newAddressLabel": "Adresă de email nouă",
+      "placeholder": "nume@exemplu.ro",
+      "sendAgain": "Trimite din nou",
+      "sending": "Se trimite...",
+      "send": "Trimite confirmarea",
+      "sameAsCurrent": "Adresa introdusă este identică cu cea curentă.",
+      "requestFailed": "Cererea nu a putut fi trimisă momentan."
+    },
+    "changePassword": {
+      "eyebrow": "Parolă",
+      "title": "Schimbă parola.",
+      "description": "Actualizează parola contului. După salvare, celelalte sesiuni active sunt revocate automat.",
+      "newPassword": "Parola nouă",
+      "newPasswordHint": "Minimum 10 caractere, cu literă și cifră.",
+      "changeAgain": "Schimbă din nou",
+      "saving": "Se salvează...",
+      "save": "Salvează parola",
+      "mustDiffer": "Parola nouă trebuie să fie diferită de parola curentă.",
+      "updateFailed": "Parola nu a putut fi actualizată momentan.",
+      "rules": {
+        "tooShort": "Parola nouă trebuie să aibă minimum 10 caractere.",
+        "noSpaces": "Parola nouă nu poate începe sau termina cu spații.",
+        "needsLetter": "Parola nouă trebuie să conțină cel puțin o literă.",
+        "needsDigit": "Parola nouă trebuie să conțină cel puțin o cifră."
+      }
+    }
+  },
+  "cookies": {
+    "bannerLabel": "Consimțământ cookie",
+    "bannerTitle": "Setări cookie Reviss",
+    "bannerDescription": "Folosim cookie-uri necesare pentru funcționare. Cookie-urile funcționale, de analiză și marketing sunt opționale și nu se activează fără acordul tău.",
+    "acceptAll": "Acceptă toate",
+    "rejectOptionalLong": "Respinge cookie-urile opționale",
+    "rejectOptional": "Respinge opționalele",
+    "customize": "Personalizează",
+    "settingsEyebrow": "Preferințe cookie",
+    "settingsTitle": "Alege ce cookie-uri accepți.",
+    "settingsDescription": "Poți modifica oricând aceste setări din footer. Cookie-urile necesare rămân active pentru autentificare și securitate.",
+    "closeSettings": "Închide setările cookie",
+    "alwaysActive": "mereu active",
+    "savePreferences": "Salvează preferințele",
+    "settingsButton": "Setări cookie",
+    "categories": {
+      "necessary": {
+        "label": "Necesare",
+        "description": "Păstrează autentificarea, securitatea și funcțiile de bază ale platformei."
+      },
+      "functional": {
+        "label": "Funcționale",
+        "description": "Memorează preferințe precum tema, setările de interfață și opțiunile de studiu."
+      },
+      "analytics": {
+        "label": "Analiză",
+        "description": "Ne-ar ajuta să înțelegem cum este folosit produsul. Nu încărcăm analytics fără acord."
+      },
+      "marketing": {
+        "label": "Marketing",
+        "description": "Ar permite campanii și măsurare de marketing. Nu încărcăm scripturi de marketing fără acord."
+      }
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact și suport",
+    "metaDescription": "Trimite o solicitare către Reviss pentru suport, facturare, confidențialitate sau raportare conținut.",
+    "eyebrow": "Suport",
+    "title": "Contact și suport.",
+    "description": "Folosește formularul pentru întrebări despre cont, facturare, date personale sau raportarea conținutului."
+  },
+  "dashboard": {
+    "functionalitateaAiNuEsteDisponibila": "Funcționalitatea AI nu este disponibilă pe planul curent.",
+    "alegeUnPlanCareInclude": "Alege un plan care include Chat AI, explicații AI și întrebări pe text selectat.",
+    "rezumat": "Rezumat",
+    "flashcardUri": "Flashcard-uri",
+    "strategii": "Strategii",
+    "quizUri": "Quiz-uri",
+    "progres": "Progres",
+    "chatAi": "Chat AI",
+    "cont": "Cont",
+    "studiu": "Studiu",
+    "aspect": "Aspect",
+    "culori": "Culori",
+    "notificari": "Notificări",
+    "securitate": "Securitate",
+    "date": "Date",
+    "planuri": "Planuri",
+    "facturi": "Facturi",
+    "incarcareMateriale": "Încărcare materiale",
+    "sumarizareContinut": "Sumarizare conținut",
+    "creareFlashcarduri": "Creare flashcarduri",
+    "pregatireStrategieInvatare": "Pregătire strategie învățare",
+    "genereazaUnQuiz": "Generează un quiz",
+    "seGenereaza": "Se generează...",
+    "construiescQuizurile": "Construiesc quizurile...",
+    "analizezMaterialulCompletEchilibrezDific": "Analizez materialul complet, echilibrez dificultățile și verific variantele corecte. Poate dura câteva minute.",
+    "citescMaterialul": "Citesc materialul",
+    "compunIntrebarile": "Compun întrebările",
+    "verificRaspunsurile": "Verific răspunsurile",
+    "generareaNuEsteDisponibilaMomentan": "Generarea nu este disponibilă momentan. Încearcă din nou în câteva minute.",
+    "pachetulNuAPututFi": "Pachetul nu a putut fi generat momentan. Încearcă din nou.",
+    "creeazaPachet": "creează pachet",
+    "creeazaQuizuri": "creează quizuri",
+    "inAsteptare": "în așteptare",
+    "inProcesare": "în procesare",
+    "creatDeTine": "Creat de tine",
+    "continuaCuRezumatulGenerat": "Continuă cu rezumatul generat",
+    "asteaptaGenerareaPachetului": "Așteaptă generarea pachetului",
+    "pachetulProiectuluiEsteGeneratSi": "Pachetul proiectului este generat și poate fi folosit pentru studiu.",
+    "revissConvertesteMaterialeleSiSalveaza": "Reviss convertește materialele și salvează automat conținutul generat.",
+    "aiAtinsLimitaPlanuluiPlanname": "Ai atins limita planului {planName}: {value} pe lună.",
+    "planulPlannameNuIncludeIncarcari": "Planul {planName} nu include încărcări de materiale.",
+    "selectiaDepasesteCotaLunaraDe": "Selecția depășește cota lunară de materiale. Mai ai {value} disponibile.",
+    "planulPlannameNuIncludePagini": "Planul {planName} nu include pagini procesate.",
+    "aiAtinsLimitaLunaraDe": "Ai atins limita lunară de pagini procesate: {pages_processed}/{pages_limit}.",
+    "generareaNuAPututFi": "Generarea nu a putut fi finalizată.",
+    "selectiaDepasesteLimitelePlanuluiPlannam": "Selecția depășește limitele planului {planName}.",
+    "proiectulNuAPututFi": "Proiectul nu a putut fi pregătit momentan.",
+    "inchideMeniul": "Închide meniul",
+    "meniuPrincipal": "Meniu principal",
+    "extindeMeniul": "Extinde meniul",
+    "restrangeMeniul": "Restrânge meniul",
+    "proiectNou": "Proiect nou",
+    "acasa": "Acasă",
+    "setari": "Setări",
+    "setariAdmin": "Setări admin",
+    "abonament": "Abonament",
+    "proiecteleTale": "Proiectele tale",
+    "proiectDezactivatPePlanulCurent": "Proiect dezactivat pe planul curent",
+    "dezactivat": "Dezactivat",
+    "nuAiProiecteInca": "Nu ai proiecte încă.",
+    "iesiDinCont": "Ieși din cont",
+    "proiecteLunare": "Proiecte lunare",
+    "materiale": "Materiale",
+    "paginiProcesate": "Pagini procesate",
+    "aiCredits": "AI Credits",
+    "paginiOcr": "Pagini OCR",
+    "aiAtinsLimitaPlanuluiCurent": "Ai atins limita planului curent pentru „{label}\". Poti face upgrade la un plan superior.",
+    "teApropiiDeLimitaLunara": "Te apropii de limita lunară pentru „{label}\". Mai ai {value} disponibile.",
+    "aiUtilizatPercentDinResursele": "Ai utilizat {percent}% din resursele incluse luna aceasta pentru „{label}\".",
+    "utilizareLunaAceasta": "Utilizare luna aceasta",
+    "nuAiIncaProiecteIncarca": "Nu ai încă proiecte. Încarcă primul curs și începem.",
+    "ai1ProiectPregatitPentru": "Ai 1 proiect pregătit pentru studiu.",
+    "aiLengthProiectePregatitePentru": "Ai {length} proiecte pregătite pentru studiu.",
+    "buna": "Bună,",
+    "proiecteActive": "Proiecte active",
+    "inSpatiulTauDeStudiu": "în spațiul tău de studiu",
+    "t1DezactivatPePlanulCurent": "1 dezactivat pe planul curent",
+    "deactivatedprojectcountDezactivatePePlan": "{deactivatedProjectCount} dezactivate pe planul curent",
+    "pacheteDeStudiu": "Pachete de studiu",
+    "cuPachetGenerat": "cu pachet generat",
+    "inPacheteleGenerate": "în pachetele generate",
+    "deschideMeniulPentruName": "Deschide meniul pentru {name}",
+    "redenumire": "Redenumire",
+    "activare": "Activare",
+    "dezactivare": "Dezactivare",
+    "arhivare": "Arhivare",
+    "stergere": "Ștergere",
+    "indisponibilPePlanulCurent": "Indisponibil pe planul curent",
+    "deschideProiectul": "Deschide proiectul",
+    "numeProiect": "Nume proiect",
+    "renunta": "Renunță",
+    "salveaza": "Salvează",
+    "niciunProiectInca": "Niciun proiect încă.",
+    "creeazaPrimulProiectIncarcaMaterialele": "Creează primul proiect, încarcă materialele și Reviss îți pregătește rezumatul, flashcardurile și quizurile.",
+    "stergereDefinitiva": "Ștergere definitivă",
+    "confirmaStergereaProiectului": "Confirmă ștergerea proiectului.",
+    "aceastaActiuneEliminaProiectulMaterialel": "Această acțiune elimină proiectul, materialele convertite și conținutul generat. Pentru păstrare fără afișare, folosește arhivarea.",
+    "proiect": "Proiect",
+    "continut": "Conținut",
+    "materialeRezumatFlashcardUriQuiz": "Materiale, rezumat, flashcard-uri, quiz-uri și progres.",
+    "alternativa": "Alternativă",
+    "arhiveazaProiectulDacaVreiDoar": "Arhivează proiectul dacă vrei doar să îl ascunzi temporar.",
+    "seSterge": "Se șterge...",
+    "stergeDefinitiv": "Șterge definitiv",
+    "inapoiLa": "Înapoi la",
+    "proiectActiv": "Proiect activ",
+    "chatAiNuEsteDisponibil": "Chat AI nu este disponibil pe planul curent.",
+    "veziPlanurile": "Vezi planurile",
+    "salutSuntAiUlPentru": "Salut! Sunt AI-ul pentru proiectul „{name}”. Întreabă-mă orice despre materialul acesta.",
+    "nuAmPututGeneraUn": "Nu am putut genera un răspuns util momentan. Încearcă din nou peste câteva momente.",
+    "raspunsulNuAPututFi": "Răspunsul nu a putut fi generat momentan. Încearcă din nou.",
+    "chatNou": "Chat nou",
+    "revissPregatesteRaspunsul": "Reviss pregătește răspunsul",
+    "mesajPentruChatAi": "Mesaj pentru Chat AI",
+    "scrieUnMesaj": "Scrie un mesaj...",
+    "trimite": "Trimite",
+    "galben": "Galben",
+    "verde": "Verde",
+    "albastru": "Albastru",
+    "roz": "Roz",
+    "mov": "Mov",
+    "paragraful": "→ paragraful",
+    "deschideParagrafulInRezumat": "Deschide paragraful în rezumat ↗",
+    "apasaPentruAStergeHighlight": "Apasă pentru a șterge highlight-ul",
+    "veziNotita": "Vezi notița",
+    "culoareHighlight": "Culoare highlight",
+    "reseteazaHighlight": "Resetează highlight",
+    "instrumente": "Instrumente",
+    "evidentiaza": "Evidențiază",
+    "aplica": "Aplică",
+    "sterge": "Șterge",
+    "notita": "Notiță",
+    "stergeInstrument": "Șterge instrument",
+    "explicatiaNuEsteDisponibilaMomentan": "Explicația nu este disponibilă momentan",
+    "nuAmPututGeneraExplicatia": "Nu am putut genera explicația. Încearcă din nou peste câteva momente.",
+    "verificaDacaAiSelectatUn": "Verifică dacă ai selectat un fragment clar din rezumat.",
+    "potiContinuaStudiulSiPoti": "Poți continua studiul și poți reveni la explicație mai târziu.",
+    "rezumatulNuEsteGeneratInca": "Rezumatul nu este generat încă.",
+    "revissGenereazaAutomatRezumatulDupa": "Reviss generează automat rezumatul după încărcarea materialelor. Dacă generarea a eșuat, reîncearcă din pagina proiectului.",
+    "selecteazaUnFragmentApoiApasa": "Selectează un fragment, apoi apasă Aplică pe selecție.",
+    "apasaPeUnTextEvidentiat": "Apasă pe un text evidențiat ca să-l ștergi.",
+    "selecteazaUnFragmentApoiConfirma": "Selectează un fragment, apoi confirmă cu Întreabă.",
+    "selecteazaUnFragmentCaSa": "Selectează un fragment ca să adaugi o notiță.",
+    "evidentiere": "Evidențiere",
+    "textSelectatPentruAi": "Text selectat pentru AI",
+    "intrebareaTa": "Întrebarea ta",
+    "exExplicaPeScurtPentru": "Ex: explică pe scurt pentru examen sau compară cu teoria lui Kant.",
+    "optional": "Opțional",
+    "intreaba": "Întreabă",
+    "anuleaza": "Anulează",
+    "stergeNotita": "Șterge notița",
+    "inchide": "Închide",
+    "scrieONotitaAici": "Scrie o notiță aici...",
+    "cuvinteCheieDinRezumat": "Cuvinte cheie din rezumat",
+    "alegeModulDeLucru": "Alege modul de lucru.",
+    "inchideInstrumentele": "Închide instrumentele",
+    "revissAi": "Reviss AI",
+    "generezExplicatia": "Generez explicația",
+    "aiIntrebatDespre": "Ai întrebat despre",
+    "analizezFragmentul": "Analizez fragmentul...",
+    "cautLegaturaCuRezumatulExtrag": "Caut legătura cu rezumatul, extrag ideea utilă pentru examen și o formulez pe scurt.",
+    "cumSaRetii": "Cum să reții",
+    "sigurVreiSaReseteziToate": "Sigur vrei să resetezi toate evidențierile din rezumat?",
+    "toateHighlightUrileAplicateIn": "Toate highlight-urile aplicate în acest rezumat vor fi șterse definitiv. Notițele nu sunt afectate.",
+    "seReseteaza": "Se resetează...",
+    "reseteazaHighlightUrile": "Resetează highlight-urile",
+    "generateInitial": "Generate initial",
+    "flashcardurileNuSuntGenerateInca": "Flashcardurile nu sunt generate încă",
+    "pachetulGeneratAutomatDinMaterialele": "Pachetul generat automat din materialele încărcate, pregătit pentru recapitulare activă.",
+    "flashcardurileAparAiciDupaCe": "Flashcardurile apar aici după ce Reviss termină generarea pachetului de studiu.",
+    "dinQuizUrileTale": "Din quiz-urile tale",
+    "intrebarileGresiteTransformateInFlashcar": "Întrebările greșite transformate în flashcarduri",
+    "aiciAparIntrebarileGresiteSalvate": "Aici apar întrebările greșite salvate",
+    "greselilePeCareLeAi": "Greșelile pe care le-ai salvat din quizuri, cu răspunsul corect.",
+    "faUnQuizCandGresesti": "Fă un quiz. Când greșești, apasă „Salvează ca flashcard” și întrebarea ajunge aici.",
+    "createDeTine": "Create de tine",
+    "flashcardurileTale": "Flashcardurile tale",
+    "creeazaPrimulFlashcard": "Creează primul flashcard",
+    "flashcardurileCreateManualRamanSeparate": "Flashcardurile create manual rămân separate de cele generate automat.",
+    "durataEst": "durată est.",
+    "continua": "Continuă",
+    "veziIntrebarea": "Vezi întrebarea",
+    "veziRaspunsul": "Vezi răspunsul",
+    "scoateFlashcardulDinRecapitulare": "Scoate flashcardul din recapitulare",
+    "marcheazaFlashcardulPentruRecapitulare": "Marchează flashcardul pentru recapitulare",
+    "verificaDacaAiSelectatUn2": "Verifică dacă ai selectat un fragment clar din flashcard.",
+    "potiContinuaRecapitulareaSiPoti": "Poți continua recapitularea și poți reveni la explicație mai târziu.",
+    "inapoiLaPachete": "Înapoi la pachete",
+    "marcate": "Marcate",
+    "interactiune": "Interacțiune",
+    "selecteazaTextPentruAi": "Selectează text pentru AI",
+    "aiIndisponibil": "AI indisponibil",
+    "textSelectatDin": "Text selectat din",
+    "intrebare": "întrebare",
+    "raspuns": "răspuns",
+    "exExplicaDeCeRaspunsul": "Ex: explică de ce răspunsul e corect sau dă-mi un exemplu simplu.",
+    "nuAiFlashcarduriMarcatePentru": "Nu ai flashcarduri marcate pentru recapitulare.",
+    "apasaPeIconitaCuCreierul": "Apasă pe iconița cu creierul de pe un flashcard ca să-l adaugi aici.",
+    "incaNuAiFlashcarduriDin": "Încă nu ai flashcarduri din quizuri.",
+    "intraIntrUnQuizSi": "Intră într-un quiz și răspunde. Când greșești, apasă „Salvează ca flashcard” și întrebarea ajunge aici.",
+    "flashcardAnterior": "Flashcard anterior",
+    "flashcardUrmator": "Flashcard următor",
+    "amesteca": "Amestecă",
+    "flashcardAi": "Flashcard AI",
+    "analizezFlashcardul": "Analizez flashcardul...",
+    "cautConceptulLegaturaCuRaspunsul": "Caut conceptul, legătura cu răspunsul și cea mai scurtă explicație utilă pentru recapitulare.",
+    "cumSaLInveti": "Cum să-l înveți",
+    "usor": "Ușor",
+    "mediu": "Mediu",
+    "greu": "Greu",
+    "flashcardManual": "Flashcard manual",
+    "creeazaFlashcard": "Creează flashcard.",
+    "categorie": "Categorie",
+    "dificultate": "Dificultate",
+    "intrebare2": "Întrebare",
+    "fata": "Față",
+    "scrieIntrebareaAici": "Scrie întrebarea aici...",
+    "raspuns2": "Răspuns",
+    "spate": "Spate",
+    "scrieRaspunsul": "Scrie răspunsul...",
+    "anulare": "Anulare",
+    "seSalveaza": "Se salvează...",
+    "salvare": "Salvare",
+    "adaugaImagine": "Adaugă imagine",
+    "pachetulGeneratDinMaterialeleIncarcate": "Pachetul generat din materialele încărcate, bun pentru prima recapitulare structurată.",
+    "t8Min": "8 min",
+    "dinRezumatulInitial": "din rezumatul inițial",
+    "recapitulareAdaptiva": "Recapitulare adaptivă",
+    "t1FlashcardDinGreseli": "1 flashcard din greșeli",
+    "quizmistakecountFlashcardUriDinGreseli": "{quizMistakeCount} flashcard-uri din greșeli",
+    "intrebarilePeCareAiAles": "Întrebările pe care ai ales să le salvezi, cu răspunsul corect.",
+    "candGresestiOIntrebareDe": "Când greșești o întrebare de quiz, poți salva aici întrebarea și răspunsul corect.",
+    "t0Min": "0 min",
+    "dinGreseliReale": "din greșeli reale",
+    "creeazaFlashcard2": "Creează flashcard",
+    "explicatiaNuAFostInclusa": "Explicația nu a fost inclusă în JSON, dar răspunsul corect este marcat.",
+    "explicaRaspunsulDinMemorieSi": "Explică răspunsul din memorie și compară-l cu variantele apropiate.",
+    "quizGeneratName": "Quiz generat · {name}",
+    "quizGeneratDinMaterialeleAcestui": "Quiz generat din materialele acestui proiect.",
+    "veziExplicatia": "vezi explicația",
+    "generareaQuizuluiAFostAnulata": "Generarea quizului a fost anulată.",
+    "aiAtinsLimitaDeMaxquizzesperproject": "Ai atins limita de {maxQuizzesPerProject} {value} pentru acest proiect.",
+    "treciLaUnPlanSuperior": "Treci la un plan superior ca să generezi mai multe.",
+    "alegeToateRaspunsurileCorecte": "Alege toate răspunsurile corecte",
+    "asociazaFiecareElementCuPerechea": "Asociază fiecare element cu perechea lui",
+    "asazaCuvinteleInOrdineaCorecta": "Așază cuvintele în ordinea corectă",
+    "completeazaGolurileDinPropozitie": "Completează golurile din propoziție",
+    "alegeUnSingurRaspuns": "Alege un singur răspuns",
+    "inapoiLaQuizUri": "Înapoi la quiz-uri",
+    "quizActiv": "Quiz activ",
+    "raspunse": "răspunse",
+    "intrebareaValueDinLength": "Întrebarea {value} din {length}",
+    "verificaRaspunsul": "Verifică răspunsul",
+    "deRevizuit": "De revizuit",
+    "acestQuizNuAreO": "Acest quiz nu are o trimitere verificabilă la rezumat.",
+    "sursa": "Sursă:",
+    "salvatInFlashcardUriPachetul": "Salvat în Flashcard-uri, pachetul Din quiz-urile tale.",
+    "nuAmPututSalvaFlashcard": "Nu am putut salva flashcard-ul. Încearcă din nou.",
+    "vreiSaRetiiIntrebareaAsta": "Vrei să reții întrebarea asta ca flashcard?",
+    "reincearca": "Reîncearcă",
+    "salveazaCaFlashcard": "Salvează ca flashcard",
+    "rezultatulNuAFostSalvat": "Rezultatul nu a fost salvat în istoric. Reîncearcă înainte să ieși din quiz.",
+    "reincearcaSalvarea": "Reîncearcă salvarea",
+    "seSalveazaRezultatulInIstoric": "Se salvează rezultatul în istoric...",
+    "veziGreselileInProgres": "Vezi greșelile în Progres →",
+    "inapoi": "Înapoi",
+    "veziSumarul": "Vezi sumarul",
+    "urmatoareaIntrebare": "Următoarea întrebare",
+    "hartaQuiz": "Hartă quiz",
+    "corecte": "Corecte",
+    "acuratete": "Acuratețe",
+    "concepteSlabe": "Concepte slabe",
+    "istoric": "Istoric",
+    "veziIncercareaDinValueIn": "Vezi încercarea din {value} în Progres",
+    "sumarFinal": "Sumar final",
+    "aiObtinut": "Ai obținut",
+    "raspunsuriCorecte": "răspunsuri corecte.",
+    "inchideSumarul": "Închide sumarul",
+    "greselileSalvateTeAsteaptaIn": "Greșelile salvate te așteaptă în flashcard-uri.",
+    "potiSalvaCaFlashcardIntrebarile": "Poți salva ca flashcard întrebările greșite cu răspuns unic.",
+    "scorQuiz": "Scor quiz",
+    "flashcardUriSalvate": "Flashcard-uri salvate",
+    "concepteDeRevizuit": "Concepte de revizuit",
+    "reiaQuizUl": "Reia quiz-ul",
+    "quizNou": "Quiz nou",
+    "genereazaTesteleCandVrei": "Generează testele când vrei.",
+    "alegiDificultateaCateIntrebariVrei": "Alegi dificultatea, câte întrebări vrei și ce tipuri de răspuns, iar noi generăm un quiz pe măsură. Planul tău permite",
+    "inAcestProiect": "în acest proiect.",
+    "seAnuleaza": "Se anulează...",
+    "anulareGenerareQuiz": "Anulare generare quiz",
+    "alegeTestulPotrivit": "Alege testul potrivit.",
+    "recapitulareAplicareSiSimulareDe": "Recapitulare, aplicare și simulare de examen, separate ca să știi exact ce exersezi.",
+    "neincercat": "Neîncercat",
+    "intrebari": "Întrebări",
+    "durata": "Durată",
+    "rezultat": "Rezultat",
+    "reintra": "Reintră",
+    "incepe": "Începe",
+    "inchideCursulSiIncearcaSa": "Închide cursul și încearcă să răspunzi",
+    "dupaFiecareSectiuneSpunePe": "După fiecare secțiune, spune pe scurt ideea principală fără să te uiți în material.",
+    "revinoMainePesteIdeileImportante": "Revino mâine peste ideile importante",
+    "oRecapitulareScurtaDupaO": "O recapitulare scurtă după o zi te ajută să fixezi conceptele care altfel se uită repede.",
+    "explicaSimpluCuExemple": "Explică simplu, cu exemple",
+    "dacaPotiLegaTeoriaDe": "Dacă poți lega teoria de un exemplu concret, ai șanse mult mai mari să o reții la examen.",
+    "strategiiAi": "Strategii AI",
+    "planDeStudiuPentru": "Plan de studiu pentru",
+    "pasiiSuntGeneratiDinMaterialul": "Pașii sunt generați din materialul proiectului și sunt gândiți pentru recapitulare activă, nu pentru citire pasivă.",
+    "context": "Context",
+    "ritmRecomandat": "Ritm recomandat",
+    "t2030MinPeSesiune": "20-30 min pe sesiune, apoi verificare rapidă în quiz-uri.",
+    "baza": "Bază",
+    "buneDeFolositLaOrice": "Bune de folosit la orice curs.",
+    "greselileDinTitleValue": "Greșelile din „{title}”, {value}.",
+    "greselileDinUltimaIncercareA": "Greșelile din ultima încercare a fiecărui quiz, grupate pe concepte.",
+    "afiseaza": "Afișează",
+    "ultimeleIncercari": "Ultimele încercări",
+    "incercareIndisponibila": "Încercare indisponibilă",
+    "raspunsuriCorecte2": "răspunsuri corecte",
+    "incercareaNuMaiEsteDisponibila": "Încercarea nu mai este disponibilă pentru acest proiect. Alege „Ultimele încercări”.",
+    "uneleIncercariAuDoarScorul": "Unele încercări au doar scorul salvat, fără detaliile întrebărilor greșite. Reia acele quizuri pentru a le include în „De revizuit”.",
+    "nuExistaRaspunsuriGresiteIn": "Nu există răspunsuri greșite în încercările cu detalii afișate.",
+    "recomandarileVorApareaAiciDupa": "Recomandările vor apărea aici după o nouă încercare.",
+    "finalizeazaUnQuizPentruA": "Finalizează un quiz pentru a vedea aici conceptele de reluat.",
+    "intrebari2": "întrebări",
+    "aceastaIntrebareNuAreO": "Această întrebare nu are o trimitere verificabilă la rezumat.",
+    "marti": "marți",
+    "sambata": "sâmbătă",
+    "duminica": "duminică",
+    "deLaPrimaIncercare": "de la prima încercare",
+    "dinMaterial": "din material",
+    "adaugateDeTine": "adăugate de tine",
+    "dinGreseli": "Din greșeli",
+    "salvateLaQuiz": "salvate la quiz",
+    "scorDePregatire": "Scor de pregătire",
+    "scoruriSiQuizUriFinalizate": "Scoruri și quiz-uri finalizate, combinate",
+    "apareDupaPrimulQuizRezolvat": "Apare după primul quiz rezolvat",
+    "scorMediu": "Scor mediu",
+    "incercare": "încercare",
+    "incercari": "încercări",
+    "nicioIncercareInca": "Nicio încercare încă",
+    "genereazaPrimulQuizDinTab": "Generează primul quiz din tab-ul Quiz",
+    "deReluat": "De reluat",
+    "repetaGreselile": "Repetă greșelile",
+    "nicioGresealaRecurenta": "Nicio greșeală recurentă",
+    "evolutiaScorurilor": "Evoluția scorurilor",
+    "liniaApareDupaPrimulQuiz": "linia apare după primul quiz",
+    "graficulApareDupaPrimulQuiz": "Graficul apare după primul quiz.",
+    "fiecareIncercareAdaugaUnPunct": "Fiecare încercare adaugă un punct pe linie, ca să vezi dacă scorurile cresc.",
+    "pregatirePentruExamen": "Pregătire pentru examen",
+    "tintaProgressReadinessTarget": "ținta: {PROGRESS_READINESS_TARGET}%",
+    "rezolvaUnQuizCaSa": "Rezolvă un quiz ca să vedem cât de pregătit ești.",
+    "estiPesteTintaMaiRepeta": "Ești peste țintă. Mai repetă o dată conceptele greșite înainte de examen.",
+    "concentreazaTePeFocustext": "Concentrează-te pe: {focusText}.",
+    "continuaCuQuizUrileNeincercate": "Continuă cu quiz-urile neîncercate ca să urce scorul.",
+    "incepeUrmatorulQuiz": "Începe următorul quiz",
+    "repetaUnQuiz": "Repetă un quiz",
+    "zileActive": "Zile active",
+    "incercariPeZileleSaptamanii": "încercări pe zilele săptămânii",
+    "invetiCelMaiDesName": "Înveți cel mai des {name}.",
+    "aiciVeiVedeaInCe": "Aici vei vedea în ce zile înveți cel mai mult.",
+    "niciunQuizGenerat": "niciun quiz generat",
+    "toate": "Toate",
+    "concepteDeReluat": "Concepte de reluat",
+    "dinRaspunsurileGresite": "din răspunsurile greșite",
+    "seIncarcaRecomandarile": "Se încarcă recomandările...",
+    "constanta": "Constanță",
+    "ultimele4Saptamani": "ultimele 4 săptămâni",
+    "stapanirePeSubiecte": "Stăpânire pe subiecte",
+    "materialeDeStudiu": "Materiale de studiu",
+    "ceAiInProiect": "ce ai în proiect",
+    "concepteCheie": "Concepte cheie",
+    "highlightUriInRezumat": "Highlight-uri în rezumat",
+    "notite": "Notițe",
+    "incercariLaQuizUri": "Încercări la quiz-uri",
+    "scorDePregatirePercentDin": "Scor de pregătire {percent}% din ținta {PROGRESS_READINESS_TARGET}%",
+    "tinta": "Țintă",
+    "pregatit": "pregătit",
+    "incercariLaQuizUriPe": "Încercări la quiz-uri pe zilele săptămânii",
+    "quizUrileNuSuntGenerate": "Quiz-urile nu sunt generate încă.",
+    "dupaCeGenereziPrimulQuiz": "După ce generezi primul quiz, îl vei vedea aici cu scorul și încercările lui.",
+    "incercari2": "Încercări",
+    "nimicDeReluatInca": "Nimic de reluat încă.",
+    "greselileDinQuizUriSe": "Greșelile din quiz-uri se grupează aici pe concepte, ca să le repeți rapid.",
+    "greseala": "greșeală",
+    "greseli": "greșeli",
+    "repetaCardurileDinGreseli": "Repetă cardurile din greșeli",
+    "inTotal": "în total",
+    "evolutiaScorurilorLaQuizUri": "Evoluția scorurilor la quiz-uri în timp",
+    "radarulSeActiveazaDupaMai": "Radarul se activează după mai multe rezultate.",
+    "aiNevoieDeCelPutin": "Ai nevoie de cel puțin trei subiecte evaluate pentru o hartă lizibilă.",
+    "radarulCompetentelorPeSubiecte": "Radarul competențelor pe subiecte",
+    "labelCountIncercari": "{label}: {count} încercări",
+    "maiPutin": "Mai puțin",
+    "maiMult": "Mai mult",
+    "incarcaUnCurs": "Încarcă un curs.",
+    "cumIlVeiGasiIn": "Cum îl vei găsi în cont.",
+    "exFarmaSem2": "Ex: Farma sem. 2",
+    "materie": "Materie",
+    "contextPentruAi": "Context pentru AI.",
+    "exImunologie": "Ex: Imunologie",
+    "scoala": "Școală",
+    "facultateScoalaSauNivel": "Facultate, școală sau nivel.",
+    "exUmfUtcn": "Ex: UMF / UTCN",
+    "lengthMaterialeSelectate": "{length} materiale selectate",
+    "adaugaMaterialele": "Adaugă materialele",
+    "valueInTotal": "{value} în total",
+    "trageFisiereAiciSauApasa": "Trage fișiere aici sau apasă pentru selectare.",
+    "alegeFisiere": "Alege fișiere",
+    "limitePlan": "Limite plan",
+    "luna": "/lună,",
+    "fisiereProiect": "fișiere/proiect,",
+    "mbFisier": "MB/fișier,",
+    "mbProiectCotaLunara": "MB/proiect. Cota lunară:",
+    "materialeSi": "materiale și",
+    "veziPlanuri": "Vezi planuri",
+    "elimina": "Elimină",
+    "pregatire": "Pregătire",
+    "progresPregatire": "Progres pregătire",
+    "amDreptulSaFolosescAceste": "Am dreptul să folosesc aceste materiale.",
+    "genereazaPachetul": "Generează pachetul",
+    "seGenereazaRezumatulCuvinteleCheie": "Se generează rezumatul, cuvintele cheie, strategiile și flashcardurile. Quizurile se pornesc separat din tabul dedicat.",
+    "nuIncarcaDateSensibileSau": "Nu încărca date sensibile sau materiale pentru care nu ai drept de utilizare.",
+    "pachetulEstePregatit": "Pachetul este pregătit",
+    "generamPachetul": "Generăm pachetul",
+    "rezumatulCuvinteleCheieStrategiileSi": "Rezumatul, cuvintele cheie, strategiile și flashcardurile au fost salvate în proiect.",
+    "pregatimMaterialeleSiCreamPrimul": "Pregătim materialele și creăm primul pachet de studiu.",
+    "proiectulEstePregatitPentruStudiu": "Proiectul este pregătit pentru studiu. Quizurile se generează separat, din tabul Quiz-uri, când vrei să intri în testare.",
+    "countMateriale": "{count} materiale",
+    "eroare": "eroare",
+    "flashcardUriPentruName": "Flashcard-uri pentru {name}",
+    "luni": "luni",
+    "miercuri": "miercuri",
+    "joi": "joi",
+    "vineri": "vineri",
+    "portocaliu": "Portocaliu",
+    "serviciulDeGenerare": "serviciul de generare",
+    "continutGeneric": "conținut",
+    "pachetulGenerat": "pachetul generat",
+    "pachetGenerat": "pachet generat",
+    "quizulNuAPututFiGenerat": "Quizul nu a putut fi generat.",
+    "quizulNuAPututFiGeneratIncearca": "Quizul nu a putut fi generat. Încearcă din nou.",
+    "generareaQuizurilorDureazaPreaMult": "Generarea quizurilor durează prea mult. Reîncarcă pagina.",
+    "planulPermiteMaximumFisiere": "Planul {planName} permite maximum {count} fișiere într-un proiect.",
+    "auFostPastrateDoarPrimele": "Au fost păstrate doar primele {count} fișiere permise de plan.",
+    "unFisierPoateAveaCelMult": "Un fișier poate avea cel mult {size} MB pe planul {planName}.",
+    "materialeleProiectuluiPotAvea": "Materialele proiectului pot avea cel mult {size} MB în total.",
+    "generareaDureazaPreaMult": "Generarea durează prea mult. Reîncarcă pagina în câteva minute.",
+    "numeleProiectuluiMinim": "Numele proiectului trebuie să aibă cel puțin 2 caractere.",
+    "proiectulNuAPututFiRedenumit": "Proiectul nu a putut fi redenumit.",
+    "proiectulNuAPututFiArhivat": "Proiectul nu a putut fi arhivat.",
+    "stareaProiectuluiNuAPututFi": "Starea proiectului nu a putut fi schimbată.",
+    "proiectulNuAPututFiSters": "Proiectul nu a putut fi șters.",
+    "createManual": "Create manual",
+    "flashcardUriCreateDeTine": "{count} flashcard-uri create de tine",
+    "cardurileAdaugateManual": "Cardurile adăugate manual, separate de pachetele generate automat.",
+    "createManualMetric": "create manual",
+    "nMin": "{count} min",
+    "rezultatulQuizuluiNuAPututFiSalvat": "Rezultatul quizului nu a putut fi salvat.",
+    "reincearcaSalvareaInainte": "Reîncearcă salvarea înainte să ieși din quiz.",
+    "conjunctieSi": "și",
+    "complexityUsor": "Ușor",
+    "complexityMediu": "Mediu",
+    "complexityGreu": "Greu",
+    "complexityExamen": "Examen"
+  },
+  "accountShell": {
+    "acasa": "Acasă",
+    "setariAdmin": "Setări admin",
+    "cont": "Cont",
+    "studiu": "Studiu",
+    "aspect": "Aspect",
+    "culori": "Culori",
+    "notificari": "Notificări",
+    "securitate": "Securitate",
+    "date": "Date",
+    "planuri": "Planuri",
+    "facturi": "Facturi",
+    "inchideMeniul": "Închide meniul",
+    "meniuPrincipal": "Meniu principal",
+    "extindeMeniul": "Extinde meniul",
+    "restrangeMeniul": "Restrânge meniul",
+    "proiectNou": "Proiect nou",
+    "setari": "Setări",
+    "abonament": "Abonament",
+    "iesiDinCont": "Ieși din cont"
+  },
+  "compliance": {
+    "categorie": "Categorie",
+    "continut": "Conținut",
+    "declaratie": "Declarație",
+    "descriere": "Descriere",
+    "numeComplet": "Nume complet",
+    "mesaj": "Mesaj",
+    "nume": "Nume",
+    "numarulComenzii": "Numărul comenzii",
+    "tip": "Tip",
+    "subiect": "Subiect",
+    "abonamentSauComanda": "Abonament sau comandă",
+    "verificaFormularulSiIncearcaDin": "Verifică formularul și încearcă din nou.",
+    "solicitareaAFostBlocataDin": "Solicitarea a fost blocată din motive de securitate. Reîncarcă pagina și încearcă din nou.",
+    "verificaDateleDinFormularUnele": "Verifică datele din formular. Unele câmpuri nu sunt completate corect.",
+    "aiTrimisPreaMulteSolicitari": "Ai trimis prea multe solicitări într-un timp scurt. Încearcă din nou mai târziu.",
+    "serverulNuPoateProcesaSolicitarea": "Serverul nu poate procesa solicitarea momentan. Încearcă din nou după câteva minute.",
+    "solicitareaNuAPututFi": "Solicitarea nu a putut fi trimisă.",
+    "valoareInvalida": "Valoare invalidă.",
+    "prefixCampObligatoriuLipsa": "{prefix}câmp obligatoriu lipsă.",
+    "prefixTrebuieSaAibaCel": "{prefix}trebuie să aibă cel puțin {minLength} caractere.",
+    "prefixTextulEstePreaScurt": "{prefix}textul este prea scurt.",
+    "prefixTrebuieSaAibaCel2": "{prefix}trebuie să aibă cel mult {maxLength} caractere.",
+    "prefixTextulEstePreaLung": "{prefix}textul este prea lung.",
+    "valueAdresaDeEMail": "{value}adresa de e-mail nu este validă.",
+    "prefixAlegeOOptiuneValida": "{prefix}alege o opțiune validă.",
+    "declaratieConfirmareaEsteObligatorie": "Declarație: confirmarea este obligatorie.",
+    "introduCelPutinMinlengthCaractere": "Introdu cel puțin {minLength} caractere.",
+    "introduCelMultMaxlengthCaractere": "Introdu cel mult {maxLength} caractere.",
+    "introduOAdresaDeE": "Introdu o adresă de e-mail validă.",
+    "introduNumeleTau": "Introdu numele tău.",
+    "numeleTrebuieSaAibaCel": "Numele trebuie să aibă cel puțin 2 caractere.",
+    "numelePoateAveaCelMult": "Numele poate avea cel mult 120 de caractere.",
+    "alegeCategoriaMesajului": "Alege categoria mesajului.",
+    "introduSubiectulMesajului": "Introdu subiectul mesajului.",
+    "subiectulTrebuieSaAibaCel": "Subiectul trebuie să aibă cel puțin 3 caractere.",
+    "subiectulPoateAveaCelMult": "Subiectul poate avea cel mult 160 de caractere.",
+    "scrieMesajul": "Scrie mesajul.",
+    "mesajulTrebuieSaAibaCel": "Mesajul trebuie să aibă cel puțin 10 caractere.",
+    "mesajulPoateAveaCelMult": "Mesajul poate avea cel mult 5000 de caractere.",
+    "introduNumeleComplet": "Introdu numele complet.",
+    "numeleCompletTrebuieSaAiba": "Numele complet trebuie să aibă cel puțin 2 caractere.",
+    "numeleCompletPoateAveaCel": "Numele complet poate avea cel mult 120 de caractere.",
+    "introduAbonamentulSauComandaVizata": "Introdu abonamentul sau comanda vizată.",
+    "abonamentulSauComandaTrebuieSa": "Abonamentul sau comanda trebuie să aibă cel puțin 2 caractere.",
+    "abonamentulSauComandaPoateAvea": "Abonamentul sau comanda poate avea cel mult 160 de caractere.",
+    "numarulComenziiPoateAveaCel": "Numărul comenzii poate avea cel mult 80 de caractere.",
+    "motivulPoateAveaCelMult": "Motivul poate avea cel mult 5000 de caractere.",
+    "confirmaSolicitareaDeRetragereInainte": "Confirmă solicitarea de retragere înainte de trimitere.",
+    "alegeTipulSesizarii": "Alege tipul sesizării.",
+    "adaugaLinkulSauIdentificatorulContinutul": "Adaugă linkul sau identificatorul conținutului.",
+    "continutulTrebuieSaAibaCel": "Conținutul trebuie să aibă cel puțin 3 caractere.",
+    "continutulPoateAveaCelMult": "Conținutul poate avea cel mult 400 de caractere.",
+    "descrieProblemaRaportata": "Descrie problema raportată.",
+    "descriereaTrebuieSaAibaCel": "Descrierea trebuie să aibă cel puțin 10 caractere.",
+    "descriereaPoateAveaCelMult": "Descrierea poate avea cel mult 5000 de caractere.",
+    "dovezilePotAveaCelMult": "Dovezile pot avea cel mult 5000 de caractere.",
+    "confirmaDeclaratiaPrivindCorectitudineaI": "Confirmă declarația privind corectitudinea informațiilor.",
+    "numarDeInregistrareRegistrationnumber": "Număr de înregistrare: {registrationNumber}",
+    "seVerificaSetarileRecaptcha": "Se verifică setările reCAPTCHA...",
+    "recaptchaNuEsteConfiguratPe": "reCAPTCHA nu este configurat pe frontend.",
+    "protectieAntiSpam": "Protecție anti-spam.",
+    "seIncarcaVerificareaAntiSpam": "Se încarcă verificarea anti-spam...",
+    "potiAtasaCelMultContentreportmaxattachme": "Poți atașa cel mult {contentReportMaxAttachmentFiles} documente.",
+    "ataseazaDoarPdfDocDocx": "Atașează doar PDF, DOC, DOCX, TXT, RTF, JPG, PNG sau WEBP.",
+    "documentulNameDepasesteLimitaDe": "Documentul {name} depășește limita de 10MB.",
+    "recaptchaNuSAPutut": "reCAPTCHA nu s-a putut încărca. Verifică domeniul și cheia site.",
+    "scriptulRecaptchaNuSA": "Scriptul reCAPTCHA nu s-a putut încărca. Încearcă din nou.",
+    "corecteazaCampurileMarcateInainteDe": "Corectează câmpurile marcate înainte de trimitere.",
+    "recaptchaNuEsteConfiguratPe2": "reCAPTCHA nu este configurat pe frontend. Adaugă cheia publică și repornește aplicația.",
+    "protectiaAntiSpamIncaSe": "Protecția anti-spam încă se încarcă. Încearcă din nou.",
+    "confirmaVerificareaAntiSpamInainte": "Confirmă verificarea anti-spam înainte de trimitere.",
+    "mesajulAFostTrimisIti": "Mesajul a fost trimis. Îți vom răspunde pe e-mail.",
+    "mesajulNuAPututFi": "Mesajul nu a putut fi trimis.",
+    "cumTePutemIdentifica": "Cum te putem identifica.",
+    "numeleTau": "Numele tău",
+    "aiciItiTrimitemRaspunsul": "Aici îți trimitem răspunsul.",
+    "directionamMesajulCorect": "Direcționăm mesajul corect.",
+    "alegeCategoria": "Alege categoria",
+    "suport": "Suport",
+    "facturare": "Facturare",
+    "confidentialitate": "Confidențialitate",
+    "raportareContinut": "Raportare conținut",
+    "peScurtDespreCeEste": "Pe scurt, despre ce este vorba.",
+    "includeDetaliileUtile": "Include detaliile utile.",
+    "scrieMesajulAici": "Scrie mesajul aici...",
+    "trimiteAltMesaj": "Trimite alt mesaj",
+    "seTrimite": "Se trimite...",
+    "trimiteMesajul": "Trimite mesajul",
+    "solicitareaDeRetragereAFost": "Solicitarea de retragere a fost înregistrată și confirmarea a fost pusă în coada de e-mail.",
+    "cumApareInContSau": "Cum apare în cont sau comandă.",
+    "numeleTauComplet": "Numele tău complet",
+    "adresaAsociataContului": "Adresa asociată contului.",
+    "abonament": "Abonament",
+    "planulSauComandaVizata": "Planul sau comanda vizată.",
+    "comanda": "Comandă",
+    "optionalDacaExista": "Opțional, dacă există.",
+    "numarComandaSauFactura": "Număr comandă sau factură",
+    "optionalContextUtil": "Opțional, context util.",
+    "potiAdaugaDetaliiDespreSolicitare": "Poți adăuga detalii despre solicitare...",
+    "confirmareObligatorie": "Confirmare obligatorie.",
+    "confirmCaDorescRetragereaDin": "Confirm că doresc retragerea din contract pentru abonamentul sau comanda indicată.",
+    "trimiteAltaSolicitare": "Trimite altă solicitare",
+    "seInregistreaza": "Se înregistrează...",
+    "confirmaRetragerea": "Confirmă retragerea",
+    "amAdaugatLengthDinSelectia": "Am adăugat {length} din selecția curentă.",
+    "sesizareaAFostInregistrataSi": "Sesizarea a fost înregistrată și va fi analizată.",
+    "sesizareaNuAPututFi": "Sesizarea nu a putut fi trimisă.",
+    "aiciItiTrimitemConfirmarea": "Aici îți trimitem confirmarea.",
+    "alegemFluxulPotrivit": "Alegem fluxul potrivit.",
+    "alegeTipul": "Alege tipul",
+    "drepturiDeAutor": "Drepturi de autor",
+    "datePersonale": "Date personale",
+    "continutIncorect": "Conținut incorect",
+    "altMotiv": "Alt motiv",
+    "linkSauIdentificator": "Link sau identificator.",
+    "urlTitluProiectSauIdentificator": "URL, titlu proiect sau identificator",
+    "explicaProblema": "Explică problema.",
+    "descrieCeTrebuieAnalizat": "Descrie ce trebuie analizat...",
+    "linkuriExplicatiiSiDocumente": "Linkuri, explicații și documente.",
+    "linkuriSauExplicatiiSuplimentare": "Linkuri sau explicații suplimentare...",
+    "adaugaDocumente": "Adaugă documente",
+    "pdfDocDocxTxtRtf": "PDF, DOC, DOCX, TXT, RTF, JPG, PNG sau WEBP. 10MB fiecare.",
+    "sterge": "Șterge",
+    "declarCaInformatiileFurnizateSunt": "Declar că informațiile furnizate sunt corecte și că solicitarea este făcută cu bună-credință.",
+    "trimiteAltaSesizare": "Trimite altă sesizare",
+    "trimiteSesizarea": "Trimite sesizarea",
+    "operator": "Operator",
+    "sediuSocial": "Sediu social",
+    "nrRegistrulComertului": "Nr. Registrul Comerțului",
+    "telefon": "Telefon",
+    "dateFirma": "Date firmă",
+    "urmaresteNe": "Urmărește-ne",
+    "documente": "Documente",
+    "eMail": "E-mail",
+    "formular": "Formular",
+    "verificareAntiSpam": "Verificare anti-spam",
+    "motiv": "Motiv",
+    "dovezi": "Dovezi",
+    "verificare": "Verificare",
+    "introduAdresaDeEMail": "Introdu adresa de e-mail.",
+    "attachmentErrorTokens": "documentul, documente, atașează"
+  },
+  "upgrade": {
+    "ronLuna": "RON / lună",
+    "ronAn": "RON / an",
+    "pentruInceput": "Pentru început",
+    "studiuActiv": "Studiu Activ",
+    "sesiunePro": "Sesiune Pro",
+    "ronPermanent": "RON / permanent",
+    "finalulPerioadeiPlatite": "finalul perioadei plătite",
+    "astazi": "astăzi",
+    "maine": "mâine",
+    "abonamentulNuAPututFi": "Abonamentul nu a putut fi actualizat momentan.",
+    "abonamentulCurrentplannameExpiraPeAccess": "Abonamentul {currentPlanName} expiră pe {accessUntilLabel}",
+    "maiAiAccesRenewalcountdownDupa": "Mai ai acces {renewalCountdown}. După această dată contul trece automat pe planul gratuit.",
+    "dupaAceastaDataContulTrece": "După această dată contul trece automat pe planul gratuit.",
+    "abonamentulCurrentplannameSeReinnoiesteP": "Abonamentul {currentPlanName} se reînnoiește pe {accessUntilLabel}",
+    "urmatoareaPlataAreLocRenewalcountdown": "Următoarea plată are loc {renewalCountdown}. Poți opri reînnoirea oricând până atunci.",
+    "potiOpriReinnoireaOricandPana": "Poți opri reînnoirea oricând până atunci.",
+    "reinnoireaEsteAnulataAiAcces": "Reînnoirea este anulată. Ai acces până la {value}.",
+    "reinnoireaAbonamentuluiEsteActivaDin": "Reînnoirea abonamentului este activă din nou.",
+    "abonament": "Abonament",
+    "alegePlanulPotrivit": "Alege planul potrivit.",
+    "planuriSimpleTransparenteCuReinnoire": "Planuri simple, transparente, cu reînnoire lunară.",
+    "activ": "activ",
+    "seOpresteLa": "se oprește la",
+    "seReinnoieste": "se reînnoiește",
+    "facturi": "Facturi",
+    "activ2": "Activ",
+    "recomandat": "Recomandat",
+    "activPanaLaAccessuntillabel": "Activ până la {accessUntilLabel}",
+    "planActual": "Plan actual",
+    "seActualizeaza": "Se actualizează...",
+    "reactiveazaReinnoirea": "Reactivează reînnoirea",
+    "anuleazaReinnoirea": "Anulează reînnoirea",
+    "programatPe": "Programat pe",
+    "trecePePlanulGratuit": "Trece pe planul gratuit",
+    "veziDetaliilePlanului": "Vezi detaliile planului",
+    "anulareReinnoire": "Anulare reînnoire",
+    "oprestiPlataLunaraPentru": "Oprești plata lunară pentru",
+    "nuVeiMaiFiTaxat": "Nu vei mai fi taxat la următoarea reînnoire. Planul rămâne activ până la",
+    "apoiContulTreceAutomatPe": ", apoi contul trece automat pe planul gratuit.",
+    "renunta": "Renunță",
+    "seAnuleaza": "Se anulează...",
+    "nZile": "{days} zile"
+  },
+  "checkout": {
+    "lunarReinnoireAutomata": "Lunar, reînnoire automată",
+    "anualReinnoireAutomata": "Anual, reînnoire automată",
+    "intervalReinnoireAutomata": "{interval}, reînnoire automată",
+    "trebuieSaFiiAutentificatCa": "Trebuie să fii autentificat ca să activezi un abonament.",
+    "plataNuAPututFi": "Plata nu a putut fi pornită momentan.",
+    "inapoiLaAbonamente": "Înapoi la abonamente",
+    "confirmareAbonament": "Confirmare abonament",
+    "verificaPlanulInainteDePlata": "Verifică planul înainte de plată.",
+    "planulAlesPretulSiBeneficiile": "Planul ales, prețul și beneficiile incluse. Plata se face securizat prin Stripe.",
+    "ronLuna": "RON / lună",
+    "sumarPlata": "Sumar Plată",
+    "planSelectat": "Plan selectat",
+    "monedaPlata": "Monedă plată",
+    "tvaInclus": "TVA inclus",
+    "daDacaEsteAplicabil": "Da, dacă este aplicabil",
+    "frecventaPlata": "Frecvență plată",
+    "pretTotal": "Preț Total",
+    "ceUrmeaza": "Ce urmează?",
+    "dupaPlataPlanulDevineActiv": "După plată, planul devine activ imediat. Îl poți schimba sau anula din cont.",
+    "planulNuAreIncaUn": "Planul nu are încă un Stripe Price ID configurat în administrare.",
+    "continuaInCont": "Continuă în cont",
+    "sePregatesteCheckoutUl": "Se pregătește checkout-ul...",
+    "continuaCatrePlataSecurizata": "Continuă către plată securizată →",
+    "prinApasareaButonuluiEstiDe": "Prin apăsarea butonului, ești de acord cu",
+    "termeniiSiConditiile": "Termenii și Condițiile",
+    "informatiiDespreRetragereSuntIn": ". Informații despre retragere sunt în politica de contract.",
+    "lunar": "Lunar",
+    "anual": "Anual"
+  },
+  "invoices": {
+    "inAsteptare": "În așteptare",
+    "platita": "Plătită",
+    "deschisa": "Deschisă",
+    "anulata": "Anulată",
+    "neincasabila": "Neîncasabilă",
+    "facturi": "Facturi",
+    "istoricPlati": "Istoric plăți.",
+    "facturileStripePentruAbonamentulTau": "Facturile Stripe pentru abonamentul tău.",
+    "planuri": "Planuri",
+    "reincarca": "Reîncarcă",
+    "seIncarcaFacturile": "Se încarcă facturile...",
+    "listaNuAPututFi": "Lista nu a putut fi încărcată. Apasă „Reîncarcă” ca să încerci din nou.",
+    "nuExistaIncaFacturiPentru": "Nu există încă facturi pentru contul tău.",
+    "factura": "Factură",
+    "valoare": "Valoare",
+    "status": "Status",
+    "actiuni": "Acțiuni",
+    "veziFactura": "Vezi factura",
+    "ciorna": "Ciornă",
+    "necunoscut": "Necunoscut",
+    "facturileNuAuPututFi": "Facturile nu au putut fi încărcate momentan."
+  },
+  "cancellation": {
+    "t24Iulie2026": "24 iulie 2026",
+    "reinnoireaAutomataAFostOprita": "Reînnoirea automată a fost oprită. Accesul rămâne activ până la finalul perioadei plătite.",
+    "anulareaNuAPututFi": "Anularea nu a putut fi procesată.",
+    "abonament": "Abonament",
+    "anulareAbonament": "Anulare abonament.",
+    "potiOpriReinnoireaAutomataDirect": "Poți opri reînnoirea automată direct din cont, fără să trimiți e-mail. Accesul rămâne activ până la finalul perioadei deja plătite.",
+    "planActiv": "Plan activ",
+    "pret": "Preț",
+    "t29RonLuna": "29 RON / lună",
+    "urmatoareaDataDeFacturare": "Următoarea dată de facturare",
+    "reinnoireAutomata": "Reînnoire automată",
+    "oprita": "Oprită",
+    "activa": "Activă",
+    "dacaOprestiReinnoireaAccesulRamane": "Dacă oprești reînnoirea, accesul rămâne activ până la",
+    "dupaAceastaDataPlanulRevine": ". După această dată, planul revine la Beginner dacă nu reactivezi abonamentul.",
+    "seProceseaza": "Se procesează...",
+    "reinnoireAutomataOprita": "Reînnoire automată oprită",
+    "opresteReinnoireaAutomata": "Oprește reînnoirea automată",
+    "ceSeIntamplaDupaAnulare": "Ce se întâmplă după anulare",
+    "nuVeiMaiFiTaxat": "Nu vei mai fi taxat la următoarea dată de facturare.",
+    "materialeleSiProgresulRamanIn": "Materialele și progresul rămân în cont.",
+    "potiReactivaUnPlanOricand": "Poți reactiva un plan oricând din pagina Abonament."
+  },
+  "notifications": {
+    "notificarileNuAuPututFi": "Notificările nu au putut fi încărcate.",
+    "notificari": "Notificări",
+    "inchideNotificarile": "Închide notificările",
+    "marcheazaTotCaCitit": "Marchează tot ca citit",
+    "seIncarca": "Se încarcă...",
+    "nuAiNicioNotificareInca": "Nu ai nicio notificare încă.",
+    "stergeNotificarea": "Șterge notificarea"
+  },
+  "quizAnswers": {
+    "asocierileTale": "Asocierile tale",
+    "alegeUnElementDinStanga": "Alege un element din stânga",
+    "acumAlegePerecheaDinDreapta": "Acum alege perechea din dreapta",
+    "propozitiaTa": "Propoziția ta",
+    "trageSauApasaCuvinteleDe": "Trage sau apasă cuvintele de mai jos ca să formezi propoziția.",
+    "apasaPentruAScoateCuvantul": "Apasă pentru a scoate cuvântul",
+    "cuvinteDisponibile": "Cuvinte disponibile",
+    "aiFolositToateCuvintele": "Ai folosit toate cuvintele.",
+    "propozitiaCorecta": "Propoziția corectă:",
+    "propozitia": "Propoziția"
+  },
+  "projectSlots": {
+    "planulSASchimbat": "Planul s-a schimbat",
+    "alegeCeProiecteRamanActive": "Alege ce proiecte rămân active",
+    "proiectActiv": "proiect activ",
+    "proiecteActive": "proiecte active",
+    "iarTuAi": ", iar tu ai",
+    "restulRamanInContSi": ". Restul rămân în cont și nu se șterg — doar nu mai pot fi studiate până revii la un plan superior.",
+    "potiAlegeIncaRemaining": "Poți alege încă {remaining}.",
+    "aiFolositToateSloturile": "Ai folosit toate sloturile.",
+    "proiectVaFiDezactivat": "proiect va fi dezactivat",
+    "proiecteVorFiDezactivate": "proiecte vor fi dezactivate",
+    "seSalveaza": "Se salvează...",
+    "confirmaSelectia": "Confirmă selecția",
+    "nuAmPututSalvaSelectia": "Nu am putut salva selecția. Încearcă din nou."
+  },
+  "checkoutDisclosure": {
+    "lunara": "lunară",
+    "lunarCuReinnoireAutomata": "Lunar, cu reînnoire automată",
+    "informatiiInainteDePlata": "Informații înainte de plată",
+    "plan": "Plan",
+    "pretTotal": "Preț total",
+    "moneda": "Monedă",
+    "tva": "TVA",
+    "inclusDacaEsteAplicabil": "Inclus, dacă este aplicabil",
+    "perioadaAbonament": "Perioadă abonament",
+    "frecventaPlatii": "Frecvența plății",
+    "anulare": "Anulare",
+    "dinPagina": "Din pagina",
+    "anulareAbonament": "Anulare abonament",
+    "intrareInVigoare": "Intrare în vigoare",
+    "anulareaOpresteUrmatoareaReinnoire": "Anularea oprește următoarea reînnoire.",
+    "informatiiDespreDreptulDeRetragere": "Informații despre dreptul de retragere sunt disponibile în pagina",
+    "retragereDinContract": "Retragere din contract",
+    "prinApasareaButonuluiDePlata": ". Prin apăsarea butonului de plată accepți",
+    "termeniiSiConditiile": "Termenii și condițiile"
+  },
+  "themeToggle": {
+    "luminoasa": "luminoasă",
+    "intunecata": "întunecată",
+    "activeazaTemaNexttheme": "Activează tema {nextTheme}"
+  },
+  "pagination": {
+    "inregistrari": "înregistrări",
+    "inapoi": "Înapoi",
+    "inainte": "Înainte",
+    "intervalDinTotal": "{start}-{end} din {total} {label}"
+  },
+  "toasts": {
+    "inchideNotificarea": "Închide notificarea"
+  },
+  "quizConfig": {
+    "quizNou": "Quiz nou",
+    "configureazaQuizul": "Configurează quizul",
+    "generamUnSingurQuiz": "Generăm un singur quiz, exact cum îl ceri. Consumă din creditele AI ale planului tău.",
+    "dificultate": "Dificultate",
+    "complexity": {
+      "low": {
+        "label": "Ușor",
+        "detail": "Definiții și recunoaștere"
+      },
+      "medium": {
+        "label": "Mediu",
+        "detail": "Înțelegere și comparații"
+      },
+      "high": {
+        "label": "Greu",
+        "detail": "Raționament în doi pași"
+      },
+      "exam": {
+        "label": "Examen",
+        "detail": "Subiecte combinate, capcane"
+      }
+    },
+    "types": {
+      "single_choice": {
+        "label": "O singură variantă",
+        "detail": "Patru opțiuni, un răspuns corect"
+      },
+      "multiple_choice": {
+        "label": "Mai multe variante",
+        "detail": "Mai multe răspunsuri corecte"
+      },
+      "matching": {
+        "label": "Asociere",
+        "detail": "Conectezi fiecare element cu perechea lui"
+      },
+      "ordering": {
+        "label": "Formează fraza",
+        "detail": "Așezi cuvintele în ordinea corectă"
+      },
+      "cloze": {
+        "label": "Completează golurile",
+        "detail": "Alegi termenii care lipsesc din propoziție"
+      }
+    },
+    "tipuriDeIntrebari": "Tipuri de întrebări",
+    "alegeCelPutinUnTip": "Alege cel puțin un tip de întrebare.",
+    "numarDeIntrebari": "Număr de întrebări",
+    "planulPermiteMaximum": "Planul tău permite maximum {cap} {cap, plural, one {întrebare} other {întrebări}} într-un quiz.",
+    "tipurileAleseSeImpart": "Cele {count} tipuri alese se împart între ele.",
+    "renunta": "Renunță",
+    "seGenereaza": "Se generează...",
+    "genereazaQuizul": "Generează quizul"
+  },
+  "common": {
+    "home": "Acasă",
+    "loadingPage": "Se încarcă pagina",
+    "loadingProjectTab": "Se încarcă tabul proiectului"
+  },
+  "apiRoutes": {
+    "googleNotConfigured": "Autentificarea prin Google nu este configurată.",
+    "authRouteMissing": "Ruta de autentificare nu există.",
+    "complianceRouteMissing": "Ruta de conformitate nu există.",
+    "visitsRouteMissing": "Ruta de vizite nu există."
+  },
+  "seo": {
+    "title": "Reviss | Platformă AI pentru rezumate, flashcard-uri și quiz-uri",
+    "description": "Reviss ajută studenții să transforme cursuri, PDF-uri, documente și prezentări în rezumate clare, flashcard-uri, quiz-uri și planuri de învățare.",
+    "ogAlt": "Reviss - platformă AI pentru studiu activ",
+    "keywords": "Reviss, rezumate AI, rezumate AI pentru studenți, rezumat PDF, generator rezumat PDF, flashcard-uri AI, flashcard-uri din cursuri, generator flashcarduri, quiz-uri pentru examen, quiz-uri din cursuri, învățare activă, repetiție inteligentă, pregătire examen, pregătire examen facultate, aplicație de studiu, platformă educațională AI, instrumente AI pentru studenți, organizare cursuri facultate, învățare cu flashcarduri, simulare examen"
+  },
+  "meta": {
+    "myaccount": {
+      "title": "Contul meu",
+      "description": "Gestionează contul și activitatea ta Reviss."
+    },
+    "chatAi": {
+      "title": "Chat AI",
+      "description": "Chat AI contextual pentru proiectul tău Reviss."
+    },
+    "flashcards": {
+      "title": "Flashcard-uri",
+      "description": "Flashcard-urile generate pentru proiectul tău Reviss."
+    },
+    "createFlashcard": {
+      "title": "Creează flashcard",
+      "description": "Creează manual flashcarduri pentru proiectul tău Reviss."
+    },
+    "progress": {
+      "title": "Progres",
+      "description": "Progresul proiectului tău Reviss."
+    },
+    "quizzes": {
+      "title": "Quiz-uri",
+      "description": "Quiz-urile proiectului tău Reviss."
+    },
+    "summary": {
+      "title": "Rezumat",
+      "description": "Rezumatul complet al proiectului tău Reviss."
+    },
+    "strategies": {
+      "title": "Strategii",
+      "description": "Strategiile de învățare pentru proiectul tău Reviss."
+    },
+    "settings": {
+      "title": "Setări",
+      "description": "Configurează preferințele contului Reviss."
+    },
+    "changeEmail": {
+      "title": "Schimbă emailul",
+      "description": "Actualizează adresa de email a contului tău Reviss."
+    },
+    "changeName": {
+      "title": "Schimbă numele",
+      "description": "Actualizează numele contului tău Reviss."
+    },
+    "changePassword": {
+      "title": "Schimbă parola",
+      "description": "Actualizează parola contului tău Reviss."
+    },
+    "checkout": {
+      "title": "Confirmare abonament",
+      "description": "Verifică informațiile planului înainte de plată."
+    },
+    "upgrade": {
+      "title": "Abonament",
+      "description": "Alege planul Reviss potrivit pentru studiul tău."
+    },
+    "cancelSubscription": {
+      "title": "Anulare abonament",
+      "description": "Oprește reînnoirea automată a abonamentului Reviss direct din cont."
+    },
+    "cookiePolicy": {
+      "title": "Politica privind cookie-urile",
+      "description": "Informații despre categoriile de cookie-uri folosite de Reviss și modul de administrare a consimțământului."
+    },
+    "privacy": {
+      "title": "Politica de confidențialitate",
+      "description": "Politica de confidențialitate Reviss privind datele personale și modul în care acestea sunt prelucrate."
+    },
+    "terms": {
+      "title": "Termeni și condiții",
+      "description": "Termenii și condițiile de utilizare pentru platforma Reviss."
+    },
+    "contentReport": {
+      "title": "Raportează conținut",
+      "description": "Raportează conținut incorect, conținut care include date personale sau posibile încălcări de drepturi."
+    },
+    "withdrawal": {
+      "title": "Retragere din contract",
+      "description": "Formular pentru exercitarea dreptului de retragere din contract pentru abonamente sau comenzi Reviss."
+    }
+  },
+  "legal": {
+    "home": "Acasă",
+    "cookiePolicy": {
+      "eyebrow": "Cookie-uri",
+      "title": "Politica privind cookie-urile.",
+      "description": "Cookie-urile opționale nu sunt încărcate înainte de consimțământ. Poți accepta, respinge sau personaliza oricând preferințele.",
+      "categoriesTitle": "Categorii de cookie-uri",
+      "alwaysActive": "mereu active",
+      "consentOnly": "doar cu acord",
+      "preferences": "Preferințe",
+      "consentVersion": "Versiune consimțământ: {version}. Poți modifica acordul fără să ți se blocheze accesul la platformă."
+    },
+    "privacy": {
+      "eyebrow": "Confidențialitate",
+      "summary": "Detalii despre datele personale prelucrate în Reviss, scopurile utilizării lor, drepturile utilizatorilor și măsurile de protecție aplicate."
+    },
+    "terms": {
+      "eyebrow": "Termeni legali",
+      "summary": "Regulile de utilizare ale platformei Reviss, drepturile și responsabilitățile aplicabile contului, materialelor încărcate și funcționalităților disponibile."
+    },
+    "contentReport": {
+      "eyebrow": "Sesizări",
+      "title": "Raportează conținut.",
+      "description": "Trimite detalii despre materialul sau conținutul generat care trebuie analizat de echipa Reviss."
+    },
+    "withdrawal": {
+      "eyebrow": "Drept de retragere",
+      "title": "Retragere din contract.",
+      "description": "Completează formularul pentru înregistrarea unei solicitări de retragere. Vei primi un număr de înregistrare după trimitere."
+    }
+  }
+}

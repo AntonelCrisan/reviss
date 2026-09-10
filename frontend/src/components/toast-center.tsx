@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   useCallback,
   useEffect,
@@ -127,6 +128,7 @@ function CloseIcon() {
 }
 
 function ToastCard({ toast }: { toast: ToastRecord }) {
+  const t = useTranslations("toasts");
   const { id, tone, title, description, durationMs, revision } = toast;
   const style = toneStyles[tone];
   const isSticky = durationMs === 0;
@@ -226,7 +228,7 @@ function ToastCard({ toast }: { toast: ToastRecord }) {
         <button
           type="button"
           onClick={close}
-          aria-label="Închide notificarea"
+          aria-label={t("inchideNotificarea")}
           className={`-mr-1 -mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition ${style.closeButton}`}
         >
           <CloseIcon />

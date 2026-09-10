@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { BrandLogo } from "@/components/brand-logo";
 
 type AuthShellProps = {
@@ -48,7 +49,7 @@ function CheckIcon() {
   );
 }
 
-export function AuthShell({
+export async function AuthShell({
   title,
   description,
   children,
@@ -59,6 +60,8 @@ export function AuthShell({
   asideDescription,
   features,
 }: AuthShellProps) {
+  const t = await getTranslations("auth.shell");
+
   return (
     <div className="theme-shadow mx-auto grid w-full overflow-hidden rounded-[1.75rem] border border-subtle bg-surface lg:grid-cols-[1.03fr_0.97fr]">
       <section className="p-5 sm:p-6 lg:p-7 xl:p-8">
@@ -98,7 +101,7 @@ export function AuthShell({
             <SparkIcon />
           </span>
           <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-on-action/65">
-            Spațiul tău de studiu
+            {t("asideEyebrow")}
           </p>
           <h2 className="mt-3 max-w-md font-serif text-2xl font-semibold leading-tight xl:text-[1.75rem]">
             {asideTitle}

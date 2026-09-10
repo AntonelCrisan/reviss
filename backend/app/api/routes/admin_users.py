@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from app.api.dependencies import AppSettings, CurrentAdminUser, DbSession
+from app.core.i18n import normalize_language, t
 from app.core.security import generate_session_token, hash_session_token
 from app.models import AuthSession, PendingRegistration, User
 from app.schemas.admin_users import (
@@ -286,15 +287,18 @@ async def send_admin_user_verification_email(
     )
     await session.flush()
 
+    # The recipient's own language, not the administrator's.
+    language = normalize_language(target_user.language_preference)
     html, text = verification_email(
         verification_url=_verification_url(settings, token),
         logo_html=email_logo_html(settings.email_logo_url, app_name="Reviss"),
+        language=language,
     )
     try:
         await EmailService(settings).send(
             EmailMessage(
                 to=target_user.email,
-                subject="Confirma contul Reviss",
+                subject=t("email.verification.subject", language),
                 html=html,
                 text=text,
             )
@@ -346,6 +350,7 @@ async def delete_admin_user(
 
     user_agent, ip_address = _request_context(request)
     target_snapshot = {
+        "target_language": target_user.language_preference,
         "target_user_id": str(target_user.id),
         "target_email": target_user.email,
         "target_name": target_user.full_name,
@@ -371,16 +376,18 @@ async def delete_admin_user(
     await session.delete(target_user)
     await session.flush()
 
+    language = normalize_language(target_snapshot.get("target_language"))
     html, text = account_deleted_email(
         app_url=settings.public_app_url,
         full_name=target_snapshot["target_name"],
         logo_html=email_logo_html(settings.email_logo_url, app_name="Reviss"),
+        language=language,
     )
     try:
         await EmailService(settings).send(
             EmailMessage(
                 to=target_snapshot["target_email"],
-                subject="Contul Reviss a fost șters",
+                subject=t("email.account_deleted.subject", language),
                 html=html,
                 text=text,
             )

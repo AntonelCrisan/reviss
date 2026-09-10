@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { NotificationBell } from "@/components/account/notification-bell";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -18,11 +19,11 @@ import {
 // works while we are on "/". Elsewhere it has to be resolved against the
 // homepage or the browser just appends the hash to the current path.
 const menuItems = [
-  { hash: "#cum-functioneaza", labelKey: "marketing.nav.how" },
-  { hash: "#flashcards", labelKey: "marketing.nav.flashcards" },
-  { hash: "#beneficii", labelKey: "marketing.nav.benefits" },
-  { hash: "#abonamente", labelKey: "marketing.nav.pricing" },
-  { hash: "#intrebari", labelKey: "marketing.nav.questions" },
+  { hash: "#cum-functioneaza", labelKey: "nav.how" },
+  { hash: "#flashcards", labelKey: "nav.flashcards" },
+  { hash: "#beneficii", labelKey: "nav.benefits" },
+  { hash: "#abonamente", labelKey: "nav.pricing" },
+  { hash: "#intrebari", labelKey: "nav.questions" },
 ] as const;
 
 function MenuIcon({ open }: { open: boolean }) {
@@ -45,10 +46,11 @@ function MenuIcon({ open }: { open: boolean }) {
 }
 
 export function MarketingHeader() {
+  const t = useTranslations("marketing");
   const [isOpen, setIsOpen] = useState(false);
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const { user, isLoading, setUser } = useAuth();
-  const { setLanguage, t } = useLanguage();
+  const { setLanguage } = useLanguage();
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const sectionHref = (hash: string) => (isHomePage ? hash : `/${hash}`);
@@ -66,7 +68,7 @@ export function MarketingHeader() {
       const updatedUser = await updateLanguagePreference(nextLanguage);
       setUser(updatedUser);
     } catch (error) {
-      console.error("Nu s-a putut salva limba contului.", error);
+      console.error("Could not save the account language.", error);
       setUser(previousUser);
       setLanguage(previousUser.language_preference);
     } finally {
@@ -84,7 +86,7 @@ export function MarketingHeader() {
         />
 
         <nav
-          aria-label="Navigatie principala"
+          aria-label={t("header.mainNav")}
           className="hidden min-w-0 items-center justify-self-center rounded-2xl border border-subtle bg-app/70 p-1 xl:flex"
         >
           {menuItems.map((item) => (
@@ -116,7 +118,7 @@ export function MarketingHeader() {
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-on-action/15 text-[9px]">
                 {user.full_name.charAt(0).toUpperCase()}
               </span>
-              {t("marketing.account")}
+              {t("account")}
             </Link>
           ) : (
             <>
@@ -124,13 +126,13 @@ export function MarketingHeader() {
                 href="/login"
                 className="hidden shrink-0 whitespace-nowrap rounded-md px-4 py-2.5 text-xs font-bold text-muted transition hover:bg-surface-hover hover:text-content sm:inline-flex"
               >
-                {t("marketing.login")}
+                {t("login")}
               </Link>
               <Link
                 href="/register"
                 className="hidden shrink-0 whitespace-nowrap rounded-md bg-action px-4 py-2.5 text-xs font-bold text-on-action transition hover:bg-action-hover sm:inline-flex"
               >
-                {t("marketing.register")}
+                {t("register")}
               </Link>
             </>
           )}
@@ -144,9 +146,7 @@ export function MarketingHeader() {
             onClick={() => setIsOpen((open) => !open)}
             aria-expanded={isOpen}
             aria-controls="mobile-navigation"
-            aria-label={
-              isOpen ? t("marketing.closeMenu") : t("marketing.openMenu")
-            }
+            aria-label={isOpen ? t("closeMenu") : t("openMenu")}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-subtle bg-surface text-content xl:hidden"
           >
             <MenuIcon open={isOpen} />
@@ -161,7 +161,7 @@ export function MarketingHeader() {
         }`}
       >
         <nav
-          aria-label="Navigatie mobila"
+          aria-label={t("header.mobileNav")}
           className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6"
         >
           <LanguageSelect
@@ -186,7 +186,7 @@ export function MarketingHeader() {
                 onClick={() => setIsOpen(false)}
                 className="mt-2 rounded-md bg-action px-4 py-3 text-center text-xs font-bold text-on-action sm:hidden"
               >
-                {t("marketing.goToAccount")}
+                {t("goToAccount")}
               </Link>
             ) : (
               <div className="mt-2 grid grid-cols-2 gap-2 border-t border-subtle pt-4 sm:hidden">
@@ -194,13 +194,13 @@ export function MarketingHeader() {
                   href="/login"
                   className="rounded-md border border-subtle bg-app px-4 py-3 text-center text-xs font-bold"
                 >
-                  {t("marketing.login")}
+                  {t("login")}
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-md bg-action px-4 py-3 text-center text-xs font-bold text-on-action"
                 >
-                  {t("marketing.register")}
+                  {t("register")}
                 </Link>
               </div>
             )
