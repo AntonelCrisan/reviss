@@ -808,7 +808,7 @@ def _generated_option_sort_order(
 
     * ordering -- the word's zero-based place in the sentence
     * cloze    -- the one-based gap the word fills, 0 for a distractor
-    * others   -- the order the options were generated in
+    * others   -- the position in the already shuffled option list
     """
     if question_type == "ordering" and isinstance(position, int):
         return int(position) - 1
@@ -4645,6 +4645,14 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
                 raise ProjectValidationError(
                     f"Intrebarea {question_index} nu are enunt."
                 )
+
+            # Choice options are stored in the order they are displayed, so
+            # the model's habit of listing the correct answers first (A, B, C
+            # on every multiple_choice) would be visible to the student. The
+            # other types are reordered at display time: matching shuffles its
+            # right column, ordering and cloze their word banks.
+            if question_type in ("single_choice", "multiple_choice"):
+                random.shuffle(options_payload)
 
             for option_index, option_payload in enumerate(options_payload):
                 label = _clean_text(str(option_payload.get("label") or ""))

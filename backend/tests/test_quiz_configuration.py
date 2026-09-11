@@ -9,10 +9,15 @@ malformed matching pair or a broken word order.
 import pydantic
 import pytest
 
-from app.models.study_project import QUIZ_COMPLEXITIES, QUIZ_QUESTION_TYPES
+from app.models.study_project import (
+    QUIZ_COMPLEXITIES,
+    QUIZ_QUESTION_TYPES,
+    StudyProject,
+)
 from app.schemas.projects import QuizGenerationRequest
 from app.services.projects import (
     ProjectValidationError,
+    StudyProjectService,
     _count_cloze_gaps,
     _distribute_question_types,
     _generated_option_sort_order,
@@ -658,3 +663,61 @@ def test_the_request_schema_still_rejects_an_unknown_type() -> None:
 def test_the_request_schema_needs_at_least_one_type() -> None:
     with pytest.raises(pydantic.ValidationError):
         QuizGenerationRequest(complexity="medium", question_count=2, question_types=[])
+
+
+def _choice_quiz_payload(question_type: str, labels: list[str], correct: int):
+    """A quiz whose correct answers are all listed first, as the model tends to."""
+    return {
+        "schema_version": "reviss.quiz.v2",
+        "quiz": {
+            "title": "Quiz",
+            "description": "d",
+            "complexity": "medium",
+            "questions": [
+                {
+                    "prompt": "Intrebare?",
+                    "type": question_type,
+                    "options": _options(
+                        *[
+                            {"label": label, "is_correct": index < correct}
+                            for index, label in enumerate(labels)
+                        ]
+                    ),
+                    "explanation": "e",
+                    "concept": "c",
+                    "review_section": "s",
+                    "review_paragraph_index": 0,
+                    "review_anchor_text": "ancora de test",
+                    "review_advice": "reciteste paragraful",
+                }
+            ],
+        },
+    }
+
+
+def _apply(payload):
+    service = StudyProjectService.__new__(StudyProjectService)
+    project = StudyProject(quizzes=[])
+    return service._apply_generated_quiz(project, payload)
+
+
+def test_choice_options_are_shuffled_before_they_are_stored() -> None:
+    """The model lists the correct answers first; students must not see that."""
+    labels = [f"optiune-{index}" for index in range(6)]
+    orders = set()
+    for _ in range(40):
+        quiz = _apply(_choice_quiz_payload("multiple_choice", labels, correct=3))
+        options = sorted(quiz.questions[0].options, key=lambda o: o.sort_order)
+        assert {option.label for option in options} == set(labels)
+        assert sum(option.is_correct for option in options) == 3
+        orders.add(tuple(option.label for option in options))
+    assert len(orders) > 1
+
+    single_correct_slots = set()
+    for _ in range(40):
+        quiz = _apply(_choice_quiz_payload("single_choice", labels[:4], correct=1))
+        options = sorted(quiz.questions[0].options, key=lambda o: o.sort_order)
+        single_correct_slots.add(
+            next(index for index, o in enumerate(options) if o.is_correct)
+        )
+    assert len(single_correct_slots) > 1
