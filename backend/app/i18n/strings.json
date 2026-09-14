@@ -943,5 +943,235 @@
     "ro": "Plata ta a fost confirmată.\n\n{lines}\nTotal plătit: {amount}\nData plății: {paid_at}\nNumăr factură: {number}\n\nVezi factura: {url}\n{pdf_line}\nCapacitatea se adaugă peste alocarea planului și expiră odată cu ciclul curent.\n\nMulțumim că folosești {app_name}.",
     "en": "Your payment is confirmed.\n\n{lines}\nTotal paid: {amount}\nPayment date: {paid_at}\nInvoice number: {number}\n\nView the invoice: {url}\n{pdf_line}\nThe capacity is added on top of your plan allowance and expires with the current cycle.\n\nThanks for using {app_name}.",
     "fr": "Ton paiement est confirmé.\n\n{lines}\nTotal payé : {amount}\nDate du paiement : {paid_at}\nNuméro de facture : {number}\n\nVoir la facture : {url}\n{pdf_line}\nLa capacité s’ajoute à l’allocation de ton forfait et expire avec le cycle en cours.\n\nMerci d’utiliser {app_name}."
+  },
+  "notify.usage_warning.title": {
+    "ro": "Ai folosit {percent}% din {resource}",
+    "en": "You have used {percent}% of your {resource}",
+    "fr": "Tu as utilisé {percent}% de {resource}"
+  },
+  "notify.usage_warning.body": {
+    "ro": "Ți-au mai rămas {remaining} {unit} până la limita planului. Alocarea se reînnoiește pe {reset_date}.",
+    "en": "You have {remaining} {unit} left before you hit your plan limit. The allowance renews on {reset_date}.",
+    "fr": "Il te reste {remaining} {unit} avant d’atteindre la limite de ton forfait. L’allocation se renouvelle le {reset_date}."
+  },
+  "notify.usage_reached.title": {
+    "ro": "Ai atins limita pentru {resource}",
+    "en": "You have reached your {resource} limit",
+    "fr": "Tu as atteint ta limite de {resource}"
+  },
+  "notify.usage_reached.body": {
+    "ro": "Ai folosit {used} din {limit} {unit}. Alocarea se reînnoiește pe {reset_date}. Până atunci poți cumpăra capacitate separat sau poți trece pe un plan superior.",
+    "en": "You have used {used} of {limit} {unit}. The allowance renews on {reset_date}. Until then you can buy extra capacity or move to a higher plan.",
+    "fr": "Tu as utilisé {used} sur {limit} {unit}. L’allocation se renouvelle le {reset_date}. D’ici là, tu peux acheter de la capacité supplémentaire ou passer à un forfait supérieur."
+  },
+  "email.usage_alert.subject_warning": {
+    "ro": "Ai folosit {percent}% din {resource}",
+    "en": "You have used {percent}% of your {resource}",
+    "fr": "Tu as utilisé {percent}% de {resource}"
+  },
+  "email.usage_alert.subject_reached": {
+    "ro": "Ai atins limita pentru {resource}",
+    "en": "You have reached your {resource} limit",
+    "fr": "Tu as atteint ta limite de {resource}"
+  },
+  "email.usage_alert.eyebrow": {
+    "ro": "Limitele contului",
+    "en": "Account limits",
+    "fr": "Limites du compte"
+  },
+  "email.usage_alert.title_warning": {
+    "ro": "Te apropii de o limită",
+    "en": "You are close to a limit",
+    "fr": "Tu approches d’une limite"
+  },
+  "email.usage_alert.title_reached": {
+    "ro": "Ai atins o limită",
+    "en": "You have reached a limit",
+    "fr": "Tu as atteint une limite"
+  },
+  "email.usage_alert.intro_warning": {
+    "ro": "Ai folosit {used} din {limit} {unit} pentru {resource}. Îți scriem acum ca să nu te oprești din lucru pe nepregătite.",
+    "en": "You have used {used} of {limit} {unit} for {resource}. We are telling you now so you are not stopped mid-task.",
+    "fr": "Tu as utilisé {used} sur {limit} {unit} pour {resource}. Nous te prévenons maintenant pour que tu ne sois pas bloqué en plein travail."
+  },
+  "email.usage_alert.intro_reached": {
+    "ro": "Ai folosit toată alocarea de {limit} {unit} pentru {resource}. Până la reînnoire, această resursă nu mai poate fi folosită.",
+    "en": "You have used your whole allowance of {limit} {unit} for {resource}. Until it renews, this resource is unavailable.",
+    "fr": "Tu as utilisé toute ton allocation de {limit} {unit} pour {resource}. Jusqu’au renouvellement, cette ressource est indisponible."
+  },
+  "email.usage_alert.preheader": {
+    "ro": "{resource}: {used} din {limit} {unit}.",
+    "en": "{resource}: {used} of {limit} {unit}.",
+    "fr": "{resource} : {used} sur {limit} {unit}."
+  },
+  "email.usage_alert.details_title": {
+    "ro": "Situația contului",
+    "en": "Where your account stands",
+    "fr": "État de ton compte"
+  },
+  "email.usage_alert.label_resource": {
+    "ro": "Resursă",
+    "en": "Resource",
+    "fr": "Ressource"
+  },
+  "email.usage_alert.label_used": {
+    "ro": "Folosit",
+    "en": "Used",
+    "fr": "Utilisé"
+  },
+  "email.usage_alert.label_reset": {
+    "ro": "Se reînnoiește pe",
+    "en": "Renews on",
+    "fr": "Se renouvelle le"
+  },
+  "email.usage_alert.cta": {
+    "ro": "Vezi contul",
+    "en": "Open your account",
+    "fr": "Ouvrir ton compte"
+  },
+  "email.usage_alert.note_title": {
+    "ro": "Ce poți face",
+    "en": "What you can do",
+    "fr": "Ce que tu peux faire"
+  },
+  "email.usage_alert.note": {
+    "ro": "Poți aștepta reînnoirea, poți cumpăra capacitate doar pentru ciclul curent, sau poți trece pe un plan superior dacă ai nevoie constant de mai mult. Nimic nu se șterge în tot acest timp.",
+    "en": "You can wait for the renewal, buy capacity for the current cycle only, or move to a higher plan if you consistently need more. Nothing is deleted in the meantime.",
+    "fr": "Tu peux attendre le renouvellement, acheter de la capacité pour le cycle en cours uniquement, ou passer à un forfait supérieur si tu as régulièrement besoin de plus. Rien n’est supprimé entre-temps."
+  },
+  "email.usage_alert.footer": {
+    "ro": "Primești acest mesaj pentru că e legat de limitele contului tău.",
+    "en": "You are getting this because it concerns your account limits.",
+    "fr": "Tu reçois ce message car il concerne les limites de ton compte."
+  },
+  "email.usage_alert.text": {
+    "ro": "{intro}\n\nResursă: {resource}\nFolosit: {used} din {limit} {unit}\nSe reînnoiește pe: {reset_date}\n\nVezi contul: {url}\n\nPoți aștepta reînnoirea, poți cumpăra capacitate doar pentru ciclul curent, sau poți trece pe un plan superior. Nimic nu se șterge.\n\n{app_name}",
+    "en": "{intro}\n\nResource: {resource}\nUsed: {used} of {limit} {unit}\nRenews on: {reset_date}\n\nOpen your account: {url}\n\nYou can wait for the renewal, buy capacity for the current cycle, or move to a higher plan. Nothing is deleted.\n\n{app_name}",
+    "fr": "{intro}\n\nRessource : {resource}\nUtilisé : {used} sur {limit} {unit}\nSe renouvelle le : {reset_date}\n\nOuvrir ton compte : {url}\n\nTu peux attendre le renouvellement, acheter de la capacité pour le cycle en cours, ou passer à un forfait supérieur. Rien n’est supprimé.\n\n{app_name}"
+  },
+  "notify.subscription_expiring.title": {
+    "ro": "Abonamentul {plan} expiră în {days} zile",
+    "en": "Your {plan} subscription ends in {days} days",
+    "fr": "Ton abonnement {plan} se termine dans {days} jours"
+  },
+  "notify.subscription_expiring.body": {
+    "ro": "Accesul se încheie pe {end_date}. După aceea contul trece pe planul gratuit. Poți reactiva reînnoirea oricând până atunci.",
+    "en": "Access ends on {end_date}. After that your account moves to the free plan. You can turn renewal back on any time until then.",
+    "fr": "L’accès prend fin le {end_date}. Ensuite, ton compte passe au forfait gratuit. Tu peux réactiver le renouvellement jusque-là."
+  },
+  "email.subscription_expiring.subject": {
+    "ro": "Abonamentul tău expiră în {days} zile",
+    "en": "Your subscription ends in {days} days",
+    "fr": "Ton abonnement se termine dans {days} jours"
+  },
+  "email.subscription_expiring.eyebrow": {
+    "ro": "Abonament",
+    "en": "Subscription",
+    "fr": "Abonnement"
+  },
+  "email.subscription_expiring.title": {
+    "ro": "Abonamentul tău se apropie de final",
+    "en": "Your subscription is about to end",
+    "fr": "Ton abonnement touche à sa fin"
+  },
+  "email.subscription_expiring.intro": {
+    "ro": "Reînnoirea este oprită, așa că accesul la {plan} se încheie pe {end_date}, peste {days} zile.",
+    "en": "Renewal is switched off, so your access to {plan} ends on {end_date}, in {days} days.",
+    "fr": "Le renouvellement est désactivé, donc ton accès à {plan} prend fin le {end_date}, dans {days} jours."
+  },
+  "email.subscription_expiring.preheader": {
+    "ro": "Accesul la {plan} se încheie pe {end_date}.",
+    "en": "Access to {plan} ends on {end_date}.",
+    "fr": "L’accès à {plan} prend fin le {end_date}."
+  },
+  "email.subscription_expiring.details_title": {
+    "ro": "Ce se întâmplă",
+    "en": "What happens",
+    "fr": "Ce qui se passe"
+  },
+  "email.subscription_expiring.label_plan": {
+    "ro": "Plan curent",
+    "en": "Current plan",
+    "fr": "Forfait actuel"
+  },
+  "email.subscription_expiring.label_end": {
+    "ro": "Ultima zi de acces",
+    "en": "Last day of access",
+    "fr": "Dernier jour d’accès"
+  },
+  "email.subscription_expiring.label_after": {
+    "ro": "După aceea",
+    "en": "After that",
+    "fr": "Ensuite"
+  },
+  "email.subscription_expiring.after_value": {
+    "ro": "Contul trece pe planul gratuit",
+    "en": "Your account moves to the free plan",
+    "fr": "Ton compte passe au forfait gratuit"
+  },
+  "email.subscription_expiring.cta": {
+    "ro": "Reactivează reînnoirea",
+    "en": "Turn renewal back on",
+    "fr": "Réactiver le renouvellement"
+  },
+  "email.subscription_expiring.note_title": {
+    "ro": "Ce se întâmplă cu proiectele tale",
+    "en": "What happens to your projects",
+    "fr": "Ce qui arrive à tes projets"
+  },
+  "email.subscription_expiring.note": {
+    "ro": "Nu se șterge nimic. Proiectele care depășesc limitele planului gratuit devin inactive și le poți reactiva oricând, dacă revii pe un plan plătit.",
+    "en": "Nothing is deleted. Projects beyond the free plan's limits become inactive, and you can bring them back any time you return to a paid plan.",
+    "fr": "Rien n’est supprimé. Les projets qui dépassent les limites du forfait gratuit deviennent inactifs, et tu peux les réactiver dès que tu reprends un forfait payant."
+  },
+  "email.subscription_expiring.footer": {
+    "ro": "Primești acest mesaj pentru că e legat de abonamentul tău.",
+    "en": "You are getting this because it concerns your subscription.",
+    "fr": "Tu reçois ce message car il concerne ton abonnement."
+  },
+  "email.subscription_expiring.text": {
+    "ro": "Reînnoirea este oprită, așa că accesul la {plan} se încheie pe {end_date}, peste {days} zile.\n\nPlan curent: {plan}\nUltima zi de acces: {end_date}\nDupă aceea: contul trece pe planul gratuit\n\nReactivează reînnoirea: {url}\n\nNu se șterge nimic. Proiectele care depășesc limitele planului gratuit devin inactive și le poți reactiva oricând.\n\n{app_name}",
+    "en": "Renewal is switched off, so your access to {plan} ends on {end_date}, in {days} days.\n\nCurrent plan: {plan}\nLast day of access: {end_date}\nAfter that: your account moves to the free plan\n\nTurn renewal back on: {url}\n\nNothing is deleted. Projects beyond the free plan's limits become inactive, and you can bring them back any time.\n\n{app_name}",
+    "fr": "Le renouvellement est désactivé, donc ton accès à {plan} prend fin le {end_date}, dans {days} jours.\n\nForfait actuel : {plan}\nDernier jour d’accès : {end_date}\nEnsuite : ton compte passe au forfait gratuit\n\nRéactiver le renouvellement : {url}\n\nRien n’est supprimé. Les projets qui dépassent les limites du forfait gratuit deviennent inactifs, et tu peux les réactiver à tout moment.\n\n{app_name}"
+  },
+  "usage.resource.projects": {
+    "ro": "Proiecte lunare",
+    "en": "Monthly projects",
+    "fr": "Projets mensuels"
+  },
+  "usage.unit.projects": {
+    "ro": "proiecte",
+    "en": "projects",
+    "fr": "projets"
+  },
+  "usage.resource.materials": {
+    "ro": "Materiale",
+    "en": "Materials",
+    "fr": "Supports"
+  },
+  "usage.unit.materials": {
+    "ro": "materiale",
+    "en": "materials",
+    "fr": "supports"
+  },
+  "usage.resource.ai_credits": {
+    "ro": "Credite AI",
+    "en": "AI credits",
+    "fr": "Crédits IA"
+  },
+  "usage.unit.ai_credits": {
+    "ro": "credite",
+    "en": "credits",
+    "fr": "crédits"
+  },
+  "usage.resource.ocr_pages": {
+    "ro": "Pagini OCR",
+    "en": "OCR pages",
+    "fr": "Pages OCR"
+  },
+  "usage.unit.ocr_pages": {
+    "ro": "pagini",
+    "en": "pages",
+    "fr": "pages"
   }
 }

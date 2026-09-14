@@ -39,6 +39,8 @@ NotificationType = Literal[
     "weekly_progress",
     "inactivity_reminder",
     "streak_milestone",
+    "usage_limit",
+    "subscription_expiring",
 ]
 
 DAILY_DIGEST_CONCURRENCY = 5

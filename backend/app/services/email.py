@@ -979,3 +979,127 @@ def addon_invoice_paid_email(
         language=language,
     )
     return html, text
+
+
+def usage_alert_email(
+    *,
+    resource_label: str,
+    unit_label: str,
+    used: int,
+    limit: int,
+    percent: int,
+    reset_date_label: str,
+    account_url: str,
+    is_reached: bool,
+    logo_html: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
+) -> tuple[str, str]:
+    """Warning that an allowance is nearly, or entirely, used up.
+
+    ``is_reached`` switches the wording from a heads-up to a statement of
+    fact: telling someone they are "close to" a limit they already hit reads
+    as if nobody checked.
+    """
+    s = _strings("email.usage_alert", language)
+
+    intro = s(
+        "intro_reached" if is_reached else "intro_warning",
+        resource=resource_label,
+        used=used,
+        limit=limit,
+        unit=unit_label,
+    )
+
+    text = s(
+        "text",
+        intro=intro,
+        resource=resource_label,
+        used=used,
+        limit=limit,
+        unit=unit_label,
+        reset_date=reset_date_label,
+        url=account_url,
+        app_name=app_name,
+    )
+
+    details: list[tuple[str, str | None]] = [
+        (f"{s('label_resource')}: {resource_label}", None),
+        (f"{s('label_used')}: {used} / {limit} {unit_label}", None),
+        (f"{s('label_reset')}: {reset_date_label}", None),
+    ]
+
+    html = _email_shell(
+        app_name=app_name,
+        eyebrow=s("eyebrow"),
+        title=s("title_reached" if is_reached else "title_warning"),
+        intro=intro,
+        preheader=s(
+            "preheader",
+            resource=resource_label,
+            used=used,
+            limit=limit,
+            unit=unit_label,
+        ),
+        logo_html=logo_html,
+        cta_label=s("cta"),
+        action_url=account_url,
+        details_title=s("details_title"),
+        details=details,
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer"),
+        language=language,
+    )
+    return html, text
+
+
+def subscription_expiring_email(
+    *,
+    plan_name: str,
+    end_date_label: str,
+    days_left: int,
+    account_url: str,
+    logo_html: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
+) -> tuple[str, str]:
+    """Notice that a cancelled subscription is about to run out.
+
+    Only for subscriptions that genuinely end. An auto-renewing one is not
+    expiring, and telling its owner otherwise would be alarming and wrong.
+    """
+    s = _strings("email.subscription_expiring", language)
+
+    text = s(
+        "text",
+        plan=plan_name,
+        end_date=end_date_label,
+        days=days_left,
+        url=account_url,
+        app_name=app_name,
+    )
+
+    details: list[tuple[str, str | None]] = [
+        (f"{s('label_plan')}: {plan_name}", None),
+        (f"{s('label_end')}: {end_date_label}", None),
+        (f"{s('label_after')}: {s('after_value')}", None),
+    ]
+
+    html = _email_shell(
+        app_name=app_name,
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro", plan=plan_name, end_date=end_date_label, days=days_left),
+        preheader=s("preheader", plan=plan_name, end_date=end_date_label),
+        logo_html=logo_html,
+        cta_label=s("cta"),
+        action_url=account_url,
+        details_title=s("details_title"),
+        details=details,
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer"),
+        language=language,
+    )
+    return html, text
