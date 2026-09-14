@@ -49,8 +49,8 @@ CRON_SECRET=<generate-a-strong-32+-character-secret>
 SESSION_COOKIE_NAME=revizzio_session
 SESSION_COOKIE_SECURE=true
 SESSION_COOKIE_SAMESITE=lax
-PUBLIC_APP_URL=https://reviss.app
-EMAIL_LOGO_URL=https://reviss.app/assets/logos/Reviss_logo_dark.svg
+PUBLIC_APP_URL=https://www.reviss.app
+EMAIL_LOGO_URL=https://www.reviss.app/assets/logos/Reviss_logo_dark.svg
 REDIS_URL=${{Redis.REDIS_URL}}
 RATE_LIMIT_REDIS_REQUIRED=true
 RECAPTCHA_SECRET_KEY=<google-recaptcha-v2-secret-key>
@@ -113,7 +113,7 @@ Set these on the `frontend` service:
 
 ```env
 API_URL=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:${{backend.PORT}}
-NEXT_PUBLIC_SITE_URL=https://reviss.app
+NEXT_PUBLIC_SITE_URL=https://www.reviss.app
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<google-recaptcha-v2-site-key>
 ```
 
@@ -135,7 +135,7 @@ not available inside the frontend service.
 Stripe webhook URL:
 
 ```text
-https://reviss.app/api/payments/stripe/webhook
+https://www.reviss.app/api/payments/stripe/webhook
 ```
 
 The frontend route forwards the raw webhook body and `Stripe-Signature` header
@@ -155,10 +155,10 @@ to the backend over Railway private networking.
    - Railway Config File: `/railway.frontend.toml`
 7. Add frontend variables, then deploy it.
 8. Attach `reviss.app` to the frontend service.
-9. Configure Stripe webhook to `https://reviss.app/api/payments/stripe/webhook`.
+9. Configure Stripe webhook to `https://www.reviss.app/api/payments/stripe/webhook`.
 10. Update backend `CORS_ORIGINS` and `PUBLIC_APP_URL` if the production domain
    changes, then redeploy backend.
-11. In Google Search Console, submit `https://reviss.app/sitemap.xml`.
+11. In Google Search Console, submit `https://www.reviss.app/sitemap.xml`.
 
 ## Optional persistent uploads
 

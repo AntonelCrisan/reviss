@@ -8,7 +8,10 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
-ARG NEXT_PUBLIC_SITE_URL=https://reviss.app
+# The canonical host is the www one. NEXT_PUBLIC_* is baked in at build
+# time, so a bare-host default here would ship a build whose canonical
+# tags and sitemap point at the host that only 301-redirects.
+ARG NEXT_PUBLIC_SITE_URL=https://www.reviss.app
 ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
 ARG RECAPTCHA_SITE_KEY=
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL

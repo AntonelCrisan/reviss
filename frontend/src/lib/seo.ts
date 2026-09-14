@@ -54,8 +54,11 @@ export const robotsDisallowRoutes = [
   "/checkout/",
   "/myaccount/",
   "/settings/",
-  // Requires a session and mirrors /abonamente, which is the indexable
-  // pricing page. Covers /upgrade/facturi too.
+  // Deliberately without a trailing slash. "/upgrade/" would only block the
+  // sub-paths and leave /upgrade itself crawlable -- and that page still
+  // reports "index, follow" while canonicalising to the homepage, which would
+  // feed Google a competing signal for "/". It mirrors /abonamente, the
+  // indexable pricing page, and this form covers /upgrade/facturi too.
   "/upgrade",
 ];
 
