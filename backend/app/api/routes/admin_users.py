@@ -8,10 +8,21 @@ from sqlalchemy.orm import selectinload
 from app.api.dependencies import AppSettings, CurrentAdminUser, DbSession
 from app.core.i18n import normalize_language, t
 from app.core.security import generate_session_token, hash_session_token
-from app.models import AuthSession, PendingRegistration, User
+from app.models import (
+    AuthSession,
+    ManualPlanGrant,
+    PendingRegistration,
+    User,
+    UserSubscription,
+)
 from app.schemas.admin_users import (
+    AdminManualPlanGrantRequest,
+    AdminManualPlanRevokeRequest,
+    AdminSubscriptionActionResponse,
+    AdminUserManualGrantResponse,
     AdminUserResponse,
     AdminUserSessionResponse,
+    AdminUserSubscriptionResponse,
     AdminUserUpdate,
 )
 from app.services.audit import add_audit_log
@@ -22,6 +33,12 @@ from app.services.email import (
     account_deleted_email,
     email_logo_html,
     verification_email,
+)
+from app.services.stripe_payments import (
+    StripeConfigurationError,
+    StripePaymentService,
+    StripePlanUnavailableError,
+    StripeRequestError,
 )
 
 router = APIRouter(prefix="/api/admin/users", tags=["admin-users"])
@@ -50,7 +67,106 @@ def _session_response(
     )
 
 
-def _user_response(user: User, now: datetime) -> AdminUserResponse:
+def _manual_grant_response(
+    grant: ManualPlanGrant | None,
+) -> AdminUserManualGrantResponse | None:
+    if grant is None:
+        return None
+    return AdminUserManualGrantResponse(
+        id=grant.id,
+        plan_slug=grant.plan.slug,
+        plan_name=grant.plan.name,
+        reason=grant.reason,
+        granted_by_email=grant.granted_by.email if grant.granted_by else None,
+        created_at=grant.created_at,
+    )
+
+
+def _subscription_response(
+    user: User,
+    subscription: UserSubscription | None,
+    grant: ManualPlanGrant | None,
+) -> AdminUserSubscriptionResponse:
+    plan = user.current_plan
+    return AdminUserSubscriptionResponse(
+        current_plan_slug=plan.slug if plan is not None else None,
+        current_plan_name=plan.name if plan is not None else None,
+        current_plan_price_ron=plan.price_ron if plan is not None else None,
+        stripe_customer_id=user.stripe_customer_id,
+        stripe_subscription_id=(
+            subscription.stripe_subscription_id if subscription else None
+        ),
+        status=subscription.status if subscription else None,
+        cancel_at_period_end=(
+            subscription.cancel_at_period_end if subscription else False
+        ),
+        current_period_start=(
+            subscription.current_period_start if subscription else None
+        ),
+        current_period_end=subscription.current_period_end if subscription else None,
+        canceled_at=subscription.canceled_at if subscription else None,
+        manual_grant=_manual_grant_response(grant),
+    )
+
+
+async def _load_billing_context(
+    session: DbSession,
+    users: list[User],
+) -> tuple[
+    dict[uuid.UUID, UserSubscription],
+    dict[uuid.UUID, ManualPlanGrant],
+]:
+    """Latest subscription and live manual grant per user, in two queries.
+
+    Done in bulk so the user list does not fan out into a query per row.
+    """
+    if not users:
+        return {}, {}
+
+    user_ids = [user.id for user in users]
+
+    # DISTINCT ON keeps one row per user in the database instead of hydrating
+    # every historical subscription just to discard all but the newest. A
+    # single long-lived account can easily hold dozens of them.
+    rows = await session.scalars(
+        select(UserSubscription)
+        .where(UserSubscription.user_id.in_(user_ids))
+        .order_by(
+            UserSubscription.user_id,
+            UserSubscription.updated_at.desc(),
+            UserSubscription.created_at.desc(),
+        )
+        .distinct(UserSubscription.user_id)
+    )
+    subscriptions = {row.user_id: row for row in rows}
+
+    grant_rows = await session.scalars(
+        select(ManualPlanGrant)
+        .options(
+            selectinload(ManualPlanGrant.plan),
+            selectinload(ManualPlanGrant.granted_by),
+        )
+        .where(
+            ManualPlanGrant.user_id.in_(user_ids),
+            ManualPlanGrant.revoked_at.is_(None),
+        )
+        .order_by(
+            ManualPlanGrant.user_id,
+            ManualPlanGrant.created_at.desc(),
+        )
+        .distinct(ManualPlanGrant.user_id)
+    )
+    grants = {row.user_id: row for row in grant_rows}
+
+    return subscriptions, grants
+
+
+def _user_response(
+    user: User,
+    now: datetime,
+    subscription: UserSubscription | None = None,
+    grant: ManualPlanGrant | None = None,
+) -> AdminUserResponse:
     sessions = sorted(user.sessions, key=lambda item: item.created_at, reverse=True)
     session_responses = [
         _session_response(auth_session, now) for auth_session in sessions
@@ -88,12 +204,33 @@ def _user_response(user: User, now: datetime) -> AdminUserResponse:
         last_session_at=last_session_at,
         last_seen_at=last_seen_at,
         sessions=session_responses,
+        subscription=_subscription_response(user, subscription, grant),
+    )
+
+
+async def _single_user_response(
+    session: DbSession,
+    user: User,
+) -> AdminUserResponse:
+    """One user with the billing block filled in.
+
+    Every endpoint that returns a user has to go through here, otherwise the
+    response would claim the user has no plan at all.
+    """
+    subscriptions, grants = await _load_billing_context(session, [user])
+    return _user_response(
+        user,
+        datetime.now(UTC),
+        subscriptions.get(user.id),
+        grants.get(user.id),
     )
 
 
 async def _get_user_or_404(session: DbSession, user_id: uuid.UUID) -> User:
     user = await session.scalar(
-        select(User).options(selectinload(User.sessions)).where(User.id == user_id)
+        select(User)
+        .options(selectinload(User.sessions), selectinload(User.current_plan))
+        .where(User.id == user_id)
     )
     if user is None:
         raise HTTPException(
@@ -160,13 +297,25 @@ async def get_admin_users(
         (
             await session.scalars(
                 select(User)
-                .options(selectinload(User.sessions))
+                .options(
+                    selectinload(User.sessions),
+                    selectinload(User.current_plan),
+                )
                 .order_by(User.created_at.desc())
             )
         ).all()
     )
     now = datetime.now(UTC)
-    return [_user_response(user, now) for user in users]
+    subscriptions, grants = await _load_billing_context(session, users)
+    return [
+        _user_response(
+            user,
+            now,
+            subscriptions.get(user.id),
+            grants.get(user.id),
+        )
+        for user in users
+    ]
 
 
 @router.patch("/{user_id}", response_model=AdminUserResponse)
@@ -230,7 +379,7 @@ async def update_admin_user(
         await session.commit()
         target_user = await _get_user_or_404(session, user_id)
 
-    return _user_response(target_user, datetime.now(UTC))
+    return await _single_user_response(session, target_user)
 
 
 @router.post("/{user_id}/verification-email", response_model=AdminUserResponse)
@@ -327,7 +476,7 @@ async def send_admin_user_verification_email(
         ) from exc
 
     target_user = await _get_user_or_404(session, user_id)
-    return _user_response(target_user, datetime.now(UTC))
+    return await _single_user_response(session, target_user)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -419,3 +568,227 @@ async def delete_admin_user(
     await session.commit()
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+def _stripe_http_error(exc: Exception) -> HTTPException:
+    if isinstance(exc, StripeConfigurationError):
+        return HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Stripe nu este configurat complet.",
+        )
+    if isinstance(exc, StripePlanUnavailableError):
+        return HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
+    return HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail="Stripe nu a putut fi contactat.",
+    )
+
+
+async def _subscription_action_response(
+    session: DbSession,
+    user: User,
+    message: str,
+) -> AdminSubscriptionActionResponse:
+    subscriptions, grants = await _load_billing_context(session, [user])
+    return AdminSubscriptionActionResponse(
+        subscription=_subscription_response(
+            user,
+            subscriptions.get(user.id),
+            grants.get(user.id),
+        ),
+        message=message,
+    )
+
+
+@router.post(
+    "/{user_id}/subscription/resync",
+    response_model=AdminSubscriptionActionResponse,
+)
+async def resync_admin_user_subscription(
+    user_id: uuid.UUID,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> AdminSubscriptionActionResponse:
+    """Replay the user's real Stripe state onto our records.
+
+    The repair path for a payment that succeeded in Stripe while the webhook
+    that should have applied the plan never arrived.
+    """
+    target_user = await _get_user_or_404(session, user_id)
+    user_agent, ip_address = _request_context(request)
+    service = StripePaymentService(session, settings)
+
+    try:
+        refreshed_user, seen = await service.admin_resync_subscriptions(
+            user=target_user,
+            actor=admin_user,
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
+    except (
+        StripeConfigurationError,
+        StripePlanUnavailableError,
+        StripeRequestError,
+    ) as exc:
+        raise _stripe_http_error(exc) from exc
+
+    return await _subscription_action_response(
+        session,
+        refreshed_user,
+        f"Sincronizare finalizata: {seen} abonamente citite din Stripe.",
+    )
+
+
+@router.post(
+    "/{user_id}/subscription/cancel",
+    response_model=AdminSubscriptionActionResponse,
+)
+async def cancel_admin_user_subscription(
+    user_id: uuid.UUID,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> AdminSubscriptionActionResponse:
+    target_user = await _get_user_or_404(session, user_id)
+    user_agent, ip_address = _request_context(request)
+    service = StripePaymentService(session, settings)
+
+    try:
+        refreshed_user, _ = await service.schedule_subscription_cancellation(
+            user=target_user,
+            user_agent=user_agent,
+            ip_address=ip_address,
+            actor=admin_user,
+        )
+    except (
+        StripeConfigurationError,
+        StripePlanUnavailableError,
+        StripeRequestError,
+    ) as exc:
+        raise _stripe_http_error(exc) from exc
+
+    return await _subscription_action_response(
+        session,
+        refreshed_user,
+        "Reinnoirea a fost oprita. Accesul ramane pana la finalul perioadei platite.",
+    )
+
+
+@router.post(
+    "/{user_id}/subscription/resume",
+    response_model=AdminSubscriptionActionResponse,
+)
+async def resume_admin_user_subscription(
+    user_id: uuid.UUID,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> AdminSubscriptionActionResponse:
+    target_user = await _get_user_or_404(session, user_id)
+    user_agent, ip_address = _request_context(request)
+    service = StripePaymentService(session, settings)
+
+    try:
+        refreshed_user, _ = await service.resume_subscription_renewal(
+            user=target_user,
+            user_agent=user_agent,
+            ip_address=ip_address,
+            actor=admin_user,
+        )
+    except (
+        StripeConfigurationError,
+        StripePlanUnavailableError,
+        StripeRequestError,
+    ) as exc:
+        raise _stripe_http_error(exc) from exc
+
+    return await _subscription_action_response(
+        session,
+        refreshed_user,
+        "Reinnoirea abonamentului a fost reactivata.",
+    )
+
+
+@router.post(
+    "/{user_id}/subscription/manual-plan",
+    response_model=AdminSubscriptionActionResponse,
+)
+async def grant_admin_user_manual_plan(
+    user_id: uuid.UUID,
+    payload: AdminManualPlanGrantRequest,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> AdminSubscriptionActionResponse:
+    """Put a user on a plan without Stripe, for comped or broken accounts."""
+    target_user = await _get_user_or_404(session, user_id)
+    user_agent, ip_address = _request_context(request)
+    service = StripePaymentService(session, settings)
+
+    try:
+        refreshed_user, _ = await service.admin_grant_manual_plan(
+            user=target_user,
+            actor=admin_user,
+            plan_slug=payload.plan_slug,
+            reason=payload.reason if payload else None,
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
+    except (
+        StripeConfigurationError,
+        StripePlanUnavailableError,
+        StripeRequestError,
+    ) as exc:
+        raise _stripe_http_error(exc) from exc
+
+    return await _subscription_action_response(
+        session,
+        refreshed_user,
+        "Planul a fost acordat manual.",
+    )
+
+
+@router.delete(
+    "/{user_id}/subscription/manual-plan",
+    response_model=AdminSubscriptionActionResponse,
+)
+async def revoke_admin_user_manual_plan(
+    user_id: uuid.UUID,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+    payload: AdminManualPlanRevokeRequest | None = None,
+) -> AdminSubscriptionActionResponse:
+    target_user = await _get_user_or_404(session, user_id)
+    user_agent, ip_address = _request_context(request)
+    service = StripePaymentService(session, settings)
+
+    try:
+        refreshed_user = await service.admin_revoke_manual_plan(
+            user=target_user,
+            actor=admin_user,
+            reason=payload.reason,
+            user_agent=user_agent,
+            ip_address=ip_address,
+        )
+    except (
+        StripeConfigurationError,
+        StripePlanUnavailableError,
+        StripeRequestError,
+    ) as exc:
+        raise _stripe_http_error(exc) from exc
+
+    return await _subscription_action_response(
+        session,
+        refreshed_user,
+        "Planul acordat manual a fost revocat.",
+    )
+

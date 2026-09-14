@@ -22,6 +22,7 @@ from sqlalchemy.orm import selectinload
 from app.core.config import Settings
 from app.core.i18n import normalize_language, t
 from app.models import (
+    ManualPlanGrant,
     StripeEvent,
     StudyProject,
     SubscriptionInvoice,
@@ -40,6 +41,10 @@ from app.services.email import (
 )
 
 logger = logging.getLogger("revizzio.stripe")
+
+# Upper bound on a single re-sync, so one account cannot page through
+# Stripe indefinitely.
+_MAX_LISTED_SUBSCRIPTIONS = 500
 
 ACTIVE_SUBSCRIPTION_STATUSES = {"active", "trialing"}
 CHECKOUT_SUBSCRIPTION_STATUSES = ACTIVE_SUBSCRIPTION_STATUSES | {
@@ -227,6 +232,51 @@ class StripeClient:
             f"/invoices/{safe_invoice_id}",
             None,
         )
+
+    async def list_customer_subscriptions(
+        self,
+        *,
+        customer_id: str,
+    ) -> list[dict[str, Any]]:
+        """Every subscription Stripe holds for a customer, newest first.
+
+        ``status=all`` is deliberate: a re-sync has to see canceled rows too,
+        otherwise a subscription that ended in Stripe but stayed active here
+        would never be corrected.
+        """
+        collected: list[dict[str, Any]] = []
+        starting_after: str | None = None
+
+        # Stripe caps a page at 100. A long-lived account can hold more than
+        # that, and a partial list would settle the plan from an incomplete
+        # history, so every page is followed.
+        while len(collected) < _MAX_LISTED_SUBSCRIPTIONS:
+            params = {"customer": customer_id, "status": "all", "limit": "100"}
+            if starting_after is not None:
+                params["starting_after"] = starting_after
+
+            payload = await to_thread.run_sync(
+                self._request,
+                "GET",
+                "/subscriptions",
+                params,
+            )
+            data = payload.get("data")
+            if not isinstance(data, list):
+                break
+
+            page = [item for item in data if isinstance(item, dict)]
+            collected.extend(page)
+
+            if not payload.get("has_more") or not page:
+                break
+
+            last_id = page[-1].get("id")
+            if not isinstance(last_id, str) or not last_id:
+                break
+            starting_after = last_id
+
+        return collected
 
     async def cancel_subscription(self, *, subscription_id: str) -> dict[str, Any]:
         safe_subscription_id = urllib.parse.quote(subscription_id, safe="")
@@ -633,6 +683,7 @@ class StripePaymentService:
         user: User,
         user_agent: str | None,
         ip_address: str | None,
+        actor: User | None = None,
     ) -> tuple[User, UserSubscription]:
         subscription = await self._fetch_current_paid_subscription(user=user)
         if subscription is None:
@@ -659,7 +710,7 @@ class StripePaymentService:
         add_audit_log(
             self._session,
             action="stripe.subscription.cancel_at_period_end.enabled",
-            actor=user,
+            actor=actor or user,
             resource_type="user_subscription",
             resource_id=str(refreshed_subscription.id),
             details={
@@ -682,6 +733,7 @@ class StripePaymentService:
         user: User,
         user_agent: str | None,
         ip_address: str | None,
+        actor: User | None = None,
     ) -> tuple[User, UserSubscription]:
         subscription = await self._fetch_current_paid_subscription(user=user)
         if subscription is None:
@@ -708,7 +760,7 @@ class StripePaymentService:
         add_audit_log(
             self._session,
             action="stripe.subscription.cancel_at_period_end.disabled",
-            actor=user,
+            actor=actor or user,
             resource_type="user_subscription",
             resource_id=str(refreshed_subscription.id),
             details={
@@ -719,6 +771,232 @@ class StripePaymentService:
         )
         await self._session.commit()
         return await self._refreshed_user(user), refreshed_subscription
+
+    async def admin_resync_subscriptions(
+        self,
+        *,
+        user: User,
+        actor: User,
+        user_agent: str | None,
+        ip_address: str | None,
+    ) -> tuple[User, int]:
+        """Re-read every subscription from Stripe and apply it locally.
+
+        This is the repair path for a payment that went through in Stripe
+        while the webhook that should have applied the plan never landed.
+        Stripe is the source of truth, so nothing here decides which plan a
+        user should get - it only replays what Stripe already says. Nothing
+        is written back to Stripe: this call creates, changes and cancels
+        nothing there.
+        """
+        if not user.stripe_customer_id:
+            raise StripePlanUnavailableError(
+                "Utilizatorul nu are un cont de plata Stripe."
+            )
+
+        stripe = StripeClient(self._settings)
+        subscriptions = await stripe.list_customer_subscriptions(
+            customer_id=user.stripe_customer_id,
+        )
+
+        # Oldest first, so the newest subscription settles the final plan.
+        for subscription in sorted(
+            subscriptions,
+            key=lambda item: _int_or_zero(item.get("created")),
+        ):
+            await self._handle_subscription_event(
+                subscription,
+                cancel_superseded=False,
+            )
+
+        await self._session.flush()
+        await self._reconcile_plan_after_replay(user=user)
+        await self._sync_latest_invoices_for_user(user=user)
+
+        refreshed_user = await self._refreshed_user(user)
+        add_audit_log(
+            self._session,
+            action="admin.subscription.resynced",
+            actor=actor,
+            resource_type="user",
+            resource_id=str(user.id),
+            details={
+                "target_user_email": user.email,
+                "stripe_customer_id": user.stripe_customer_id,
+                "subscriptions_seen": len(subscriptions),
+                "resulting_plan": (
+                    refreshed_user.current_plan.slug
+                    if refreshed_user.current_plan is not None
+                    else None
+                ),
+            },
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        await self._session.commit()
+        return await self._refreshed_user(user), len(subscriptions)
+
+    async def admin_grant_manual_plan(
+        self,
+        *,
+        user: User,
+        actor: User,
+        plan_slug: str,
+        reason: str,
+        user_agent: str | None,
+        ip_address: str | None,
+    ) -> tuple[User, ManualPlanGrant]:
+        """Put a user on a plan by hand, with no Stripe subscription behind it.
+
+        The grant writes ``current_plan_id`` so every existing entitlement
+        check keeps reading a single field, and stays live until revoked. A
+        real Stripe subscription still wins: a later subscription event
+        overwrites the plan, which is what should happen when someone
+        eventually pays.
+        """
+        plan = await self._session.scalar(
+            select(SubscriptionPlan).where(SubscriptionPlan.slug == plan_slug)
+        )
+        if plan is None:
+            raise StripePlanUnavailableError("Planul cerut nu exista.")
+
+        existing = await self._fetch_active_manual_grant(user=user)
+        if existing is not None:
+            raise StripePlanUnavailableError(
+                "Utilizatorul are deja un plan acordat manual. "
+                "Revoca-l inainte de a acorda altul."
+            )
+
+        grant = ManualPlanGrant(
+            user_id=user.id,
+            plan_id=plan.id,
+            granted_by_id=actor.id,
+            reason=reason.strip(),
+        )
+        self._session.add(grant)
+
+        previous_plan_id = user.current_plan_id
+        user.current_plan_id = plan.id
+        if previous_plan_id != plan.id:
+            await self._reactivate_projects_for_plan(user=user, plan=plan)
+
+        add_audit_log(
+            self._session,
+            action="admin.subscription.manual_plan.granted",
+            actor=actor,
+            resource_type="user",
+            resource_id=str(user.id),
+            details={
+                "target_user_email": user.email,
+                "plan_slug": plan.slug,
+                "reason": reason.strip(),
+            },
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        await self._session.commit()
+        return await self._refreshed_user(user), grant
+
+    async def admin_revoke_manual_plan(
+        self,
+        *,
+        user: User,
+        actor: User,
+        reason: str | None,
+        user_agent: str | None,
+        ip_address: str | None,
+    ) -> User:
+        """Drop a hand-granted plan and fall back to what the user really has.
+
+        If a paid Stripe subscription is active the user lands back on it;
+        otherwise they land on the free plan.
+        """
+        grant = await self._fetch_active_manual_grant(user=user)
+        if grant is None:
+            raise StripePlanUnavailableError(
+                "Utilizatorul nu are un plan acordat manual."
+            )
+
+        grant.revoked_at = datetime.now(UTC)
+        grant.revoked_by_id = actor.id
+        grant.revoke_reason = reason.strip() if reason else None
+
+        paid_subscription = await self._fetch_current_paid_subscription(user=user)
+        if paid_subscription is not None:
+            fallback_plan_id: UUID | None = paid_subscription.plan_id
+        else:
+            free_plan = await self._session.scalar(
+                select(SubscriptionPlan).where(SubscriptionPlan.slug == "start")
+            )
+            fallback_plan_id = free_plan.id if free_plan is not None else None
+
+        user.current_plan_id = fallback_plan_id
+
+        add_audit_log(
+            self._session,
+            action="admin.subscription.manual_plan.revoked",
+            actor=actor,
+            resource_type="user",
+            resource_id=str(user.id),
+            details={
+                "target_user_email": user.email,
+                "revoke_reason": grant.revoke_reason,
+                "fell_back_to_subscription": paid_subscription is not None,
+            },
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        await self._session.commit()
+        return await self._refreshed_user(user)
+
+    async def _reconcile_plan_after_replay(self, *, user: User) -> None:
+        """Decide the plan once, after every subscription has been replayed.
+
+        Per-event logic is written for live webhooks, where one payload is the
+        whole news. Replaying a history of mostly-cancelled subscriptions runs
+        that logic dozens of times, and a cancelled one processed last would
+        drop the user to the free plan even though another subscription is
+        still active. So the plan is settled here instead, from the final
+        state: a live manual grant wins, then a paid subscription, then free.
+
+        The grant comes first on purpose. An admin set it deliberately and with
+        a recorded reason, so a diagnostic re-sync must not quietly undo it and
+        leave a grant row that claims to be active while changing nothing. A
+        real payment still overrides it the moment its webhook lands.
+        """
+        grant = await self._fetch_active_manual_grant(user=user)
+        if grant is not None:
+            user.current_plan_id = grant.plan_id
+            return
+
+        paid_subscription = await self._fetch_current_paid_subscription(user=user)
+        if paid_subscription is not None:
+            user.current_plan_id = paid_subscription.plan_id
+            return
+
+        free_plan = await self._session.scalar(
+            select(SubscriptionPlan).where(SubscriptionPlan.slug == "start")
+        )
+        user.current_plan_id = free_plan.id if free_plan is not None else None
+
+    async def _fetch_active_manual_grant(
+        self,
+        *,
+        user: User,
+    ) -> ManualPlanGrant | None:
+        return await self._session.scalar(
+            select(ManualPlanGrant)
+            .options(
+                selectinload(ManualPlanGrant.plan),
+                selectinload(ManualPlanGrant.granted_by),
+            )
+            .where(
+                ManualPlanGrant.user_id == user.id,
+                ManualPlanGrant.revoked_at.is_(None),
+            )
+            .order_by(ManualPlanGrant.created_at.desc())
+            .limit(1)
+        )
 
     async def _fetch_user_invoices(self, *, user: User) -> list[SubscriptionInvoice]:
         result = await self._session.scalars(
@@ -850,7 +1128,15 @@ class StripePaymentService:
     async def _handle_subscription_event(
         self,
         subscription: dict[str, Any],
+        *,
+        cancel_superseded: bool = True,
     ) -> None:
+        """Apply one Stripe subscription payload to our records.
+
+        ``cancel_superseded`` must be False when replaying history rather than
+        reacting to a live event: superseding issues real DELETE calls to
+        Stripe, which a read-only repair must never do.
+        """
         stripe_subscription_id = str(subscription.get("id") or "")
         stripe_customer_id = str(subscription.get("customer") or "")
         status = str(subscription.get("status") or "unknown")
@@ -900,6 +1186,7 @@ class StripePaymentService:
             current_period_end=period_end,
             cancel_at_period_end=bool(subscription.get("cancel_at_period_end")),
             canceled_at=_timestamp(subscription.get("canceled_at")),
+            cancel_superseded=cancel_superseded,
         )
 
     async def _handle_invoice_payment_failed(self, invoice: dict[str, Any]) -> None:
@@ -1175,6 +1462,7 @@ class StripePaymentService:
         current_period_end: datetime | None,
         cancel_at_period_end: bool,
         canceled_at: datetime | None,
+        cancel_superseded: bool = True,
     ) -> None:
         now = datetime.now(UTC)
         user_subscription = await self._session.scalar(
@@ -1222,10 +1510,11 @@ class StripePaymentService:
                 user.current_plan_id = plan.id
                 if previous_plan_id != plan.id:
                     await self._reactivate_projects_for_plan(user=user, plan=plan)
-                await self._cancel_superseded_subscriptions(
-                    user=user,
-                    active_subscription=user_subscription,
-                )
+                if cancel_superseded:
+                    await self._cancel_superseded_subscriptions(
+                        user=user,
+                        active_subscription=user_subscription,
+                    )
         elif (
             status in INACTIVE_SUBSCRIPTION_STATUSES
             and user.current_plan_id == plan.id

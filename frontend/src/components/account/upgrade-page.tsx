@@ -206,9 +206,13 @@ export function UpgradePage({
   const userPlanIsPaid = Number(user?.current_plan?.price_ron ?? 0) > 0;
   const upgradePlans = toUpgradePlans(t, plans);
   const activeSubscription = currentSubscription;
-  const currentPlanSlug = activeSubscription?.plan_slug ?? userPlanSlug;
+  // Which plan the account actually gets comes from current_plan: it is what
+  // every limit is checked against, and an admin can set it without a Stripe
+  // subscription. The subscription still drives the billing dates below, so a
+  // granted plan no longer shows up as the old paid one.
+  const currentPlanSlug = userPlanSlug;
   const currentPlanName =
-    activeSubscription?.plan_name ?? user?.current_plan?.name ?? "Start";
+    user?.current_plan?.name ?? activeSubscription?.plan_name ?? "Start";
   const currentPlanIsPaid = Boolean(activeSubscription) || userPlanIsPaid;
   const cancellationPending = Boolean(activeSubscription?.cancel_at_period_end);
   const accessUntilLabel = formatSubscriptionDate(

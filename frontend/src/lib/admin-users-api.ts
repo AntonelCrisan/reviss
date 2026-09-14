@@ -10,6 +10,34 @@ export type AdminUserSession = {
   ip_address: string | null;
 };
 
+export type AdminUserManualGrant = {
+  id: string;
+  plan_slug: string;
+  plan_name: string;
+  reason: string;
+  granted_by_email: string | null;
+  created_at: string;
+};
+
+export type AdminUserSubscription = {
+  current_plan_slug: string | null;
+  current_plan_name: string | null;
+  current_plan_price_ron: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  status: string | null;
+  cancel_at_period_end: boolean;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  canceled_at: string | null;
+  manual_grant: AdminUserManualGrant | null;
+};
+
+export type AdminSubscriptionActionResult = {
+  subscription: AdminUserSubscription;
+  message: string;
+};
+
 export type AdminUser = {
   id: string;
   email: string;
@@ -28,6 +56,7 @@ export type AdminUser = {
   last_session_at: string | null;
   last_seen_at: string | null;
   sessions: AdminUserSession[];
+  subscription: AdminUserSubscription;
 };
 
 type ApiErrorPayload = {
@@ -109,4 +138,51 @@ export async function deleteAdminUser(userId: string): Promise<void> {
   await adminUsersRequest<void>(`users/${userId}`, {
     method: "DELETE",
   });
+}
+
+export function resyncAdminUserSubscription(
+  userId: string,
+): Promise<AdminSubscriptionActionResult> {
+  return adminUsersRequest<AdminSubscriptionActionResult>(
+    `users/${userId}/subscription/resync`,
+    { method: "POST" },
+  );
+}
+
+export function cancelAdminUserSubscription(
+  userId: string,
+): Promise<AdminSubscriptionActionResult> {
+  return adminUsersRequest<AdminSubscriptionActionResult>(
+    `users/${userId}/subscription/cancel`,
+    { method: "POST" },
+  );
+}
+
+export function resumeAdminUserSubscription(
+  userId: string,
+): Promise<AdminSubscriptionActionResult> {
+  return adminUsersRequest<AdminSubscriptionActionResult>(
+    `users/${userId}/subscription/resume`,
+    { method: "POST" },
+  );
+}
+
+export function grantAdminUserManualPlan(
+  userId: string,
+  payload: { plan_slug: string; reason: string },
+): Promise<AdminSubscriptionActionResult> {
+  return adminUsersRequest<AdminSubscriptionActionResult>(
+    `users/${userId}/subscription/manual-plan`,
+    { method: "POST", body: payload },
+  );
+}
+
+export function revokeAdminUserManualPlan(
+  userId: string,
+  payload: { reason: string | null },
+): Promise<AdminSubscriptionActionResult> {
+  return adminUsersRequest<AdminSubscriptionActionResult>(
+    `users/${userId}/subscription/manual-plan`,
+    { method: "DELETE", body: payload },
+  );
 }

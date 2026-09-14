@@ -13,6 +13,11 @@ const allowedRoutes = [
   { method: "POST", pattern: /^users\/[^/]+\/verification-email$/ },
   { method: "PATCH", pattern: /^users\/[^/]+$/ },
   { method: "DELETE", pattern: /^users\/[^/]+$/ },
+  { method: "POST", pattern: /^users\/[^/]+\/subscription\/resync$/ },
+  { method: "POST", pattern: /^users\/[^/]+\/subscription\/cancel$/ },
+  { method: "POST", pattern: /^users\/[^/]+\/subscription\/resume$/ },
+  { method: "POST", pattern: /^users\/[^/]+\/subscription\/manual-plan$/ },
+  { method: "DELETE", pattern: /^users\/[^/]+\/subscription\/manual-plan$/ },
   { method: "GET", pattern: /^visitor-stats$/ },
   { method: "GET", pattern: /^visitor-visits$/ },
 ];

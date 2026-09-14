@@ -325,3 +325,55 @@ class StripeEvent(Base):
         nullable=False,
         server_default=func.now(),
     )
+
+
+class ManualPlanGrant(Base):
+    """A plan an admin put on a user by hand, outside Stripe.
+
+    Used when there is no Stripe subscription to sync from: a comped account,
+    a support gesture, or a test user. The grant also writes
+    ``User.current_plan_id`` so every entitlement check keeps reading one
+    field, and it stays live until an admin revokes it.
+    """
+
+    __tablename__ = "manual_plan_grants"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    plan_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("subscription_plans.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    granted_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    revoked_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    revoke_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    plan: Mapped[SubscriptionPlan] = relationship(foreign_keys=[plan_id])
+    user: Mapped[User] = relationship(foreign_keys=[user_id])
+    granted_by: Mapped[User | None] = relationship(foreign_keys=[granted_by_id])

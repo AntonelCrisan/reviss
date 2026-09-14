@@ -1106,5 +1106,21 @@
   "Payload Stripe invalid.": {
     "en": "Invalid Stripe payload.",
     "fr": "Contenu Stripe invalide."
+  },
+  "Utilizatorul nu are un cont de plata Stripe.": {
+    "en": "This user has no Stripe billing account.",
+    "fr": "Cet utilisateur n'a pas de compte de facturation Stripe."
+  },
+  "Planul cerut nu exista.": {
+    "en": "The requested plan does not exist.",
+    "fr": "Le forfait demandé n'existe pas."
+  },
+  "Utilizatorul are deja un plan acordat manual. Revoca-l inainte de a acorda altul.": {
+    "en": "This user already has a manually granted plan. Revoke it before granting another.",
+    "fr": "Cet utilisateur a déjà un forfait accordé manuellement. Révoquez-le avant d'en accorder un autre."
+  },
+  "Utilizatorul nu are un plan acordat manual.": {
+    "en": "This user has no manually granted plan.",
+    "fr": "Cet utilisateur n'a pas de forfait accordé manuellement."
   }
 }

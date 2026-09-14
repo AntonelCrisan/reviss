@@ -38,6 +38,7 @@ from app.models.study_project import (
     StudyProjectSummaryNote,
 )
 from app.models.subscription import (
+    ManualPlanGrant,
     StripeEvent,
     SubscriptionInvoice,
     SubscriptionPlan,
@@ -65,6 +66,7 @@ __all__ = [
     "PasswordResetToken",
     "PendingEmailChange",
     "PendingRegistration",
+    "ManualPlanGrant",
     "StripeEvent",
     "StudyProject",
     "StudyProjectArchive",

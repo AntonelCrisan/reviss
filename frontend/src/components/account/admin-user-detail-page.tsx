@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
+import { AdminUserSubscriptionSection } from "@/components/account/admin-user-subscription-section";
 import { TablePagination } from "@/components/account/table-pagination";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -11,12 +12,14 @@ import {
   sendAdminUserVerificationEmail,
   type AdminUser,
   type AdminUserSession,
+  type AdminUserSubscription,
   updateAdminUser,
 } from "@/lib/admin-users-api";
 import { toast } from "@/lib/toast-store";
 
 type AdminUserDetailPageProps = {
   user: AdminUser;
+  plans: { slug: string; name: string }[];
 };
 
 const SESSIONS_PAGE_SIZE = 8;
@@ -122,6 +125,7 @@ function UserMetric({
 
 export function AdminUserDetailPage({
   user: initialUser,
+  plans,
 }: AdminUserDetailPageProps) {
   const router = useRouter();
   const { user: currentUser } = useAuth();
@@ -299,6 +303,16 @@ export function AdminUserDetailPage({
             detail={themeLabel(user.theme_preference)}
           />
         </div>
+
+        <AdminUserSubscriptionSection
+          userId={user.id}
+          userEmail={user.email}
+          subscription={user.subscription}
+          plans={plans}
+          onSubscriptionChange={(subscription: AdminUserSubscription) =>
+            setUser((current) => ({ ...current, subscription }))
+          }
+        />
 
         <section className="rounded-xl border border-subtle bg-surface p-5">
           <div className="flex flex-col gap-3 border-b border-subtle pb-5 lg:flex-row lg:items-start lg:justify-between">
