@@ -181,3 +181,57 @@ export function updateAdminPlans(
     body: JSON.stringify({ plans }),
   });
 }
+
+export type PlanFeatureTranslationEntry = {
+  feature_id: string;
+  source_label: string;
+  label: string;
+};
+
+/**
+ * One plan's translatable copy. The `source_*` fields are the Romanian
+ * original, shown beside the inputs so nobody has to translate blind; only
+ * the plain fields are saved.
+ */
+export type PlanTranslationEntry = {
+  plan_id: string;
+  plan_slug: string;
+  source_name: string;
+  source_description: string;
+  source_material_limit: string;
+  source_ai_level: string;
+  source_storage: string;
+  source_conditions: string;
+  source_badge: string | null;
+  source_discount_label: string | null;
+  name: string;
+  description: string;
+  material_limit: string;
+  ai_level: string;
+  storage: string;
+  conditions: string;
+  badge: string;
+  discount_label: string;
+  features: PlanFeatureTranslationEntry[];
+};
+
+export type PlanTranslations = {
+  locale: string;
+  plans: PlanTranslationEntry[];
+};
+
+export function getAdminPlanTranslations(
+  locale: string,
+): Promise<PlanTranslations> {
+  return plansRequest<PlanTranslations>(`admin/translations/${locale}`);
+}
+
+export function updateAdminPlanTranslations(
+  locale: string,
+  plans: PlanTranslationEntry[],
+): Promise<PlanTranslations> {
+  return plansRequest<PlanTranslations>(`admin/translations/${locale}`, {
+    method: "PUT",
+    body: JSON.stringify({ plans }),
+  });
+}

@@ -51,6 +51,12 @@ const planCards: SettingsCard[] = [
     icon: "card",
   },
   {
+    title: "Traduceri planuri",
+    description: "Textele planurilor în engleză și franceză.",
+    href: "/admin/settings/traduceri-planuri",
+    icon: "card",
+  },
+  {
     title: "AI Credits și cost",
     description: "Praguri de credite pe mărime și cost estimat per model AI.",
     href: "/admin/settings/ai-credite",

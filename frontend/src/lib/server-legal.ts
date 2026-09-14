@@ -1,6 +1,10 @@
 import "server-only";
 
 import { cookies, headers } from "next/headers";
+import {
+  acceptLanguageHeader,
+  languageCookieHeader,
+} from "@/lib/server-language";
 import { legalConfig } from "@/lib/legal-config";
 import type { CompanyData, LegalDocument, LegalDocumentSlug } from "@/lib/legal-api";
 
@@ -35,6 +39,19 @@ async function requestHeaders(includeAuth: boolean) {
     if (cookieHeader) {
       requestHeaders.set("cookie", cookieHeader);
     }
+  } else {
+    // Public endpoints get the language cookie only, never the session: the
+    // backend picks the response language from it, and without it every
+    // server-rendered page would answer in Romanian whatever the visitor chose.
+    const languageCookie = await languageCookieHeader();
+    if (languageCookie) {
+      requestHeaders.set("cookie", languageCookie);
+    }
+  }
+
+  const acceptLanguage = await acceptLanguageHeader();
+  if (acceptLanguage) {
+    requestHeaders.set("accept-language", acceptLanguage);
   }
 
   if (userAgent) {
@@ -122,6 +139,10 @@ export function createFallbackLegalDocument(
   return {
     id: "fallback",
     slug,
+    // The bundled copy is the Romanian original, so it never carries the
+    // notice that a translation is non-binding.
+    locale: "ro",
+    is_translation: false,
     title,
     content_html: contentHtml,
     rendered_content_html: contentHtml,

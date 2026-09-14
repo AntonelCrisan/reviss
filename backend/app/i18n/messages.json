@@ -1122,5 +1122,13 @@
   "Utilizatorul nu are un plan acordat manual.": {
     "en": "This user has no manually granted plan.",
     "fr": "Cet utilisateur n'a pas de forfait accordé manuellement."
+  },
+  "Limba nu poate fi tradusa.": {
+    "en": "That language cannot be translated.",
+    "fr": "Cette langue ne peut pas être traduite."
+  },
+  "Documentul legal nu a putut fi creat.": {
+    "en": "The legal document could not be created.",
+    "fr": "Le document juridique n'a pas pu être créé."
   }
 }

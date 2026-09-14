@@ -1,6 +1,8 @@
 const allowedRoutes = [
   { method: "GET", pattern: /^admin$/ },
   { method: "PUT", pattern: /^admin$/ },
+  { method: "GET", pattern: /^admin\/translations\/[a-z]{2}$/ },
+  { method: "PUT", pattern: /^admin\/translations\/[a-z]{2}$/ },
 ];
 
 function noStoreHeaders(headers?: HeadersInit) {
@@ -53,12 +55,20 @@ async function proxyPlansRequest(
   }
 
   try {
-    const backendResponse = await fetch(`${apiUrl}/api/plans/${action}`, {
-      method: request.method,
-      headers: requestHeaders,
-      body: request.method === "GET" ? undefined : await request.text(),
-      cache: "no-store",
-    });
+    // The query string carries ?locale=, which selects the language a
+    // document is read and written in. Dropping it would silently send
+    // every edit to the Romanian original.
+    const queryString = new URL(request.url).search;
+    const backendResponse = await fetch(
+      `${apiUrl}/api/plans/${action}${queryString}`,
+      {
+        method: request.method,
+        headers: requestHeaders,
+        body:
+          request.method === "GET" ? undefined : await request.text(),
+        cache: "no-store",
+      },
+    );
 
     const responseHeaders = new Headers();
     const responseContentType = backendResponse.headers.get("content-type");

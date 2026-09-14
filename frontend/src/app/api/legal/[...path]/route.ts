@@ -48,12 +48,20 @@ async function proxyLegalRequest(
   }
 
   try {
-    const backendResponse = await fetch(`${apiUrl}/api/legal/${action}`, {
-      method: request.method,
-      headers,
-      body: request.method === "GET" ? undefined : await request.text(),
-      cache: "no-store",
-    });
+    // The query string carries ?locale=, which selects the language a
+    // document is read and written in. Dropping it would silently send
+    // every edit to the Romanian original.
+    const queryString = new URL(request.url).search;
+    const backendResponse = await fetch(
+      `${apiUrl}/api/legal/${action}${queryString}`,
+      {
+        method: request.method,
+        headers,
+        body:
+          request.method === "GET" ? undefined : await request.text(),
+        cache: "no-store",
+      },
+    );
 
     const responseHeaders = new Headers();
     const responseContentType = backendResponse.headers.get("content-type");

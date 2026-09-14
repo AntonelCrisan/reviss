@@ -43,6 +43,8 @@ from app.models.subscription import (
     SubscriptionInvoice,
     SubscriptionPlan,
     SubscriptionPlanFeature,
+    SubscriptionPlanFeatureTranslation,
+    SubscriptionPlanTranslation,
     UserSubscription,
 )
 from app.models.user import User
@@ -87,6 +89,8 @@ __all__ = [
     "SubscriptionInvoice",
     "SubscriptionPlan",
     "SubscriptionPlanFeature",
+    "SubscriptionPlanFeatureTranslation",
+    "SubscriptionPlanTranslation",
     "UserSubscription",
     "SubscriptionCancellation",
     "User",

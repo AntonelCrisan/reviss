@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import {
   createAdminLegalDocumentSection,
   deleteAdminLegalDocumentSection,
+  getAdminLegalDocument,
   type LegalDocument,
   type LegalDocumentSection,
   updateAdminLegalDocumentSection,
+  type LegalLocale,
 } from "@/lib/legal-api";
 import { toast } from "@/lib/toast-store";
 
@@ -72,12 +74,21 @@ function EditorMetric({
   );
 }
 
+/** Romanian is the authoritative text; the others are informative. */
+const LEGAL_LOCALES = [
+  { code: "ro" as const, label: "Română" },
+  { code: "en" as const, label: "English" },
+  { code: "fr" as const, label: "Français" },
+];
+
 export function AdminLegalEditorPage({
   document,
   description,
   publicHref,
 }: AdminLegalEditorPageProps) {
+  const [locale, setLocale] = useState<LegalLocale>("ro");
   const [sections, setSections] = useState(document.sections);
+  const [isLoadingLocale, setIsLoadingLocale] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draft, setDraft] = useState<DraftSection | null>(null);
   const [newDraft, setNewDraft] = useState<DraftSection>(createEmptyDraft);
@@ -86,6 +97,38 @@ export function AdminLegalEditorPage({
   const [deleteConfirmKey, setDeleteConfirmKey] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+
+  // Every language goes through the same fetch, Romanian included, so there is
+  // one code path and no synchronous state write before it. Opening a
+  // translation for the first time makes the backend copy the Romanian
+  // sections across, so the translator starts from the real structure.
+  useEffect(() => {
+    let isMounted = true;
+
+    getAdminLegalDocument(document.slug, locale)
+      .then((result) => {
+        if (!isMounted) return;
+        setSections(result.sections);
+        setEditingKey(null);
+        setDraft(null);
+      })
+      .catch((cause: unknown) => {
+        if (!isMounted) return;
+        toast.error(
+          cause instanceof Error
+            ? cause.message
+            : "Documentul nu a putut fi încărcat.",
+        );
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setIsLoadingLocale(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [document.slug, locale]);
 
   function startEditing(section: LegalDocumentSection) {
     setEditingKey(section.section_key);
@@ -114,6 +157,7 @@ export function AdminLegalEditorPage({
       const updatedDocument = await createAdminLegalDocumentSection(
         document.slug,
         payload,
+        locale,
       );
       setSections(updatedDocument.sections);
       setNewDraft(createEmptyDraft());
@@ -147,6 +191,7 @@ export function AdminLegalEditorPage({
         document.slug,
         section.section_key,
         payload,
+        locale,
       );
       setSections(updatedDocument.sections);
       setEditingKey(null);
@@ -172,6 +217,7 @@ export function AdminLegalEditorPage({
       const updatedDocument = await deleteAdminLegalDocumentSection(
         document.slug,
         section.section_key,
+        locale,
       );
       setSections(updatedDocument.sections);
       setDeleteConfirmKey(null);
@@ -201,6 +247,14 @@ export function AdminLegalEditorPage({
   return (
     <AccountStaticShell activePage="admin-settings">
       <section className="space-y-7">
+        {locale !== "ro" ? (
+          <div className="rounded-xl border border-warning-border bg-warning-soft px-4 py-3 text-sm leading-6 text-warning">
+            <strong className="font-bold">Editezi o traducere.</strong> Versiunea
+            în limba română rămâne cea care obligă juridic; aceasta este
+            informativă. O secțiune lăsată neschimbată păstrează textul copiat
+            din română.
+          </div>
+        ) : null}
         <div className="flex flex-col gap-5 border-b border-subtle pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <Link
@@ -218,6 +272,31 @@ export function AdminLegalEditorPage({
             <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-muted">
               {description}
             </p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {LEGAL_LOCALES.map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  onClick={() => {
+                    if (item.code === locale) return;
+                    setIsLoadingLocale(true);
+                    setLocale(item.code);
+                  }}
+                  disabled={isLoadingLocale}
+                  className={`rounded-md border px-4 py-2 text-sm font-bold transition disabled:opacity-60 ${
+                    locale === item.code
+                      ? "border-transparent bg-action text-on-action"
+                      : "border-subtle hover:bg-surface-hover"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+              {isLoadingLocale ? (
+                <span className="text-xs text-muted">Se încarcă...</span>
+              ) : null}
+            </div>
           </div>
 
           <Link

@@ -1,15 +1,30 @@
 from datetime import UTC, datetime
 from decimal import Decimal
+from typing import Final
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.api.dependencies import CurrentAdminUser, DbSession
-from app.models import SubscriptionPlan, SubscriptionPlanFeature
+from app.core.i18n import (
+    DEFAULT_LANGUAGE,
+    get_request_language,
+    normalize_language,
+)
+from app.models import (
+    SubscriptionPlan,
+    SubscriptionPlanFeature,
+    SubscriptionPlanFeatureTranslation,
+    SubscriptionPlanTranslation,
+)
 from app.schemas.plans import (
+    PlanFeatureTranslationEntry,
+    PlanTranslationEntry,
+    PlanTranslationsResponse,
+    PlanTranslationsUpdate,
     SubscriptionPlanPublicResponse,
     SubscriptionPlanResponse,
     SubscriptionPlansUpdate,
@@ -208,16 +223,27 @@ async def _get_plans(
     session: DbSession,
     *,
     include_hidden: bool,
+    refresh: bool = False,
 ) -> list[SubscriptionPlan]:
     await _ensure_default_plans(session)
 
     query = (
         select(SubscriptionPlan)
-        .options(selectinload(SubscriptionPlan.features))
+        .options(
+            selectinload(SubscriptionPlan.features).selectinload(
+                SubscriptionPlanFeature.translations,
+            ),
+            selectinload(SubscriptionPlan.translations),
+        )
         .order_by(SubscriptionPlan.sort_order, SubscriptionPlan.created_at)
     )
     if not include_hidden:
         query = query.where(SubscriptionPlan.is_visible.is_(True))
+    if refresh:
+        # The session outlives a commit (expire_on_commit=False), so objects
+        # already loaded keep the collections they were loaded with. Re-reading
+        # after a write needs this, or the response echoes the pre-save state.
+        query = query.execution_options(populate_existing=True)
 
     plans = list((await session.scalars(query)).all())
     for plan in plans:
@@ -225,8 +251,90 @@ async def _get_plans(
     return plans
 
 
+# Copy that differs per language. Everything else on a plan - prices, limits,
+# flags, Stripe identifiers - is language independent and never translated.
+TRANSLATABLE_PLAN_FIELDS: Final = (
+    "name",
+    "description",
+    "material_limit",
+    "ai_level",
+    "storage",
+    "conditions",
+    "badge",
+    "discount_label",
+)
+
+
+def _plan_overrides(plan: SubscriptionPlan, language: str) -> dict[str, str]:
+    """Translated plan copy for one language, field by field.
+
+    Romanian is the stored original, so it needs no lookup. A field left blank
+    in a translation falls through to the Romanian text, which keeps a
+    half-finished translation rendering a complete page instead of gaps.
+    """
+    if language == DEFAULT_LANGUAGE:
+        return {}
+
+    translation = next(
+        (item for item in plan.translations if item.locale == language),
+        None,
+    )
+    if translation is None:
+        return {}
+
+    overrides: dict[str, str] = {}
+    for field in TRANSLATABLE_PLAN_FIELDS:
+        value = getattr(translation, field, None)
+        if isinstance(value, str) and value.strip():
+            overrides[field] = value
+    return overrides
+
+
+def _feature_labels(plan: SubscriptionPlan, language: str) -> dict[UUID, str]:
+    if language == DEFAULT_LANGUAGE:
+        return {}
+
+    labels: dict[UUID, str] = {}
+    for feature in plan.features:
+        translation = next(
+            (item for item in feature.translations if item.locale == language),
+            None,
+        )
+        if translation is not None and translation.label.strip():
+            labels[feature.id] = translation.label
+    return labels
+
+
+def _apply_translations(response: object, plan: SubscriptionPlan) -> None:
+    """Overlay the visitor's language onto an already serialised plan.
+
+    Applied to the response rather than to the ORM objects on purpose: writing
+    translated text onto the loaded plan would make SQLAlchemy try to persist
+    it back over the Romanian original.
+    """
+    language = get_request_language()
+
+    for field, value in _plan_overrides(plan, language).items():
+        if hasattr(response, field):
+            setattr(response, field, value)
+
+    labels = _feature_labels(plan, language)
+    if not labels:
+        return
+
+    for feature_response, feature in zip(
+        getattr(response, "features", []),
+        plan.features,
+        strict=False,
+    ):
+        label = labels.get(feature.id)
+        if label is not None:
+            feature_response.label = label
+
+
 def _plan_response(plan: SubscriptionPlan) -> SubscriptionPlanResponse:
     response = SubscriptionPlanResponse.model_validate(plan)
+    _apply_translations(response, plan)
 
     if response.slug == "start" and response.name == "Start":
         response.name = "Beginner"
@@ -247,6 +355,7 @@ def _public_plan_response(plan: SubscriptionPlan) -> SubscriptionPlanPublicRespo
     }
     payload["is_purchasable"] = bool(plan.stripe_price_id)
     response = SubscriptionPlanPublicResponse.model_validate(payload)
+    _apply_translations(response, plan)
 
     if response.slug == "start" and response.name == "Start":
         response.name = "Beginner"
@@ -386,3 +495,171 @@ async def update_admin_plans(
 
     plans = await _get_plans(session, include_hidden=True)
     return [_plan_response(plan) for plan in plans]
+
+def _translation_entry(plan: SubscriptionPlan, locale: str) -> PlanTranslationEntry:
+    translation = next(
+        (item for item in plan.translations if item.locale == locale),
+        None,
+    )
+
+    def translated(field: str) -> str:
+        value = getattr(translation, field, None) if translation else None
+        return value if isinstance(value, str) else ""
+
+    feature_labels = {
+        item.feature_id: item.label
+        for feature in plan.features
+        for item in feature.translations
+        if item.locale == locale
+    }
+
+    return PlanTranslationEntry(
+        plan_id=plan.id,
+        plan_slug=plan.slug,
+        source_name=plan.name,
+        source_description=plan.description,
+        source_material_limit=plan.material_limit,
+        source_ai_level=plan.ai_level,
+        source_storage=plan.storage,
+        source_conditions=plan.conditions,
+        source_badge=plan.badge,
+        source_discount_label=plan.discount_label,
+        name=translated("name"),
+        description=translated("description"),
+        material_limit=translated("material_limit"),
+        ai_level=translated("ai_level"),
+        storage=translated("storage"),
+        conditions=translated("conditions"),
+        badge=translated("badge"),
+        discount_label=translated("discount_label"),
+        features=[
+            PlanFeatureTranslationEntry(
+                feature_id=feature.id,
+                source_label=feature.label,
+                label=feature_labels.get(feature.id, ""),
+            )
+            for feature in plan.features
+        ],
+    )
+
+
+def _require_translatable_locale(locale: str) -> str:
+    """Romanian is the source text and is edited in the plan editor itself."""
+    normalized = normalize_language(locale, default="")  # type: ignore[arg-type]
+    if not normalized or normalized == DEFAULT_LANGUAGE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Limba nu poate fi tradusa.",
+        )
+    return normalized
+
+
+@router.get(
+    "/admin/translations/{locale}",
+    response_model=PlanTranslationsResponse,
+)
+async def get_admin_plan_translations(
+    locale: str,
+    _: CurrentAdminUser,
+    session: DbSession,
+) -> PlanTranslationsResponse:
+    target_locale = _require_translatable_locale(locale)
+    plans = await _get_plans(session, include_hidden=True)
+    return PlanTranslationsResponse(
+        locale=target_locale,
+        plans=[_translation_entry(plan, target_locale) for plan in plans],
+    )
+
+
+@router.put(
+    "/admin/translations/{locale}",
+    response_model=PlanTranslationsResponse,
+)
+async def update_admin_plan_translations(
+    locale: str,
+    payload: PlanTranslationsUpdate,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+) -> PlanTranslationsResponse:
+    """Replace one language's plan copy.
+
+    Whole-locale replace rather than a row-by-row diff: every translation for
+    this language is dropped and the non-empty ones are written again. That
+    keeps "cleared the box" and "never translated" as the same state, so
+    clearing a field restores the Romanian text instead of storing a blank.
+
+    The deletes are Core statements, not session.delete(): removing mapped
+    objects one by one makes the ORM walk their relationships during flush,
+    which attempts lazy IO the async session cannot perform.
+    """
+    target_locale = _require_translatable_locale(locale)
+    plans = {plan.id: plan for plan in await _get_plans(session, include_hidden=True)}
+
+    feature_ids = [feature.id for plan in plans.values() for feature in plan.features]
+
+    await session.execute(
+        delete(SubscriptionPlanTranslation).where(
+            SubscriptionPlanTranslation.locale == target_locale,
+            SubscriptionPlanTranslation.plan_id.in_(list(plans)),
+        )
+    )
+    if feature_ids:
+        await session.execute(
+            delete(SubscriptionPlanFeatureTranslation).where(
+                SubscriptionPlanFeatureTranslation.locale == target_locale,
+                SubscriptionPlanFeatureTranslation.feature_id.in_(feature_ids),
+            )
+        )
+
+    touched: list[str] = []
+    for entry in payload.plans:
+        plan = plans.get(entry.plan_id)
+        if plan is None:
+            continue
+
+        values = {
+            field: (getattr(entry, field) or "").strip() or None
+            for field in TRANSLATABLE_PLAN_FIELDS
+        }
+        if any(values.values()):
+            session.add(
+                SubscriptionPlanTranslation(
+                    plan_id=plan.id,
+                    locale=target_locale,
+                    **values,
+                )
+            )
+
+        known_features = {feature.id for feature in plan.features}
+        for feature_entry in entry.features:
+            label = feature_entry.label.strip()
+            if label and feature_entry.feature_id in known_features:
+                session.add(
+                    SubscriptionPlanFeatureTranslation(
+                        feature_id=feature_entry.feature_id,
+                        locale=target_locale,
+                        label=label,
+                    )
+                )
+
+        touched.append(plan.slug)
+
+    add_audit_log(
+        session,
+        action="admin.plan_translations.updated",
+        actor=admin_user,
+        resource_type="subscription_plan_translations",
+        resource_id=target_locale,
+        details={"locale": target_locale, "slugs": touched},
+        ip_address=request.client.host if request.client is not None else None,
+        user_agent=(request.headers.get("user-agent") or "")[:512] or None,
+    )
+    await session.commit()
+
+    refreshed = await _get_plans(session, include_hidden=True, refresh=True)
+    return PlanTranslationsResponse(
+        locale=target_locale,
+        plans=[_translation_entry(plan, target_locale) for plan in refreshed],
+    )
+

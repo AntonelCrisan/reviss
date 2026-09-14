@@ -209,6 +209,57 @@ class SubscriptionPlanUpdate(BaseModel):
         return self
 
 
+class PlanFeatureTranslationEntry(BaseModel):
+    """One feature line: the Romanian original beside its translation."""
+
+    feature_id: uuid.UUID
+    source_label: str
+    label: str = Field(default="", max_length=400)
+
+
+class PlanTranslationEntry(BaseModel):
+    """One plan's translatable copy, paired with the Romanian source.
+
+    ``source_*`` is read-only context for whoever is translating; only the
+    plain fields are saved. An empty field means "not translated", and the
+    reader falls back to the Romanian text rather than showing a gap.
+    """
+
+    plan_id: uuid.UUID
+    plan_slug: str
+    source_name: str
+    source_description: str
+    source_material_limit: str
+    source_ai_level: str
+    source_storage: str
+    source_conditions: str
+    source_badge: str | None
+    source_discount_label: str | None
+
+    name: str = Field(default="", max_length=120)
+    description: str = Field(default="", max_length=2000)
+    material_limit: str = Field(default="", max_length=2000)
+    ai_level: str = Field(default="", max_length=2000)
+    storage: str = Field(default="", max_length=2000)
+    conditions: str = Field(default="", max_length=2000)
+    badge: str = Field(default="", max_length=80)
+    discount_label: str = Field(default="", max_length=120)
+
+    features: list[PlanFeatureTranslationEntry] = Field(
+        default_factory=list,
+        max_length=40,
+    )
+
+
+class PlanTranslationsResponse(BaseModel):
+    locale: str
+    plans: list[PlanTranslationEntry]
+
+
+class PlanTranslationsUpdate(BaseModel):
+    plans: list[PlanTranslationEntry] = Field(max_length=20)
+
+
 class SubscriptionPlansUpdate(BaseModel):
     plans: list[SubscriptionPlanUpdate] = Field(min_length=1, max_length=12)
 

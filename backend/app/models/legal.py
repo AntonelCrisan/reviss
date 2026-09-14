@@ -18,11 +18,20 @@ from app.db.base import Base
 class LegalDocument(Base):
     __tablename__ = "legal_documents"
     __table_args__ = (
-        UniqueConstraint("slug", name="uq_legal_documents_slug"),
+        UniqueConstraint("slug", "locale", name="uq_legal_documents_slug_locale"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     slug: Mapped[str] = mapped_column(String(80), nullable=False)
+    # A translated document is a document in its own right: its own sections,
+    # its own revision date, published independently of the Romanian original.
+    # Romanian is the authoritative version and the fallback for every lookup.
+    locale: Mapped[str] = mapped_column(
+        String(8),
+        nullable=False,
+        default="ro",
+        server_default="ro",
+    )
     title: Mapped[str] = mapped_column(String(160), nullable=False)
     last_date_modified: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

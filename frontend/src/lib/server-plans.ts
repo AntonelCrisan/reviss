@@ -1,6 +1,10 @@
 import "server-only";
 
 import { cookies, headers } from "next/headers";
+import {
+  acceptLanguageHeader,
+  languageCookieHeader,
+} from "@/lib/server-language";
 import type {
   SubscriptionPlan,
   SubscriptionPlanPublic,
@@ -236,6 +240,19 @@ async function requestHeaders(includeAuth: boolean) {
     if (cookieHeader) {
       requestHeaders.set("cookie", cookieHeader);
     }
+  } else {
+    // Public endpoints get the language cookie only, never the session: the
+    // backend picks the response language from it, and without it every
+    // server-rendered page would answer in Romanian whatever the visitor chose.
+    const languageCookie = await languageCookieHeader();
+    if (languageCookie) {
+      requestHeaders.set("cookie", languageCookie);
+    }
+  }
+
+  const acceptLanguage = await acceptLanguageHeader();
+  if (acceptLanguage) {
+    requestHeaders.set("accept-language", acceptLanguage);
   }
 
   if (userAgent) {

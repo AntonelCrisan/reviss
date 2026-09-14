@@ -13,6 +13,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -159,6 +160,11 @@ class SubscriptionPlan(Base):
         order_by="SubscriptionPlanFeature.sort_order",
         passive_deletes=True,
     )
+    translations: Mapped[list[SubscriptionPlanTranslation]] = relationship(
+        back_populates="plan",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
     user_subscriptions: Mapped[list[UserSubscription]] = relationship(
         back_populates="plan",
     )
@@ -177,6 +183,91 @@ class SubscriptionPlanFeature(Base):
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     plan: Mapped[SubscriptionPlan] = relationship(back_populates="features")
+    translations: Mapped[list[SubscriptionPlanFeatureTranslation]] = relationship(
+        back_populates="feature",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+class SubscriptionPlanTranslation(Base):
+    """Localised copy for a plan. Every column is optional.
+
+    A null field means "no translation yet", and the reader falls back to the
+    Romanian text on the plan itself, so a half-finished translation still
+    renders a complete page.
+    """
+
+    __tablename__ = "subscription_plan_translations"
+    __table_args__ = (
+        UniqueConstraint(
+            "plan_id",
+            "locale",
+            name="uq_subscription_plan_translations_plan_locale",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    plan_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("subscription_plans.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    locale: Mapped[str] = mapped_column(String(8), nullable=False)
+    name: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    material_limit: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_level: Mapped[str | None] = mapped_column(Text, nullable=True)
+    storage: Mapped[str | None] = mapped_column(Text, nullable=True)
+    conditions: Mapped[str | None] = mapped_column(Text, nullable=True)
+    badge: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    discount_label: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    plan: Mapped[SubscriptionPlan] = relationship(back_populates="translations")
+
+
+class SubscriptionPlanFeatureTranslation(Base):
+    __tablename__ = "subscription_plan_feature_translations"
+    __table_args__ = (
+        UniqueConstraint(
+            "feature_id",
+            "locale",
+            name="uq_plan_feature_translations_feature_locale",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    feature_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("subscription_plan_features.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    locale: Mapped[str] = mapped_column(String(8), nullable=False)
+    label: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    feature: Mapped[SubscriptionPlanFeature] = relationship(
+        back_populates="translations",
+    )
 
 
 class UserSubscription(Base):

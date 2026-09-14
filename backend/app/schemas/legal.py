@@ -128,6 +128,13 @@ class LegalDocumentResponse(BaseModel):
 
     id: uuid.UUID
     slug: str
+    # The language actually served. It differs from the one requested whenever
+    # a translation has not been written yet, and the reader falls back to the
+    # authoritative Romanian text.
+    locale: str
+    # True when the served document is a translation, so the page can carry the
+    # notice that the Romanian version is the binding one.
+    is_translation: bool
     title: str
     content_html: str
     rendered_content_html: str

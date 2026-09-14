@@ -9,6 +9,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.dependencies import CurrentAdminUser, DbSession
+from app.core.i18n import (
+    DEFAULT_LANGUAGE,
+    get_request_language,
+    normalize_language,
+)
 from app.models import CompanyData, LegalDocument, LegalDocumentSection
 from app.schemas.legal import (
     CompanyDataResponse,
@@ -166,24 +171,51 @@ async def _get_company_data(session: DbSession) -> CompanyData:
     return company_data
 
 
-async def _get_document(session: DbSession, slug: str) -> LegalDocument:
+async def _load_document(
+    session: DbSession,
+    slug: str,
+    locale: str,
+) -> LegalDocument | None:
+    return await session.scalar(
+        select(LegalDocument)
+        .options(selectinload(LegalDocument.sections))
+        .where(
+            LegalDocument.slug == slug,
+            LegalDocument.locale == locale,
+        )
+    )
+
+
+async def _get_document(
+    session: DbSession,
+    slug: str,
+    locale: str = DEFAULT_LANGUAGE,
+) -> LegalDocument:
+    """The document in the requested language, or the Romanian original.
+
+    Romanian is the authoritative version: it is the one that is seeded, the
+    one an admin must keep current, and the one served whenever a translation
+    has not been written yet. A visitor never gets an empty legal page.
+    """
     if slug not in DOCUMENT_TITLES:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Documentul legal nu exista.",
         )
 
-    document = await session.scalar(
-        select(LegalDocument)
-        .options(selectinload(LegalDocument.sections))
-        .where(LegalDocument.slug == slug)
-    )
+    if locale != DEFAULT_LANGUAGE:
+        translated = await _load_document(session, slug, locale)
+        if translated is not None:
+            return translated
+
+    document = await _load_document(session, slug, DEFAULT_LANGUAGE)
     if document is not None:
         return document
 
     now = datetime.now(UTC)
     document = LegalDocument(
         slug=slug,
+        locale=DEFAULT_LANGUAGE,
         title=DOCUMENT_TITLES[slug],
         last_date_modified=now,
     )
@@ -192,11 +224,7 @@ async def _get_document(session: DbSession, slug: str) -> LegalDocument:
     session.add(document)
     await session.commit()
 
-    document = await session.scalar(
-        select(LegalDocument)
-        .options(selectinload(LegalDocument.sections))
-        .where(LegalDocument.slug == slug)
-    )
+    document = await _load_document(session, slug, DEFAULT_LANGUAGE)
     if document is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -231,6 +259,8 @@ def _document_response(
     return LegalDocumentResponse(
         id=document.id,
         slug=document.slug,
+        locale=document.locale,
+        is_translation=document.locale != DEFAULT_LANGUAGE,
         title=document.title,
         content_html=f"<article>\n{content_html}\n</article>",
         rendered_content_html=(
@@ -255,7 +285,7 @@ async def get_legal_document(
     slug: str,
     session: DbSession,
 ) -> LegalDocumentResponse:
-    document = await _get_document(session, slug)
+    document = await _get_document(session, slug, get_request_language())
     company_data = await _get_company_data(session)
     return _document_response(document, company_data)
 
@@ -296,13 +326,63 @@ async def update_admin_company_data(
     return CompanyDataResponse.model_validate(company_data)
 
 
+async def _get_admin_document(
+    session: DbSession,
+    slug: str,
+    locale: str,
+) -> LegalDocument:
+    """The editable document for one language, seeded from Romanian if new.
+
+    Opening a language for the first time copies the Romanian sections across,
+    so the translator starts from the real structure and text instead of a
+    blank page - and no section can be quietly forgotten.
+    """
+    target = normalize_language(locale)
+    if target == DEFAULT_LANGUAGE:
+        return await _get_document(session, slug, DEFAULT_LANGUAGE)
+
+    existing = await _load_document(session, slug, target)
+    if existing is not None:
+        return existing
+
+    source = await _get_document(session, slug, DEFAULT_LANGUAGE)
+    now = datetime.now(UTC)
+    document = LegalDocument(
+        slug=slug,
+        locale=target,
+        title=source.title,
+        last_date_modified=now,
+    )
+    document.sections = [
+        LegalDocumentSection(
+            section_key=section.section_key,
+            title=section.title,
+            content=section.content,
+            sort_order=section.sort_order,
+            last_date_modified=now,
+        )
+        for section in sorted(source.sections, key=lambda item: item.sort_order)
+    ]
+    session.add(document)
+    await session.commit()
+
+    created = await _load_document(session, slug, target)
+    if created is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Documentul legal nu a putut fi creat.",
+        )
+    return created
+
+
 @router.get("/admin/documents/{slug}", response_model=LegalDocumentResponse)
 async def get_admin_legal_document(
     slug: str,
     _: CurrentAdminUser,
     session: DbSession,
+    locale: str = DEFAULT_LANGUAGE,
 ) -> LegalDocumentResponse:
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     company_data = await _get_company_data(session)
     return _document_response(document, company_data)
 
@@ -318,8 +398,9 @@ async def create_admin_legal_document_section(
     request: Request,
     admin_user: CurrentAdminUser,
     session: DbSession,
+    locale: str = DEFAULT_LANGUAGE,
 ) -> LegalDocumentResponse:
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     now = datetime.now(UTC)
     section_id = uuid.uuid4()
     section = LegalDocumentSection(
@@ -350,7 +431,7 @@ async def create_admin_legal_document_section(
     )
     await session.commit()
 
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     company_data = await _get_company_data(session)
     return _document_response(document, company_data)
 
@@ -366,8 +447,9 @@ async def update_admin_legal_document_section(
     request: Request,
     admin_user: CurrentAdminUser,
     session: DbSession,
+    locale: str = DEFAULT_LANGUAGE,
 ) -> LegalDocumentResponse:
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     section = _find_document_section(document, section_key)
     if section is None:
         raise HTTPException(
@@ -397,7 +479,7 @@ async def update_admin_legal_document_section(
     await session.commit()
     await session.refresh(document)
 
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     company_data = await _get_company_data(session)
     return _document_response(document, company_data)
 
@@ -412,8 +494,9 @@ async def delete_admin_legal_document_section(
     request: Request,
     admin_user: CurrentAdminUser,
     session: DbSession,
+    locale: str = DEFAULT_LANGUAGE,
 ) -> LegalDocumentResponse:
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     section = _find_document_section(document, section_key)
     if section is None:
         raise HTTPException(
@@ -448,6 +531,6 @@ async def delete_admin_legal_document_section(
     )
     await session.commit()
 
-    document = await _get_document(session, slug)
+    document = await _get_admin_document(session, slug, locale)
     company_data = await _get_company_data(session)
     return _document_response(document, company_data)

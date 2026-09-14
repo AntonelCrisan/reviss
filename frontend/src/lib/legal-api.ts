@@ -32,9 +32,16 @@ export type LegalDocumentSection = {
   last_date_modified: string;
 };
 
+/** Romanian is the authoritative version; the rest are translations. */
+export type LegalLocale = "ro" | "en" | "fr";
+
 export type LegalDocument = {
   id: string;
   slug: LegalDocumentSlug;
+  /** The language actually served, which may be the Romanian fallback. */
+  locale: LegalLocale;
+  /** True when this is a translation, so the page can flag which text binds. */
+  is_translation: boolean;
   title: string;
   content_html: string;
   rendered_content_html: string;
@@ -196,19 +203,27 @@ async function legalRequest<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+function localeQuery(locale: LegalLocale) {
+  return `?locale=${encodeURIComponent(locale)}`;
+}
+
 export function getAdminLegalDocument(
   slug: LegalDocumentSlug,
+  locale: LegalLocale = "ro",
 ): Promise<LegalDocument> {
-  return legalRequest<LegalDocument>(`admin/documents/${slug}`);
+  return legalRequest<LegalDocument>(
+    `admin/documents/${slug}${localeQuery(locale)}`,
+  );
 }
 
 export function updateAdminLegalDocumentSection(
   slug: LegalDocumentSlug,
   sectionKey: string,
   payload: LegalSectionUpdate,
+  locale: LegalLocale = "ro",
 ): Promise<LegalDocument> {
   return legalRequest<LegalDocument>(
-    `admin/documents/${slug}/sections/${sectionKey}`,
+    `admin/documents/${slug}/sections/${sectionKey}${localeQuery(locale)}`,
     {
       method: "PATCH",
       body: JSON.stringify(payload),
@@ -219,19 +234,24 @@ export function updateAdminLegalDocumentSection(
 export function createAdminLegalDocumentSection(
   slug: LegalDocumentSlug,
   payload: LegalSectionCreate,
+  locale: LegalLocale = "ro",
 ): Promise<LegalDocument> {
-  return legalRequest<LegalDocument>(`admin/documents/${slug}/sections`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  return legalRequest<LegalDocument>(
+    `admin/documents/${slug}/sections${localeQuery(locale)}`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function deleteAdminLegalDocumentSection(
   slug: LegalDocumentSlug,
   sectionKey: string,
+  locale: LegalLocale = "ro",
 ): Promise<LegalDocument> {
   return legalRequest<LegalDocument>(
-    `admin/documents/${slug}/sections/${sectionKey}`,
+    `admin/documents/${slug}/sections/${sectionKey}${localeQuery(locale)}`,
     {
       method: "DELETE",
     },
