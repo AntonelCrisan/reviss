@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { AdminUserSubscriptionSection } from "@/components/account/admin-user-subscription-section";
+import { AdminUserUsageSection } from "@/components/account/admin-user-usage-section";
 import { TablePagination } from "@/components/account/table-pagination";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -137,6 +138,7 @@ export function AdminUserDetailPage({
     useState<VerificationEmailState>("idle");
   const [isDeletingUser, setIsDeletingUser] = useState(false);
   const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
+  const [usageRefreshToken, setUsageRefreshToken] = useState(0);
   const verificationEmailRequestInFlightRef = useRef(false);
   const isCurrentUser = currentUser?.id === user.id;
   const hasSentVerificationEmail = verificationEmailState === "sent";
@@ -309,9 +311,15 @@ export function AdminUserDetailPage({
           userEmail={user.email}
           subscription={user.subscription}
           plans={plans}
-          onSubscriptionChange={(subscription: AdminUserSubscription) =>
-            setUser((current) => ({ ...current, subscription }))
-          }
+          onSubscriptionChange={(subscription: AdminUserSubscription) => {
+            setUser((current) => ({ ...current, subscription }));
+            setUsageRefreshToken((token) => token + 1);
+          }}
+        />
+
+        <AdminUserUsageSection
+          userId={user.id}
+          refreshToken={usageRefreshToken}
         />
 
         <section className="rounded-xl border border-subtle bg-surface p-5">

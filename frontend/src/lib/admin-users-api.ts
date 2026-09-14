@@ -38,6 +38,34 @@ export type AdminSubscriptionActionResult = {
   message: string;
 };
 
+export type AdminUserUsageEntry = {
+  used: number;
+  limit: number;
+};
+
+export type AdminUserUsage = {
+  plan_slug: string | null;
+  plan_name: string | null;
+  cycle_reset_at: string;
+  projects: {
+    total: number;
+    active: number;
+    deactivated: number;
+    archived: number;
+  };
+  monthly_projects: AdminUserUsageEntry;
+  monthly_materials: AdminUserUsageEntry;
+  monthly_pages: AdminUserUsageEntry;
+  ai_credits: AdminUserUsageEntry;
+  ocr_pages: AdminUserUsageEntry;
+  active_project_slots: number;
+  files_per_project_limit: number;
+  file_size_limit_mb: number;
+  project_size_limit_mb: number;
+  quizzes_per_project_limit: number;
+  allow_scanned_documents: boolean;
+};
+
 export type AdminUser = {
   id: string;
   email: string;
@@ -185,4 +213,14 @@ export function revokeAdminUserManualPlan(
     `users/${userId}/subscription/manual-plan`,
     { method: "DELETE", body: payload },
   );
+}
+
+export function getAdminUserUsage(userId: string): Promise<AdminUserUsage> {
+  return adminUsersRequest<AdminUserUsage>(`users/${userId}/usage`);
+}
+
+export function resetAdminUserUsage(userId: string): Promise<AdminUserUsage> {
+  return adminUsersRequest<AdminUserUsage>(`users/${userId}/usage/reset`, {
+    method: "POST",
+  });
 }

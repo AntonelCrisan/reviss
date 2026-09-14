@@ -1948,12 +1948,22 @@ class StudyProjectService:
                 f"{limits.monthly_page_limit} pagini pe ciclu."
             )
 
-    async def get_monthly_usage(self, user: User) -> tuple[int, int]:
+    async def get_monthly_usage(
+        self,
+        user: User,
+        window: tuple[datetime, datetime] | None = None,
+    ) -> tuple[int, int]:
         """Return (materials_used, pages_processed) for the user's current
         billing cycle, across all of their projects. Used by the usage
         dashboard - not an enforcement check.
+
+        ``window`` lets a caller that already resolved the billing cycle pass
+        it in, instead of paying for the same lookup twice.
         """
-        window_start, window_end = await _current_billing_window(self.session, user)
+        window_start, window_end = window or await _current_billing_window(
+            self.session,
+            user,
+        )
 
         materials_used = await self.session.scalar(
             select(func.count(StudyProjectFile.id))

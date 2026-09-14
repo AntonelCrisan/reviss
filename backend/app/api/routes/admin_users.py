@@ -12,6 +12,7 @@ from app.models import (
     AuthSession,
     ManualPlanGrant,
     PendingRegistration,
+    StudyProject,
     User,
     UserSubscription,
 )
@@ -20,12 +21,21 @@ from app.schemas.admin_users import (
     AdminManualPlanRevokeRequest,
     AdminSubscriptionActionResponse,
     AdminUserManualGrantResponse,
+    AdminUserProjectCounts,
     AdminUserResponse,
     AdminUserSessionResponse,
     AdminUserSubscriptionResponse,
     AdminUserUpdate,
+    AdminUserUsageEntry,
+    AdminUserUsageResponse,
+)
+from app.services.ai_credits import (
+    AiCreditsService,
+    monthly_ai_credits,
+    monthly_ocr_pages,
 )
 from app.services.audit import add_audit_log
+from app.services.billing_window import current_billing_window
 from app.services.email import (
     EmailDeliveryError,
     EmailMessage,
@@ -34,6 +44,7 @@ from app.services.email import (
     email_logo_html,
     verification_email,
 )
+from app.services.projects import StudyProjectService, limits_for_user
 from app.services.stripe_payments import (
     StripeConfigurationError,
     StripePaymentService,
@@ -206,6 +217,29 @@ def _user_response(
         sessions=session_responses,
         subscription=_subscription_response(user, subscription, grant),
     )
+
+
+async def _get_user_for_usage_or_404(
+    session: DbSession,
+    user_id: uuid.UUID,
+) -> User:
+    """Load a user without their auth sessions.
+
+    _get_user_or_404 eagerly loads every session because the endpoints that
+    use it revoke them. The usage view never reads one, and a long-lived
+    account can hold hundreds.
+    """
+    user = await session.scalar(
+        select(User)
+        .options(selectinload(User.current_plan))
+        .where(User.id == user_id)
+    )
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilizatorul nu exista.",
+        )
+    return user
 
 
 async def _single_user_response(
@@ -791,4 +825,154 @@ async def revoke_admin_user_manual_plan(
         refreshed_user,
         "Planul acordat manual a fost revocat.",
     )
+
+async def _build_usage_response(
+    session: DbSession,
+    settings: AppSettings,
+    target_user: User,
+) -> AdminUserUsageResponse:
+    """What the account holds and what its plan allows.
+
+    Reuses the same helpers the user's own usage panel calls, so support and
+    the customer are always looking at identical numbers.
+    """
+    window_start, window_end = await current_billing_window(session, target_user)
+    limits = limits_for_user(target_user)
+    plan = target_user.current_plan
+
+    projects_service = StudyProjectService(session, settings)
+    credits_service = AiCreditsService(session)
+
+    active_projects = await projects_service.count_active_projects(target_user)
+    materials_used, pages_processed = await projects_service.get_monthly_usage(
+        target_user,
+        window=(window_start, window_end),
+    )
+
+    # One pass over the user's projects instead of a query per figure.
+    # The active count stays with the service, which owns the definition of
+    # "occupying a slot" and has to keep matching what list_projects returns.
+    counts = await session.execute(
+        select(
+            func.count(StudyProject.id),
+            func.count(StudyProject.id).filter(
+                StudyProject.deactivated_at.is_not(None),
+            ),
+            func.count(StudyProject.id).filter(StudyProject.archive.has()),
+            func.count(StudyProject.id).filter(
+                StudyProject.created_at >= window_start,
+                StudyProject.created_at < window_end,
+            ),
+        ).where(StudyProject.user_id == target_user.id)
+    )
+    (
+        total_projects,
+        deactivated_projects,
+        archived_projects,
+        monthly_projects_used,
+    ) = counts.one()
+
+    ai_credits_used = await credits_service.credits_used_this_cycle(
+        target_user,
+        window_start,
+        window_end,
+    )
+    ocr_pages_used = await credits_service.ocr_pages_used_this_cycle(
+        target_user,
+        window_start,
+        window_end,
+    )
+
+    return AdminUserUsageResponse(
+        plan_slug=plan.slug if plan is not None else None,
+        plan_name=plan.name if plan is not None else None,
+        cycle_reset_at=window_end,
+        projects=AdminUserProjectCounts(
+            total=int(total_projects or 0),
+            active=active_projects,
+            deactivated=int(deactivated_projects or 0),
+            archived=int(archived_projects or 0),
+        ),
+        monthly_projects=AdminUserUsageEntry(
+            used=int(monthly_projects_used or 0),
+            limit=limits.active_projects,
+        ),
+        monthly_materials=AdminUserUsageEntry(
+            used=materials_used,
+            limit=limits.monthly_materials,
+        ),
+        monthly_pages=AdminUserUsageEntry(
+            used=pages_processed,
+            limit=limits.monthly_page_limit,
+        ),
+        ai_credits=AdminUserUsageEntry(
+            used=ai_credits_used,
+            limit=monthly_ai_credits(target_user),
+        ),
+        ocr_pages=AdminUserUsageEntry(
+            used=ocr_pages_used,
+            limit=monthly_ocr_pages(target_user),
+        ),
+        active_project_slots=limits.active_projects,
+        files_per_project_limit=limits.files_per_project,
+        file_size_limit_mb=limits.file_mb,
+        project_size_limit_mb=limits.total_project_mb,
+        quizzes_per_project_limit=limits.quizzes_per_project,
+        allow_scanned_documents=limits.allow_scanned_documents,
+    )
+
+@router.get("/{user_id}/usage", response_model=AdminUserUsageResponse)
+async def get_admin_user_usage(
+    user_id: uuid.UUID,
+    _: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> AdminUserUsageResponse:
+    target_user = await _get_user_for_usage_or_404(session, user_id)
+    return await _build_usage_response(session, settings, target_user)
+
+
+@router.post("/{user_id}/usage/reset", response_model=AdminUserUsageResponse)
+async def reset_admin_user_usage(
+    user_id: uuid.UUID,
+    request: Request,
+    admin_user: CurrentAdminUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> AdminUserUsageResponse:
+    """Start this account's usage cycle over, right now.
+
+    Nothing is deleted: usage is derived by counting rows inside the billing
+    window, so the reset simply moves that window's start to this moment. The
+    account's history, invoices and AI spend records all stay intact.
+    """
+    target_user = await _get_user_for_usage_or_404(session, user_id)
+    now = datetime.now(UTC)
+
+    before = await _build_usage_response(session, settings, target_user)
+    target_user.usage_reset_at = now
+
+    add_audit_log(
+        session,
+        action="admin.usage.reset",
+        actor=admin_user,
+        resource_type="user",
+        resource_id=str(target_user.id),
+        details={
+            "target_user_email": target_user.email,
+            "plan_slug": before.plan_slug,
+            # What the account had consumed at the moment it was wiped, so the
+            # trail says what was actually given away.
+            "released_projects": before.monthly_projects.used,
+            "released_materials": before.monthly_materials.used,
+            "released_pages": before.monthly_pages.used,
+            "released_ai_credits": before.ai_credits.used,
+            "released_ocr_pages": before.ocr_pages.used,
+        },
+        ip_address=_request_context(request)[1],
+        user_agent=_request_context(request)[0],
+    )
+    await session.commit()
+
+    return await _build_usage_response(session, settings, target_user)
 

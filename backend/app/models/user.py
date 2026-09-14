@@ -101,6 +101,13 @@ class User(Base):
         nullable=True,
         index=True,
     )
+    # Set by an admin to start this account's usage cycle over. It only ever
+    # moves the window start forward, so the next real billing cycle overtakes
+    # it and it stops mattering on its own -- nothing has to clear it.
+    usage_reset_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
 
     sessions: Mapped[list[AuthSession]] = relationship(
         back_populates="user",

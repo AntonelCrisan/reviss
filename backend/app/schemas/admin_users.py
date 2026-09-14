@@ -84,6 +84,45 @@ class AdminSubscriptionActionResponse(BaseModel):
     message: str
 
 
+class AdminUserProjectCounts(BaseModel):
+    total: int
+    active: int
+    deactivated: int
+    archived: int
+
+
+class AdminUserUsageEntry(BaseModel):
+    """One usage line: how much of an allowance the cycle has consumed."""
+
+    used: int
+    limit: int
+
+
+class AdminUserUsageResponse(BaseModel):
+    """Support view of an account: what it holds and what its plan allows.
+
+    Served from its own endpoint rather than folded into the user payload,
+    because it costs several aggregate queries per user and the user list
+    must not pay that per row.
+    """
+
+    plan_slug: str | None
+    plan_name: str | None
+    cycle_reset_at: datetime
+    projects: AdminUserProjectCounts
+    monthly_projects: AdminUserUsageEntry
+    monthly_materials: AdminUserUsageEntry
+    monthly_pages: AdminUserUsageEntry
+    ai_credits: AdminUserUsageEntry
+    ocr_pages: AdminUserUsageEntry
+    active_project_slots: int
+    files_per_project_limit: int
+    file_size_limit_mb: int
+    project_size_limit_mb: int
+    quizzes_per_project_limit: int
+    allow_scanned_documents: bool
+
+
 class AdminUserUpdate(BaseModel):
     role: UserRole | None = None
     is_active: bool | None = None

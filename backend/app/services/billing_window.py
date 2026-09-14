@@ -49,5 +49,36 @@ async def current_billing_window(
         and subscription.current_period_start is not None
         and subscription.current_period_end is not None
     ):
-        return subscription.current_period_start, subscription.current_period_end
-    return current_month_window()
+        window = (
+            subscription.current_period_start,
+            subscription.current_period_end,
+        )
+    else:
+        window = current_month_window()
+
+    return _apply_usage_reset(window, user)
+
+
+def _apply_usage_reset(
+    window: tuple[datetime, datetime],
+    user: User,
+) -> tuple[datetime, datetime]:
+    """Honour an admin reset by moving the window start forward.
+
+    Usage is not stored as counters: every figure is derived by counting rows
+    inside this window, so starting it later is what "reset the limits" means.
+
+    The start only ever moves forward, never past the end. That is also what
+    makes the reset expire by itself: once the next billing cycle opens, its
+    own start is more recent than the reset, so the stored timestamp quietly
+    stops having any effect and nothing needs to clean it up.
+    """
+    reset_at = getattr(user, "usage_reset_at", None)
+    if reset_at is None:
+        return window
+
+    window_start, window_end = window
+    if reset_at <= window_start or reset_at >= window_end:
+        return window
+
+    return reset_at, window_end

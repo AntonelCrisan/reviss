@@ -10,6 +10,8 @@ const allowedRoutes = [
     pattern: /^content-reports\/[^/]+\/attachments\/[^/]+\/download$/,
   },
   { method: "GET", pattern: /^users$/ },
+  { method: "GET", pattern: /^users\/[^/]+\/usage$/ },
+  { method: "POST", pattern: /^users\/[^/]+\/usage\/reset$/ },
   { method: "POST", pattern: /^users\/[^/]+\/verification-email$/ },
   { method: "PATCH", pattern: /^users\/[^/]+$/ },
   { method: "DELETE", pattern: /^users\/[^/]+$/ },
