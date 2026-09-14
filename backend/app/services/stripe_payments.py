@@ -11,7 +11,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Final
 from uuid import UUID, uuid4
 
 from anyio import to_thread
@@ -163,6 +163,32 @@ def _webhook_resource_id(event_type: str, data: dict[str, Any]) -> str | None:
     )
 
 
+# The locales Stripe Checkout knows. An unrecognised value is rejected with a
+# 400, which would take payment down rather than merely showing the wrong
+# language. Today every language the app supports is in here, so the guard
+# only bites if a new one is added that Stripe does not know: that language
+# then gets "auto" and Stripe reads the browser, instead of no checkout.
+STRIPE_CHECKOUT_LOCALES: Final[frozenset[str]] = frozenset(
+    {
+        "auto", "bg", "cs", "da", "de", "el", "en", "en-GB", "es", "es-419",
+        "et", "fi", "fil", "fr", "fr-CA", "hr", "hu", "id", "it", "ja", "ko",
+        "lt", "lv", "ms", "mt", "nb", "nl", "pl", "pt", "pt-BR", "ro", "ru",
+        "sk", "sl", "sv", "th", "tr", "vi", "zh", "zh-HK", "zh-TW",
+    }
+)
+
+
+def _checkout_locale(user: User) -> str:
+    """Show Stripe's own page in the language the account chose.
+
+    The account setting is used rather than the browser: it is the language the
+    user picked deliberately, and it is what every email and invoice from us
+    already uses, so the payment page stops being the odd one out.
+    """
+    language = normalize_language(user.language_preference)
+    return language if language in STRIPE_CHECKOUT_LOCALES else "auto"
+
+
 def _uuid_or_none(value: object) -> UUID | None:
     if value is None:
         return None
@@ -273,6 +299,7 @@ class StripeClient:
             "success_url": success_url,
             "cancel_url": cancel_url,
             "allow_promotion_codes": "true",
+            "locale": _checkout_locale(user),
             "metadata[user_id]": str(user.id),
             "metadata[plan_id]": str(plan.id),
             "metadata[plan_slug]": plan.slug,
@@ -318,6 +345,7 @@ class StripeClient:
             "client_reference_id": str(user.id),
             "success_url": success_url,
             "cancel_url": cancel_url,
+            "locale": _checkout_locale(user),
             "metadata[user_id]": str(user.id),
             # The basket lives on our order row; only its id travels, so Stripe
             # metadata limits can never truncate what was bought.

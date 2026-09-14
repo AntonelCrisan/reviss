@@ -80,6 +80,9 @@ def _user(price: str = "79.00") -> SimpleNamespace:
         email="student@example.com",
         full_name="Student Exemplu",
         stripe_customer_id="cus_1",
+        # A real User always carries one: the column is not nullable and the
+        # checkout page is shown in this language.
+        language_preference="ro",
         current_plan=SimpleNamespace(slug="focus", price_ron=Decimal(price)),
     )
 
