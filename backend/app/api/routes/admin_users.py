@@ -44,7 +44,11 @@ from app.services.email import (
     email_logo_html,
     verification_email,
 )
-from app.services.projects import StudyProjectService, limits_for_user
+from app.services.projects import (
+    ProjectValidationError,
+    StudyProjectService,
+    limits_for_user,
+)
 from app.services.stripe_payments import (
     StripeConfigurationError,
     StripePaymentService,
@@ -183,9 +187,7 @@ def _user_response(
         _session_response(auth_session, now) for auth_session in sessions
     ]
     active_sessions = sum(
-        1
-        for auth_session in sessions
-        if _session_status(auth_session, now) == "activă"
+        1 for auth_session in sessions if _session_status(auth_session, now) == "activă"
     )
     last_session_at = sessions[0].created_at if sessions else None
     last_seen_at = next(
@@ -230,9 +232,7 @@ async def _get_user_for_usage_or_404(
     account can hold hundreds.
     """
     user = await session.scalar(
-        select(User)
-        .options(selectinload(User.current_plan))
-        .where(User.id == user_id)
+        select(User).options(selectinload(User.current_plan)).where(User.id == user_id)
     )
     if user is None:
         raise HTTPException(
@@ -603,6 +603,7 @@ async def delete_admin_user(
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+
 def _stripe_http_error(exc: Exception) -> HTTPException:
     if isinstance(exc, StripeConfigurationError):
         return HTTPException(
@@ -826,6 +827,7 @@ async def revoke_admin_user_manual_plan(
         "Planul acordat manual a fost revocat.",
     )
 
+
 async def _build_usage_response(
     session: DbSession,
     settings: AppSettings,
@@ -837,7 +839,15 @@ async def _build_usage_response(
     the customer are always looking at identical numbers.
     """
     window_start, window_end = await current_billing_window(session, target_user)
-    limits = limits_for_user(target_user)
+    try:
+        limits = limits_for_user(target_user)
+    except ProjectValidationError as exc:
+        # An account without a usable plan must still be inspectable from the
+        # admin panel, so this reads as a conflict rather than a crash.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
     plan = target_user.current_plan
 
     projects_service = StudyProjectService(session, settings)
@@ -921,6 +931,7 @@ async def _build_usage_response(
         allow_scanned_documents=limits.allow_scanned_documents,
     )
 
+
 @router.get("/{user_id}/usage", response_model=AdminUserUsageResponse)
 async def get_admin_user_usage(
     user_id: uuid.UUID,
@@ -975,4 +986,3 @@ async def reset_admin_user_usage(
     await session.commit()
 
     return await _build_usage_response(session, settings, target_user)
-

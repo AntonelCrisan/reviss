@@ -47,6 +47,7 @@ import {
   getCurrentUser,
   type AuthUserPlan,
 } from "@/lib/auth-api";
+import { AccountAddonsButton } from "@/components/account/account-addons-card";
 import { getUsage, type Usage } from "@/lib/usage-api";
 import {
   archiveStudyProject,
@@ -2263,6 +2264,7 @@ export function AccountDashboard({
               onArchiveProject={archiveProject}
               onSetProjectActivation={setProjectActivation}
               onDeleteProject={removeProject}
+              onUsageRefresh={() => void refreshUsageSnapshot()}
             />
           ) : null}
 
@@ -2405,14 +2407,88 @@ function AccountMetric({
   );
 }
 
-function UsageMeter({
+function ChevronIcon({ isOpen }: { isOpen: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`h-4 w-4 text-muted transition-transform ${
+        isOpen ? "rotate-90" : ""
+      }`}
+    >
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function MeterBar({
   label,
   used,
   limit,
+  tone,
+  muted = false,
 }: {
   label: string;
   used: number;
   limit: number;
+  tone: string;
+  muted?: boolean;
+}) {
+  const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+
+  return (
+    <div className={muted ? "mt-2" : ""}>
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <p
+          className={
+            muted
+              ? "text-xs font-semibold text-muted"
+              : "text-sm font-bold text-content"
+          }
+        >
+          {label}
+        </p>
+        <span
+          className={`rounded-md px-2.5 py-1 text-[11px] font-bold ${
+            muted ? "bg-app text-muted" : tone
+          }`}
+        >
+          {used} / {limit}
+        </span>
+      </div>
+      <div
+        className={`overflow-hidden rounded-full bg-app ${
+          muted ? "h-1.5" : "h-2.5"
+        }`}
+      >
+        <div
+          className={`h-full rounded-full ${muted ? "bg-muted/50" : tone.split(" ")[0]}`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function UsageMeter({
+  label,
+  used,
+  limit,
+  extra,
+  t,
+}: {
+  label: string;
+  used: number;
+  /** The whole allowance: plan plus anything bought. */
+  limit: number;
+  /** How much of that allowance was bought. */
+  extra: number;
+  t: ReturnType<typeof useTranslations<"dashboard">>;
 }) {
   if (limit <= 0) {
     return (
@@ -2420,7 +2496,7 @@ function UsageMeter({
         <div className="mb-2 flex items-center justify-between gap-3">
           <p className="text-sm font-bold text-content">{label}</p>
           <span className="rounded-md bg-app px-2.5 py-1 text-[11px] font-bold text-muted">
-            Indisponibil
+            {t("indisponibil")}
           </span>
         </div>
         <div className="h-2.5 overflow-hidden rounded-full bg-app" />
@@ -2429,37 +2505,80 @@ function UsageMeter({
   }
 
   const percent = Math.min(100, Math.round((used / limit) * 100));
-  const barClass =
-    percent >= 90 ? "bg-danger" : percent >= 70 ? "bg-warning" : "bg-success";
-  const badgeClass =
+  const barTone =
+    percent >= 90
+      ? "bg-danger danger-soft text-danger"
+      : percent >= 70
+        ? "bg-warning warning-soft text-warning"
+        : "bg-success success-soft text-success";
+  const badgeTone =
     percent >= 90
       ? "bg-danger-soft text-danger"
       : percent >= 70
         ? "bg-warning-soft text-warning"
         : "bg-success-soft text-success";
 
+  // Nothing bought: one bar is the whole story, and three would be noise.
+  if (extra <= 0) {
+    return (
+      <div className="py-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="text-sm font-bold text-content">{label}</p>
+          <span
+            className={`rounded-md px-2.5 py-1 text-[11px] font-bold ${badgeTone}`}
+          >
+            {used} / {limit}
+          </span>
+        </div>
+        <div className="h-2.5 overflow-hidden rounded-full bg-app">
+          <div
+            className={`h-full rounded-full ${barTone.split(" ")[0]}`}
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // The plan allowance is consumed first, so anything past it came out of what
+  // was bought. Splitting it this way is what makes the two bars add up.
+  const base = Math.max(limit - extra, 0);
+  const baseUsed = Math.min(used, base);
+  const extraUsed = Math.max(used - base, 0);
+
   return (
     <div className="py-3">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <p className="text-sm font-bold text-content">{label}</p>
-        <span
-          className={`rounded-md px-2.5 py-1 text-[11px] font-bold ${badgeClass}`}
-        >
-          {used} / {limit}
-        </span>
-      </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-app">
-        <div
-          className={`h-full rounded-full ${barClass}`}
-          style={{ width: `${percent}%` }}
+      <MeterBar label={label} used={baseUsed} limit={base} tone={badgeTone} />
+      <MeterBar
+        label={t("labelExtra", { label })}
+        used={extraUsed}
+        limit={extra}
+        tone={badgeTone}
+        muted
+      />
+      <div className="mt-3 border-t border-subtle pt-2">
+        <MeterBar
+          label={t("total")}
+          used={used}
+          limit={limit}
+          tone={badgeTone}
         />
       </div>
     </div>
   );
 }
 
-function UsageSection({ usage }: { usage: Usage | null }) {
+function UsageSection({
+  usage,
+  onUsageRefresh,
+}: {
+  usage: Usage | null;
+  onUsageRefresh: () => void;
+}) {
   const t = useTranslations("dashboard");
+  // Collapsed by default: the meters matter when something is running out, and
+  // the warning above the card already says when that is.
+  const [isOpen, setIsOpen] = useState(false);
   if (!usage) return null;
 
   const meters = [
@@ -2468,30 +2587,35 @@ function UsageSection({ usage }: { usage: Usage | null }) {
       label: t("proiecteLunare"),
       used: usage.projects_used,
       limit: usage.projects_limit,
+      extra: usage.projects_extra,
     },
     {
       key: "materials",
       label: t("materiale"),
       used: usage.materials_used,
       limit: usage.materials_limit,
+      extra: usage.materials_extra,
     },
     {
       key: "pages",
       label: t("paginiProcesate"),
       used: usage.pages_processed,
       limit: usage.pages_limit,
+      extra: usage.pages_extra,
     },
     {
       key: "credits",
       label: t("aiCredits"),
       used: usage.ai_credits_used,
       limit: usage.ai_credits_limit,
+      extra: usage.ai_credits_extra,
     },
     {
       key: "ocr",
       label: t("paginiOcr"),
       used: usage.ocr_pages_used,
       limit: usage.ocr_pages_limit,
+      extra: usage.ocr_pages_extra,
     },
   ];
 
@@ -2530,22 +2654,43 @@ function UsageSection({ usage }: { usage: Usage | null }) {
       ) : null}
 
       <div className="rounded-xl border border-subtle bg-surface p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <SectionLabel>{t("utilizareLunaAceasta")}</SectionLabel>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setIsOpen((open) => !open)}
+            aria-expanded={isOpen}
+            aria-controls="usage-meters"
+            className="flex items-center gap-2 text-left"
+          >
+            <ChevronIcon isOpen={isOpen} />
+            <SectionLabel>{t("utilizareLunaAceasta")}</SectionLabel>
+          </button>
+
           <p className="text-xs font-semibold text-muted">
-            Resetare pe: {resetDateLabel}
+            {t("resetarePe", { date: resetDateLabel })}
           </p>
         </div>
-        <div className="mt-2 divide-y divide-subtle">
-          {meters.map((meter) => (
-            <UsageMeter
-              key={meter.key}
-              label={meter.label}
-              used={meter.used}
-              limit={meter.limit}
-            />
-          ))}
-        </div>
+
+        {isOpen ? (
+          <div id="usage-meters">
+            <div className="mt-2 divide-y divide-subtle">
+              {meters.map((meter) => (
+                <UsageMeter
+                  key={meter.key}
+                  label={meter.label}
+                  used={meter.used}
+                  limit={meter.limit}
+                  extra={meter.extra}
+                  t={t}
+                />
+              ))}
+            </div>
+
+            <div className="mt-5 flex justify-end border-t border-subtle pt-5">
+              <AccountAddonsButton onPurchased={onUsageRefresh} />
+            </div>
+          </div>
+        ) : null}
       </div>
     </>
   );
@@ -2561,6 +2706,7 @@ function HomeView({
   onArchiveProject,
   onSetProjectActivation,
   onDeleteProject,
+  onUsageRefresh,
 }: {
   displayName: string;
   projects: StudyProject[];
@@ -2574,6 +2720,7 @@ function HomeView({
     isActive: boolean,
   ) => Promise<void> | void;
   onDeleteProject: (projectId: string) => Promise<void> | void;
+  onUsageRefresh: () => void;
 }) {
   const t = useTranslations("dashboard");
   const [openMenuProjectId, setOpenMenuProjectId] = useState<string | null>(
@@ -2726,7 +2873,7 @@ function HomeView({
         />
       </div>
 
-      <UsageSection usage={usage} />
+      <UsageSection usage={usage} onUsageRefresh={onUsageRefresh} />
 
       <SectionLabel>{t("proiecteleTale")}</SectionLabel>
       <div>

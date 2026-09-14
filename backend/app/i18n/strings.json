@@ -9,7 +9,6 @@
     "en": "This email was sent automatically by {app_name} to your account address.",
     "fr": "Cet email a été envoyé automatiquement par {app_name} à l'adresse de votre compte."
   },
-
   "email.verification.subject": {
     "ro": "Confirmă contul Reviss",
     "en": "Confirm your Reviss account",
@@ -70,7 +69,6 @@
     "en": "This email was sent automatically by {app_name} because the address was used to register.",
     "fr": "Cet email a été envoyé automatiquement par {app_name} car l'adresse a été utilisée lors de l'inscription."
   },
-
   "email.email_change.subject": {
     "ro": "Confirmă noua adresă de email Reviss",
     "en": "Confirm your new Reviss email address",
@@ -141,7 +139,6 @@
     "en": "Ignore this email and do not open the link. If you suspect someone else has access to your account, change your password.",
     "fr": "Ignorez cet email et n'ouvrez pas le lien. Si vous pensez que quelqu'un d'autre a accès à votre compte, changez votre mot de passe."
   },
-
   "email.password_reset.subject": {
     "ro": "Resetare parolă Reviss",
     "en": "Reset your Reviss password",
@@ -212,7 +209,6 @@
     "en": "This email was sent automatically by {app_name} for the reset request made for this address.",
     "fr": "Cet email a été envoyé automatiquement par {app_name} suite à la demande de réinitialisation faite pour cette adresse."
   },
-
   "email.digest.subject_many": {
     "ro": "Rezumatul tău zilnic Reviss ({count} noutăți)",
     "en": "Your daily Reviss digest ({count} updates)",
@@ -283,7 +279,6 @@
     "en": "This email was sent automatically by {app_name} for the notifications you enabled.",
     "fr": "Cet email a été envoyé automatiquement par {app_name} pour les notifications que vous avez activées."
   },
-
   "email.contact_confirmation.subject": {
     "ro": "Am primit mesajul tău Reviss ({reference})",
     "en": "We received your Reviss message ({reference})",
@@ -349,7 +344,6 @@
     "en": "This email confirms receipt of the message sent through the {app_name} contact form.",
     "fr": "Cet email confirme la réception du message envoyé via le formulaire de contact {app_name}."
   },
-
   "email.content_report_confirmation.subject": {
     "ro": "Am primit raportarea ta Reviss ({reference})",
     "en": "We received your Reviss report ({reference})",
@@ -435,7 +429,6 @@
     "en": "This email confirms receipt of the report sent through the {app_name} form.",
     "fr": "Cet email confirme la réception du signalement envoyé via le formulaire {app_name}."
   },
-
   "email.withdrawal_confirmation.subject": {
     "ro": "Am primit retragerea ta Reviss ({reference})",
     "en": "We received your Reviss withdrawal request ({reference})",
@@ -501,7 +494,6 @@
     "en": "This email confirms receipt of the request sent through the {app_name} form.",
     "fr": "Cet email confirme la réception de la demande envoyée via le formulaire {app_name}."
   },
-
   "email.account_deleted.subject": {
     "ro": "Contul Reviss a fost șters",
     "en": "Your Reviss account has been deleted",
@@ -582,7 +574,6 @@
     "en": "This email was sent automatically by {app_name} to inform you about the account deletion.",
     "fr": "Cet email a été envoyé automatiquement par {app_name} pour vous informer de la suppression du compte."
   },
-
   "email.invoice_paid.subject": {
     "ro": "Factura Reviss {number}",
     "en": "Reviss invoice {number}",
@@ -678,7 +669,6 @@
     "en": "This email was sent automatically by {app_name} after the payment for your subscription was received.",
     "fr": "Cet email a été envoyé automatiquement par {app_name} après l'encaissement du paiement de votre abonnement."
   },
-
   "notification.project_ready.title": {
     "ro": "Proiectul tău e gata",
     "en": "Your project is ready",
@@ -789,7 +779,6 @@
     "en": "You have studied {days} days in a row. That is how performance is built.",
     "fr": "Vous avez étudié {days} jours d'affilée. C'est ainsi que se construit la performance."
   },
-
   "validation.missing": {
     "ro": "Câmpul este obligatoriu.",
     "en": "This field is required.",
@@ -864,5 +853,95 @@
     "ro": "Valoarea nu este validă.",
     "en": "The value is not valid.",
     "fr": "La valeur n'est pas valide."
+  },
+  "email.addon_paid.subject": {
+    "ro": "Factura Reviss {number}",
+    "en": "Reviss invoice {number}",
+    "fr": "Facture Reviss {number}"
+  },
+  "email.addon_paid.eyebrow": {
+    "ro": "Factură capacitate suplimentară",
+    "en": "Extra capacity invoice",
+    "fr": "Facture capacité supplémentaire"
+  },
+  "email.addon_paid.title": {
+    "ro": "Plata ta a fost confirmată",
+    "en": "Your payment is confirmed",
+    "fr": "Ton paiement est confirmé"
+  },
+  "email.addon_paid.intro": {
+    "ro": "Am înregistrat plata de {amount}. Capacitatea a fost adăugată imediat în cont și este valabilă până la finalul ciclului curent.",
+    "en": "We recorded your payment of {amount}. The capacity was added to your account right away and lasts until the end of the current cycle.",
+    "fr": "Nous avons enregistré ton paiement de {amount}. La capacité a été ajoutée immédiatement à ton compte et reste valable jusqu’à la fin du cycle en cours."
+  },
+  "email.addon_paid.preheader": {
+    "ro": "Plata de {amount} a fost confirmată.",
+    "en": "Your payment of {amount} is confirmed.",
+    "fr": "Ton paiement de {amount} est confirmé."
+  },
+  "email.addon_paid.details_title": {
+    "ro": "Ce ai cumpărat",
+    "en": "What you bought",
+    "fr": "Ce que tu as acheté"
+  },
+  "email.addon_paid.label_total": {
+    "ro": "Total plătit",
+    "en": "Total paid",
+    "fr": "Total payé"
+  },
+  "email.addon_paid.label_date": {
+    "ro": "Data plății",
+    "en": "Payment date",
+    "fr": "Date du paiement"
+  },
+  "email.addon_paid.label_number": {
+    "ro": "Număr factură",
+    "en": "Invoice number",
+    "fr": "Numéro de facture"
+  },
+  "email.addon_paid.paid_today": {
+    "ro": "astăzi",
+    "en": "today",
+    "fr": "aujourd’hui"
+  },
+  "email.addon_paid.line": {
+    "ro": "{description} — {amount}",
+    "en": "{description} — {amount}",
+    "fr": "{description} — {amount}"
+  },
+  "email.addon_paid.pdf_detail": {
+    "ro": "Factură PDF: descarcă documentul",
+    "en": "PDF invoice: download the document",
+    "fr": "Facture PDF : télécharger le document"
+  },
+  "email.addon_paid.pdf_line": {
+    "ro": "Descarcă PDF-ul: {url}\n",
+    "en": "Download the PDF: {url}\n",
+    "fr": "Télécharge le PDF : {url}\n"
+  },
+  "email.addon_paid.cta": {
+    "ro": "Vezi factura",
+    "en": "View the invoice",
+    "fr": "Voir la facture"
+  },
+  "email.addon_paid.note_title": {
+    "ro": "Cât timp e valabilă",
+    "en": "How long it lasts",
+    "fr": "Durée de validité"
+  },
+  "email.addon_paid.note": {
+    "ro": "Capacitatea cumpărată se adaugă peste alocarea planului și expiră odată cu ciclul curent de facturare. Dacă ai nevoie constant de mai mult, un plan superior iese mai ieftin.",
+    "en": "Bought capacity is added on top of your plan allowance and expires with the current billing cycle. If you consistently need more, a higher plan works out cheaper.",
+    "fr": "La capacité achetée s’ajoute à l’allocation de ton forfait et expire avec le cycle de facturation en cours. Si tu as régulièrement besoin de plus, un forfait supérieur revient moins cher."
+  },
+  "email.addon_paid.footer": {
+    "ro": "Mulțumim că folosești {app_name}.",
+    "en": "Thanks for using {app_name}.",
+    "fr": "Merci d’utiliser {app_name}."
+  },
+  "email.addon_paid.text": {
+    "ro": "Plata ta a fost confirmată.\n\n{lines}\nTotal plătit: {amount}\nData plății: {paid_at}\nNumăr factură: {number}\n\nVezi factura: {url}\n{pdf_line}\nCapacitatea se adaugă peste alocarea planului și expiră odată cu ciclul curent.\n\nMulțumim că folosești {app_name}.",
+    "en": "Your payment is confirmed.\n\n{lines}\nTotal paid: {amount}\nPayment date: {paid_at}\nInvoice number: {number}\n\nView the invoice: {url}\n{pdf_line}\nThe capacity is added on top of your plan allowance and expires with the current cycle.\n\nThanks for using {app_name}.",
+    "fr": "Ton paiement est confirmé.\n\n{lines}\nTotal payé : {amount}\nDate du paiement : {paid_at}\nNuméro de facture : {number}\n\nVoir la facture : {url}\n{pdf_line}\nLa capacité s’ajoute à l’allocation de ton forfait et expire avec le cycle en cours.\n\nMerci d’utiliser {app_name}."
   }
 }

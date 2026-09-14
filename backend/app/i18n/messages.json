@@ -1130,5 +1130,77 @@
   "Documentul legal nu a putut fi creat.": {
     "en": "The legal document could not be created.",
     "fr": "Le document juridique n'a pas pu être créé."
+  },
+  "Pachetele suplimentare sunt disponibile doar pe planurile platite.": {
+    "en": "Add-on packs are available on paid plans only.",
+    "fr": "Les packs supplémentaires sont réservés aux forfaits payants."
+  },
+  "Stripe nu a returnat o sesiune de plata.": {
+    "en": "Stripe did not return a payment session.",
+    "fr": "Stripe n’a pas renvoyé de session de paiement."
+  },
+  "Sesiunea nu apartine acestui cont.": {
+    "en": "That session does not belong to this account.",
+    "fr": "Cette session n’appartient pas à ce compte."
+  },
+  "Alege cel putin o resursa.": {
+    "en": "Pick at least one resource.",
+    "fr": "Choisis au moins une ressource."
+  },
+  "Cantitatea este in afara intervalului permis.": {
+    "en": "That quantity is outside the allowed range.",
+    "fr": "Cette quantité est en dehors de la plage autorisée."
+  },
+  "Cantitatea trebuie sa fie un numar intreg.": {
+    "en": "The quantity has to be a whole number.",
+    "fr": "La quantité doit être un nombre entier."
+  },
+  "Cosul este gol.": {
+    "en": "The basket is empty.",
+    "fr": "Le panier est vide."
+  },
+  "Fiecare resursa poate aparea o singura data.": {
+    "en": "Each resource may appear only once.",
+    "fr": "Chaque ressource ne peut apparaître qu’une seule fois."
+  },
+  "Maximul nu poate fi sub minim.": {
+    "en": "The maximum cannot be below the minimum.",
+    "fr": "Le maximum ne peut pas être inférieur au minimum."
+  },
+  "Minimul trebuie sa fie un multiplu al pasului.": {
+    "en": "The minimum has to be a multiple of the step.",
+    "fr": "Le minimum doit être un multiple du pas."
+  },
+  "Resursa ceruta nu exista.": {
+    "en": "That resource does not exist.",
+    "fr": "Cette ressource n’existe pas."
+  },
+  "Resursa sau pretul Stripe este deja folosit.": {
+    "en": "That resource or Stripe price is already in use.",
+    "fr": "Cette ressource ou ce prix Stripe est déjà utilisé."
+  },
+  "Resursa {key} nu este disponibila.": {
+    "en": "The resource {key} is not available.",
+    "fr": "La ressource {key} n’est pas disponible."
+  },
+  "Resursa {key} nu este configurata.": {
+    "en": "The resource {key} is not configured.",
+    "fr": "La ressource {key} n’est pas configurée."
+  },
+  "{resource.name} nu este disponibila pentru cumparare.": {
+    "en": "{resource.name} is not available for purchase.",
+    "fr": "{resource.name} n’est pas disponible à l’achat."
+  },
+  "Minimul pentru {resource.name} este {resource.min_quantity} {resource.unit_label}.": {
+    "en": "The minimum for {resource.name} is {resource.min_quantity} {resource.unit_label}.",
+    "fr": "Le minimum pour {resource.name} est {resource.min_quantity} {resource.unit_label}."
+  },
+  "Maximul pentru {resource.name} este {resource.max_quantity} {resource.unit_label}.": {
+    "en": "The maximum for {resource.name} is {resource.max_quantity} {resource.unit_label}.",
+    "fr": "Le maximum pour {resource.name} est {resource.max_quantity} {resource.unit_label}."
+  },
+  "{resource.name} se cumpara din {resource.step} in {resource.step} {resource.unit_label}.": {
+    "en": "{resource.name} is sold in steps of {resource.step} {resource.unit_label}.",
+    "fr": "{resource.name} se vend par paliers de {resource.step} {resource.unit_label}."
   }
 }

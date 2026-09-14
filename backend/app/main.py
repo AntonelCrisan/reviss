@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.routes.addons import router as addons_router
 from app.api.routes.admin_account_deletion_requests import (
     router as admin_account_deletion_requests_router,
 )
@@ -227,6 +228,7 @@ app.include_router(auth_router)
 app.include_router(admin_account_deletion_requests_router)
 app.include_router(admin_contact_messages_router)
 app.include_router(admin_content_reports_router)
+app.include_router(addons_router)
 app.include_router(admin_users_router)
 app.include_router(admin_visitors_router)
 app.include_router(admin_withdrawal_requests_router)

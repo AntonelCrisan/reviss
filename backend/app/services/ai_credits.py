@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import AiCreditRate, AiModelRate, AiUsageLog, User
+from app.services.addons import balance_of
 from app.services.audit import add_audit_log
 from app.services.plan_errors import (
     AiCreditsLimitReachedError,
@@ -65,7 +66,7 @@ def _plan_int_field(user: User, field: str) -> int:
 
 
 def monthly_ai_credits(user: User) -> int:
-    return _plan_int_field(user, "monthly_ai_credits")
+    return _plan_int_field(user, "monthly_ai_credits") + balance_of(user).ai_credits
 
 
 def ai_chat_enabled(user: User) -> bool:
@@ -78,19 +79,52 @@ def ai_chat_enabled(user: User) -> bool:
 
 
 def monthly_ocr_pages(user: User) -> int:
-    return _plan_int_field(user, "monthly_ocr_pages")
+    return _plan_int_field(user, "monthly_ocr_pages") + balance_of(user).ocr_pages
+
+
+def _addon_cost_headroom(user: User) -> Decimal:
+    """Extra spend allowance earned by buying AI credits.
+
+    The spend ceiling exists to stop one account burning unbounded money at the
+    provider. Bought credits have to raise it too, or a customer would pay for
+    credits the ceiling then refuses to let them spend. The per-credit rate
+    comes from the plan itself, so repricing a plan carries the pack with it.
+    """
+    extra_credits = balance_of(user).ai_credits
+    if extra_credits <= 0:
+        return Decimal("0")
+
+    plan = getattr(user, "current_plan", None)
+    plan_credits = getattr(plan, "monthly_ai_credits", None)
+    plan_ceiling = getattr(plan, "max_openai_cost_usd_per_cycle", None)
+    if (
+        not isinstance(plan_credits, int)
+        or isinstance(plan_credits, bool)
+        or plan_credits <= 0
+        or plan_ceiling is None
+        or isinstance(plan_ceiling, bool)
+    ):
+        return Decimal("0")
+
+    try:
+        per_credit = Decimal(str(plan_ceiling)) / Decimal(plan_credits)
+    except (ArithmeticError, ValueError):
+        return Decimal("0")
+
+    return per_credit * Decimal(extra_credits)
 
 
 def _max_cost_usd_per_cycle(user: User) -> Decimal:
     plan = getattr(user, "current_plan", None)
     value = getattr(plan, "max_openai_cost_usd_per_cycle", None)
+    headroom = _addon_cost_headroom(user)
     if value is not None and not isinstance(value, bool):
         try:
-            return Decimal(str(value))
+            return Decimal(str(value)) + headroom
         except (TypeError, ValueError, ArithmeticError):
             pass
     fallback = _PLAN_AI_FALLBACK.get(_plan_slug(user), _PLAN_AI_FALLBACK["start"])
-    return Decimal(str(fallback["max_openai_cost_usd_per_cycle"]))
+    return Decimal(str(fallback["max_openai_cost_usd_per_cycle"])) + headroom
 
 
 class AiCreditsService:

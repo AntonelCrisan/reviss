@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User, UserSubscription
-from app.services.stripe_payments import ACTIVE_SUBSCRIPTION_STATUSES
+from app.services.subscription_status import ACTIVE_SUBSCRIPTION_STATUSES
 
 
 def current_month_window(now: datetime | None = None) -> tuple[datetime, datetime]:

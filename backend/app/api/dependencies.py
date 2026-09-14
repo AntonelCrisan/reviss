@@ -7,6 +7,7 @@ from app.core.config import Settings, get_settings
 from app.core.i18n import apply_user_language
 from app.db.session import get_db_session
 from app.models import User
+from app.services.addons import addon_balance_for, attach_addon_balance
 from app.services.auth import AuthService, InvalidSessionError
 
 DbSession = Annotated[AsyncSession, Depends(get_db_session)]
@@ -27,6 +28,7 @@ async def get_current_user(
     request: Request,
     service: AuthServiceDependency,
     settings: AppSettings,
+    session: DbSession,
 ) -> User:
     token = request.cookies.get(settings.session_cookie_name)
     if token is None:
@@ -43,6 +45,10 @@ async def get_current_user(
             detail="Sesiunea nu mai este validă.",
         ) from exc
     apply_user_language(user.language_preference)
+    # Paid capacity packs raise this cycle's limits. Loading the balance here
+    # keeps limits_for_user() and the AI credit helpers synchronous, exactly
+    # like current_plan does, and every entitlement check downstream sees it.
+    attach_addon_balance(user, await addon_balance_for(session, user))
     return user
 
 

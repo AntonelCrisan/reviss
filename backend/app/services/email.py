@@ -907,3 +907,75 @@ def invoice_paid_email(
         language=language,
     )
     return html, text
+
+
+def addon_invoice_paid_email(
+    *,
+    invoice_url: str,
+    invoice_pdf_url: str | None,
+    invoice_number: str | None,
+    amount_label: str,
+    paid_at_label: str | None,
+    line_items: list[tuple[str, str]],
+    logo_html: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
+) -> tuple[str, str]:
+    """Receipt for a one-off capacity purchase.
+
+    Separate from invoice_paid_email on purpose: that one is written around a
+    subscription and leads with the plan name, which says nothing about what a
+    top-up actually contained. Here the invoice lines carry the message -
+    description, quantity and amount, exactly as billed.
+
+    ``line_items`` is (description, amount) as Stripe itself worded them, so
+    the email can never disagree with the document it links to.
+    """
+    s = _strings("email.addon_paid", language)
+    invoice_label = invoice_number or "-"
+    paid_label = paid_at_label or s("paid_today")
+    pdf_line = s("pdf_line", url=invoice_pdf_url) if invoice_pdf_url else ""
+
+    text_lines = "\n".join(
+        s("line", description=description, amount=amount)
+        for description, amount in line_items
+    )
+
+    text = s(
+        "text",
+        lines=text_lines,
+        amount=amount_label,
+        paid_at=paid_label,
+        number=invoice_label,
+        url=invoice_url,
+        pdf_line=pdf_line,
+        app_name=app_name,
+    )
+
+    details: list[tuple[str, str | None]] = [
+        (s("line", description=description, amount=amount), None)
+        for description, amount in line_items
+    ]
+    details.append((f"{s('label_total')}: {amount_label}", None))
+    details.append((f"{s('label_date')}: {paid_label}", None))
+    details.append((f"{s('label_number')}: {invoice_label}", None))
+    if invoice_pdf_url:
+        details.append((s("pdf_detail"), invoice_pdf_url))
+
+    html = _email_shell(
+        app_name=app_name,
+        eyebrow=s("eyebrow"),
+        title=s("title"),
+        intro=s("intro", amount=amount_label),
+        preheader=s("preheader", amount=amount_label),
+        logo_html=logo_html,
+        cta_label=s("cta"),
+        action_url=invoice_url,
+        details_title=s("details_title"),
+        details=details,
+        note_title=s("note_title"),
+        note=s("note"),
+        footer_note=s("footer", app_name=app_name),
+        language=language,
+    )
+    return html, text

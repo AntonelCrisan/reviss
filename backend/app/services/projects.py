@@ -58,6 +58,7 @@ from app.models.study_project import (
     SLOT_OCCUPYING_STATUSES,
 )
 from app.schemas.projects import StudyProjectResponse
+from app.services.addons import balance_of
 from app.services.ai_credits import AiCreditsService
 from app.services.billing_window import (
     current_billing_window as _current_billing_window,
@@ -425,14 +426,25 @@ def limits_for_user(user: User) -> ProjectPlanLimits:
         raise ProjectValidationError(
             "Limitele planului nu sunt configurate corect. Contacteaza suportul."
         )
+    # Paid packs raise the cycle allowances on top of the plan. Anything the
+    # plan caps per item rather than per cycle - file size, pages per upload -
+    # is untouched: a pack buys volume, not bigger individual uploads.
+    extra = balance_of(user)
+
     return ProjectPlanLimits(
-        active_projects=_plan_int_limit(plan, "active_project_limit", 0),
-        monthly_materials=_plan_int_limit(plan, "monthly_material_limit", 0),
+        active_projects=(
+            _plan_int_limit(plan, "active_project_limit", 0) + extra.projects
+        ),
+        monthly_materials=(
+            _plan_int_limit(plan, "monthly_material_limit", 0) + extra.materials
+        ),
         files_per_project=_plan_int_limit(plan, "files_per_project_limit", 1),
         file_mb=_plan_int_limit(plan, "file_size_limit_mb", 1),
         total_project_mb=_plan_int_limit(plan, "project_size_limit_mb", 1),
         estimated_pages=_plan_int_limit(plan, "estimated_page_limit", 1),
-        monthly_page_limit=_plan_int_limit(plan, "monthly_page_limit", 0),
+        monthly_page_limit=(
+            _plan_int_limit(plan, "monthly_page_limit", 0) + extra.pages
+        ),
         initial_flashcards=_plan_int_limit(plan, "initial_flashcard_limit", 1),
         quiz_questions_per_quiz=_plan_int_limit(plan, "quiz_questions_per_quiz", 1),
         quizzes_per_project=_plan_int_limit(plan, "quizzes_per_project_limit", 1),

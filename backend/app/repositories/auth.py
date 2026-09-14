@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import AuthSession, User
+from app.models import FREE_PLAN_SLUG, AuthSession, SubscriptionPlan, User
 
 
 class UserRepository:
@@ -24,6 +24,17 @@ class UserRepository:
             select(User)
             .options(selectinload(User.current_plan))
             .where(User.google_sub == google_sub)
+        )
+
+    async def _free_plan(self) -> SubscriptionPlan | None:
+        """The plan a brand-new account starts on.
+
+        Assigned as the relationship, not just the id: the caller keeps using
+        the freshly created user in the same request, and a lazy load of
+        ``current_plan`` there would blow up under async SQLAlchemy.
+        """
+        return await self._session.scalar(
+            select(SubscriptionPlan).where(SubscriptionPlan.slug == FREE_PLAN_SLUG)
         )
 
     async def add(
@@ -47,6 +58,7 @@ class UserRepository:
             newsletter_consent=newsletter_consent,
             newsletter_consent_at=newsletter_consent_at,
         )
+        user.current_plan = await self._free_plan()
         self._session.add(user)
         await self._session.flush()
         return user
@@ -72,6 +84,7 @@ class UserRepository:
             newsletter_consent=False,
             newsletter_consent_at=None,
         )
+        user.current_plan = await self._free_plan()
         self._session.add(user)
         await self._session.flush()
         return user

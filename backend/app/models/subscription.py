@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from sqlalchemy import (
     Boolean,
@@ -23,6 +23,12 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.user import User
+
+
+# The free plan every account starts on. Entitlement checks read
+# ``User.current_plan`` and refuse to invent limits when it is missing, so a
+# freshly registered account has to be put on this plan right away.
+FREE_PLAN_SLUG: Final[str] = "start"
 
 
 class SubscriptionPlan(Base):

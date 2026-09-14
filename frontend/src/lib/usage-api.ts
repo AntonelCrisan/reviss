@@ -1,15 +1,25 @@
 import { genericErrorFallback } from "@/lib/client-locale";
+/**
+ * Each *_limit is the whole allowance, plan plus anything bought. The matching
+ * *_extra says how much of it came from a purchase, so the card can show the
+ * two apart without recomputing the split.
+ */
 export type Usage = {
   projects_used: number;
   projects_limit: number;
+  projects_extra: number;
   materials_used: number;
   materials_limit: number;
+  materials_extra: number;
   pages_processed: number;
   pages_limit: number;
+  pages_extra: number;
   ai_credits_used: number;
   ai_credits_limit: number;
+  ai_credits_extra: number;
   ocr_pages_used: number;
   ocr_pages_limit: number;
+  ocr_pages_extra: number;
   reset_date: string;
 };
 

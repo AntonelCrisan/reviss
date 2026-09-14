@@ -1,3 +1,11 @@
+from app.models.addon import (
+    ADDON_PURCHASE_COLUMNS,
+    ADDON_RESOURCE_KEYS,
+    PURCHASE_PAID,
+    PURCHASE_PENDING,
+    AddonPurchase,
+    AddonResource,
+)
 from app.models.ai_usage import AiCreditRate, AiModelRate, AiUsageLog
 from app.models.audit import AuditLog
 from app.models.auth_session import AuthSession
@@ -38,6 +46,7 @@ from app.models.study_project import (
     StudyProjectSummaryNote,
 )
 from app.models.subscription import (
+    FREE_PLAN_SLUG,
     ManualPlanGrant,
     StripeEvent,
     SubscriptionInvoice,
@@ -51,6 +60,13 @@ from app.models.user import User
 from app.models.visitor import VisitorVisit
 
 __all__ = [
+    "ADDON_PURCHASE_COLUMNS",
+    "ADDON_RESOURCE_KEYS",
+    "PURCHASE_PAID",
+    "PURCHASE_PENDING",
+    "FREE_PLAN_SLUG",
+    "AddonPurchase",
+    "AddonResource",
     "AiCreditRate",
     "AiModelRate",
     "AiUsageLog",

@@ -10,8 +10,9 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from anyio import to_thread
 from sqlalchemy import func, select
@@ -22,6 +23,10 @@ from sqlalchemy.orm import selectinload
 from app.core.config import Settings
 from app.core.i18n import normalize_language, t
 from app.models import (
+    PURCHASE_PAID,
+    PURCHASE_PENDING,
+    AddonPurchase,
+    AddonResource,
     ManualPlanGrant,
     StripeEvent,
     StudyProject,
@@ -31,13 +36,20 @@ from app.models import (
     UserSubscription,
 )
 from app.models.study_project import SLOT_OCCUPYING_STATUSES
+from app.services.addons import billing_cycle_window
 from app.services.audit import add_audit_log
 from app.services.email import (
     EmailDeliveryError,
     EmailMessage,
     EmailService,
+    addon_invoice_paid_email,
     email_logo_html,
     invoice_paid_email,
+)
+from app.services.subscription_status import (
+    ACTIVE_SUBSCRIPTION_STATUSES,
+    CHECKOUT_SUBSCRIPTION_STATUSES,
+    INACTIVE_SUBSCRIPTION_STATUSES,
 )
 
 logger = logging.getLogger("revizzio.stripe")
@@ -46,15 +58,7 @@ logger = logging.getLogger("revizzio.stripe")
 # Stripe indefinitely.
 _MAX_LISTED_SUBSCRIPTIONS = 500
 
-ACTIVE_SUBSCRIPTION_STATUSES = {"active", "trialing"}
-CHECKOUT_SUBSCRIPTION_STATUSES = ACTIVE_SUBSCRIPTION_STATUSES | {
-    "checkout_completed",
-}
-INACTIVE_SUBSCRIPTION_STATUSES = {
-    "canceled",
-    "incomplete_expired",
-    "unpaid",
-}
+
 
 
 class StripeConfigurationError(Exception):
@@ -128,6 +132,35 @@ def _int_or_zero(value: object) -> int:
         return 0
 
 
+def _invoice_line_items(invoice: dict[str, Any]) -> list[tuple[str, str]]:
+    """Description and amount per line, worded the way Stripe billed them.
+
+    Taking them from the invoice rather than from our own order means the
+    email can never disagree with the document it links to.
+    """
+    lines = (invoice.get("lines") or {}).get("data") or []
+    currency = str(invoice.get("currency") or "RON").upper()
+
+    items: list[tuple[str, str]] = []
+    for line in lines:
+        if not isinstance(line, dict):
+            continue
+
+        description = _string_or_none(line.get("description")) or "-"
+        # Stripe's description is the product name alone, so the quantity has
+        # to be added: "Credite AI" says nothing about how many were bought.
+        quantity = _int_or_zero(line.get("quantity"))
+        if quantity > 1:
+            description = f"{description} × {quantity}"
+
+        amount = _int_or_zero(line.get("amount")) / 100
+        # Same comma decimals as the invoice total, so one email cannot show
+        # two different number formats.
+        formatted = f"{amount:.2f}".replace(".", ",")
+        items.append((description, f"{formatted} {currency}"))
+    return items
+
+
 def _format_invoice_amount(invoice: SubscriptionInvoice) -> str:
     amount = invoice.amount_paid if invoice.amount_paid > 0 else invoice.amount_due
     normalized = f"{amount / 100:.2f}".replace(".", ",")
@@ -198,6 +231,57 @@ class StripeClient:
             data["subscription_data[metadata][replaces_subscription_id]"] = (
                 replaces_subscription_id
             )
+
+        return await to_thread.run_sync(
+            self._request,
+            "POST",
+            "/checkout/sessions",
+            data,
+        )
+
+    async def create_addon_checkout_session(
+        self,
+        *,
+        user: User,
+        purchase_id: UUID,
+        line_items: list[tuple[str, int]],
+        customer_id: str,
+        success_url: str,
+        cancel_url: str,
+    ) -> dict[str, Any]:
+        """A one-off basket, not a subscription.
+
+        Each entry is a Stripe Price and a quantity, so Stripe multiplies and
+        totals the order. We never send an amount we computed ourselves, which
+        keeps the money arithmetic on Stripe's side of the line.
+        """
+        if not line_items:
+            raise StripePlanUnavailableError("Cosul este gol.")
+
+        data: dict[str, str] = {
+            "mode": "payment",
+            "customer": customer_id,
+            "client_reference_id": str(user.id),
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+            "metadata[user_id]": str(user.id),
+            # The basket lives on our order row; only its id travels, so Stripe
+            # metadata limits can never truncate what was bought.
+            "metadata[addon_purchase_id]": str(purchase_id),
+            "payment_intent_data[metadata][user_id]": str(user.id),
+            "payment_intent_data[metadata][addon_purchase_id]": str(purchase_id),
+            # A payment-mode session raises no invoice unless asked. Without
+            # this the customer gets a receipt but no document, while every
+            # subscription charge produces a proper invoice.
+            "invoice_creation[enabled]": "true",
+            "invoice_creation[invoice_data][metadata][user_id]": str(user.id),
+            "invoice_creation[invoice_data][metadata][addon_purchase_id]": str(
+                purchase_id
+            ),
+        }
+        for index, (price_id, quantity) in enumerate(line_items):
+            data[f"line_items[{index}][price]"] = price_id
+            data[f"line_items[{index}][quantity]"] = str(quantity)
 
         return await to_thread.run_sync(
             self._request,
@@ -998,6 +1082,262 @@ class StripePaymentService:
             .limit(1)
         )
 
+    async def create_addon_checkout_session(
+        self,
+        *,
+        user: User,
+        items: dict[str, int],
+        user_agent: str | None,
+        ip_address: str | None,
+    ) -> CheckoutSessionResult:
+        """Start a one-off purchase of extra capacity.
+
+        ``items`` maps a resource key to a quantity. Quantities are validated
+        against the resource's own bounds here rather than trusted from the
+        client, and the price comes from the resource row, so the caller can
+        choose how much but never what it costs.
+
+        Sold to paying subscribers only: on the free plan the answer to running
+        out is the subscription itself, not an endless string of top-ups.
+        """
+        plan = getattr(user, "current_plan", None)
+        plan_price = getattr(plan, "price_ron", None)
+        if plan is None or plan_price is None or Decimal(str(plan_price)) <= 0:
+            raise StripePlanUnavailableError(
+                "Pachetele suplimentare sunt disponibile doar pe planurile platite."
+            )
+
+        wanted = {key: int(value) for key, value in items.items() if int(value) > 0}
+        if not wanted:
+            raise StripePlanUnavailableError("Alege cel putin o resursa.")
+
+        resources = {
+            resource.resource_key: resource
+            for resource in (
+                await self._session.scalars(
+                    select(AddonResource).where(
+                        AddonResource.resource_key.in_(list(wanted)),
+                        AddonResource.is_visible.is_(True),
+                    )
+                )
+            ).all()
+        }
+
+        line_items: list[tuple[str, int]] = []
+        quantities: dict[str, int] = {}
+        for key, quantity in wanted.items():
+            resource = resources.get(key)
+            if resource is None:
+                raise StripePlanUnavailableError(f"Resursa {key} nu este disponibila.")
+            if not resource.stripe_price_id:
+                raise StripePlanUnavailableError(
+                    f"{resource.name} nu este disponibila pentru cumparare."
+                )
+            if quantity < resource.min_quantity:
+                raise StripePlanUnavailableError(
+                    f"Minimul pentru {resource.name} este "
+                    f"{resource.min_quantity} {resource.unit_label}."
+                )
+            if quantity > resource.max_quantity:
+                raise StripePlanUnavailableError(
+                    f"Maximul pentru {resource.name} este "
+                    f"{resource.max_quantity} {resource.unit_label}."
+                )
+            if quantity % resource.step != 0:
+                raise StripePlanUnavailableError(
+                    f"{resource.name} se cumpara din {resource.step} in "
+                    f"{resource.step} {resource.unit_label}."
+                )
+
+            column = resource.purchase_column
+            if column is None:
+                raise StripePlanUnavailableError(f"Resursa {key} nu este configurata.")
+
+            line_items.append((resource.stripe_price_id, quantity))
+            quantities[column] = quantity
+
+        stripe = StripeClient(self._settings)
+        customer_id = user.stripe_customer_id or await self._create_stripe_customer(
+            stripe,
+            user=user,
+        )
+
+        cycle_start, cycle_end = await billing_cycle_window(self._session, user)
+        purchase = AddonPurchase(
+            user_id=user.id,
+            status=PURCHASE_PENDING,
+            # Filled in below; the row exists first so the basket is recorded
+            # even if the redirect never completes.
+            stripe_checkout_session_id=f"pending:{uuid4()}",
+            cycle_start=cycle_start,
+            cycle_end=cycle_end,
+            **quantities,
+        )
+        self._session.add(purchase)
+        await self._session.flush()
+
+        session_payload = await stripe.create_addon_checkout_session(
+            user=user,
+            purchase_id=purchase.id,
+            line_items=line_items,
+            customer_id=customer_id,
+            success_url=self._addon_success_url(),
+            cancel_url=self._addon_cancel_url(),
+        )
+        checkout_url = _string_or_none(session_payload.get("url"))
+        session_id = _string_or_none(session_payload.get("id"))
+        if not checkout_url or not session_id:
+            raise StripeRequestError("Stripe nu a returnat o sesiune de plata.")
+
+        purchase.stripe_checkout_session_id = session_id
+
+        add_audit_log(
+            self._session,
+            action="stripe.addon.checkout_started",
+            actor=user,
+            resource_type="addon_purchase",
+            resource_id=str(purchase.id),
+            details={"items": quantities, "checkout_session_id": session_id},
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        await self._session.commit()
+
+        return CheckoutSessionResult(checkout_url=checkout_url, session_id=session_id)
+
+    async def record_addon_purchase(
+        self,
+        *,
+        session_payload: dict[str, Any],
+    ) -> AddonPurchase | None:
+        """Mark a pending order paid, at most once.
+
+        Stripe retries webhooks and the browser syncs the same session on the
+        way back, so this runs several times for one payment. Flipping an
+        already-paid row is a no-op, which is what makes both paths safe.
+        """
+        session_id = _string_or_none(session_payload.get("id"))
+        if not session_id:
+            return None
+        if str(session_payload.get("payment_status") or "") != "paid":
+            return None
+
+        purchase = await self._session.scalar(
+            select(AddonPurchase).where(
+                AddonPurchase.stripe_checkout_session_id == session_id
+            )
+        )
+        if purchase is None:
+            return None
+        if purchase.status == PURCHASE_PAID:
+            return purchase
+
+        purchase.status = PURCHASE_PAID
+        purchase.paid_at = datetime.now(UTC)
+        purchase.stripe_payment_intent_id = _string_or_none(
+            session_payload.get("payment_intent")
+        )
+        purchase.amount_paid = _int_or_zero(session_payload.get("amount_total"))
+        purchase.currency = str(session_payload.get("currency") or "RON").upper()
+
+        user = await self._session.get(User, purchase.user_id)
+        add_audit_log(
+            self._session,
+            action="stripe.addon.purchased",
+            actor=user,
+            resource_type="addon_purchase",
+            resource_id=str(purchase.id),
+            details={
+                "amount_paid": purchase.amount_paid,
+                "currency": purchase.currency,
+                "ai_credits": purchase.extra_ai_credits,
+                "ocr_pages": purchase.extra_ocr_pages,
+                "cycle_end": purchase.cycle_end.isoformat(),
+            },
+        )
+        return purchase
+
+    async def _sync_addon_invoice(
+        self,
+        *,
+        session_payload: dict[str, Any],
+        user: User,
+    ) -> None:
+        """Record and email the invoice for a one-off purchase.
+
+        Subscriptions already have a polling fallback that fetches invoices
+        from Stripe, which is why they arrive even when no webhook does. Packs
+        had none, so on any setup where invoice.paid cannot reach the backend -
+        local development being the obvious one - the customer was charged and
+        got no document at all.
+
+        The webhook stays authoritative; both paths are idempotent, and the
+        invoice is skipped silently if Stripe has not finalised it yet.
+        """
+        invoice_id = _string_or_none(session_payload.get("invoice"))
+        if invoice_id is None:
+            return
+
+        try:
+            stripe = StripeClient(self._settings)
+            invoice_payload = await stripe.retrieve_invoice(invoice_id=invoice_id)
+        except (StripeConfigurationError, StripeRequestError) as exc:
+            logger.warning(
+                "Factura %s pentru pachet nu a putut fi citita: %s",
+                invoice_id,
+                exc,
+            )
+            return
+
+        subscription_invoice = await self._upsert_invoice(invoice=invoice_payload)
+        if subscription_invoice is None:
+            return
+
+        await self._send_paid_invoice_email_if_needed(
+            invoice=subscription_invoice,
+            user=user,
+            line_items=_invoice_line_items(invoice_payload),
+        )
+
+    async def sync_addon_checkout_session(
+        self,
+        *,
+        user: User,
+        session_id: str,
+    ) -> AddonPurchase | None:
+        """Credit the order on return from Stripe, without waiting.
+
+        The webhook stays authoritative, but it can land after the browser
+        does. Both paths call the same idempotent recorder.
+        """
+        stripe = StripeClient(self._settings)
+        session_payload = await stripe.retrieve_checkout_session(session_id=session_id)
+
+        metadata = session_payload.get("metadata") or {}
+        if _uuid_or_none(metadata.get("user_id")) != user.id:
+            raise StripePlanUnavailableError("Sesiunea nu apartine acestui cont.")
+
+        purchase = await self.record_addon_purchase(session_payload=session_payload)
+        if purchase is not None:
+            await self._sync_addon_invoice(
+                session_payload=session_payload,
+                user=user,
+            )
+        await self._session.commit()
+        return purchase
+
+    def _addon_success_url(self) -> str:
+        # Stripe only fills the session id in where the placeholder appears, and
+        # the account page needs it to credit the order without waiting for the
+        # webhook.
+        return (
+            f"{self._settings.public_app_url}"
+            "/myaccount?addon=success&session_id={CHECKOUT_SESSION_ID}"
+        )
+
+    def _addon_cancel_url(self) -> str:
+        return f"{self._settings.public_app_url}/myaccount?addon=cancelled"
+
     async def _fetch_user_invoices(self, *, user: User) -> list[SubscriptionInvoice]:
         result = await self._session.scalars(
             select(SubscriptionInvoice)
@@ -1083,6 +1423,19 @@ class StripePaymentService:
             )
 
     async def _handle_checkout_completed(self, session: dict[str, Any]) -> None:
+        # A pack purchase is mode=payment and carries no subscription, so it
+        # has to branch out before the subscription path discards it.
+        if str(session.get("mode") or "") == "payment":
+            purchase = await self.record_addon_purchase(session_payload=session)
+            if purchase is not None:
+                user = await self._session.get(User, purchase.user_id)
+                if user is not None:
+                    await self._sync_addon_invoice(
+                        session_payload=session,
+                        user=user,
+                    )
+            return
+
         metadata = session.get("metadata") or {}
         user_id = metadata.get("user_id") or session.get("client_reference_id")
         plan_id = metadata.get("plan_id")
@@ -1217,6 +1570,19 @@ class StripePaymentService:
             user_subscription=user_subscription,
         )
         if user_subscription is None:
+            # A one-off purchase has no subscription, but it still produces an
+            # invoice and the customer still expects the same email. The
+            # subscription bookkeeping below simply does not apply to it.
+            if send_email and subscription_invoice is not None:
+                standalone_user = await self._session.get(
+                    User,
+                    subscription_invoice.user_id,
+                )
+                if standalone_user is not None:
+                    await self._send_paid_invoice_email_if_needed(
+                        invoice=subscription_invoice,
+                        user=standalone_user,
+                    )
             return
         stripe_subscription_id = user_subscription.stripe_subscription_id
         user_subscription = await self._session.scalar(
@@ -1324,8 +1690,10 @@ class StripePaymentService:
             user = await self._session.scalar(
                 select(User).where(User.stripe_customer_id == stripe_customer_id)
             )
-            if user is not None:
-                plan_id = user.current_plan_id
+            # plan_id is deliberately left unset here. An invoice with no
+            # subscription behind it is a one-off purchase, and stamping the
+            # customer's current plan on it would make a top-up receipt read as
+            # if it were a subscription charge.
 
         if user is None:
             return None
@@ -1375,7 +1743,14 @@ class StripePaymentService:
         *,
         invoice: SubscriptionInvoice,
         user: User,
+        line_items: list[tuple[str, str]] | None = None,
     ) -> None:
+        """Email a paid invoice, once.
+
+        ``line_items`` marks this as a one-off purchase and switches the
+        template: a top-up receipt has to list what was bought, since there is
+        no plan name that would describe it.
+        """
         if invoice.email_sent_at is not None or invoice.status != "paid":
             return
 
@@ -1386,25 +1761,43 @@ class StripePaymentService:
             )
             return
 
-        plan_name: str | None = None
-        if invoice.plan_id is not None:
-            plan = await self._session.get(SubscriptionPlan, invoice.plan_id)
-            plan_name = plan.name if plan is not None else None
-
         # Sent from a webhook too, where no request language exists: the
         # account preference is the only signal.
         language = normalize_language(user.language_preference)
-        html, text = invoice_paid_email(
-            invoice_url=invoice_url,
-            invoice_pdf_url=invoice.invoice_pdf_url,
-            invoice_number=invoice.number,
-            amount_label=_format_invoice_amount(invoice),
-            paid_at_label=_format_invoice_paid_at(invoice),
-            plan_name=plan_name,
-            logo_html=email_logo_html(self._settings.email_logo_url, app_name="Reviss"),
+        logo_html = email_logo_html(
+            self._settings.email_logo_url,
             app_name="Reviss",
-            language=language,
         )
+
+        if line_items:
+            html, text = addon_invoice_paid_email(
+                invoice_url=invoice_url,
+                invoice_pdf_url=invoice.invoice_pdf_url,
+                invoice_number=invoice.number,
+                amount_label=_format_invoice_amount(invoice),
+                paid_at_label=_format_invoice_paid_at(invoice),
+                line_items=line_items,
+                logo_html=logo_html,
+                app_name="Reviss",
+                language=language,
+            )
+        else:
+            plan_name: str | None = None
+            if invoice.plan_id is not None:
+                plan = await self._session.get(SubscriptionPlan, invoice.plan_id)
+                plan_name = plan.name if plan is not None else None
+
+            html, text = invoice_paid_email(
+                invoice_url=invoice_url,
+                invoice_pdf_url=invoice.invoice_pdf_url,
+                invoice_number=invoice.number,
+                amount_label=_format_invoice_amount(invoice),
+                paid_at_label=_format_invoice_paid_at(invoice),
+                plan_name=plan_name,
+                logo_html=logo_html,
+                app_name="Reviss",
+                language=language,
+            )
 
         try:
             await self._email.send(

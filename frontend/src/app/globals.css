@@ -1274,3 +1274,16 @@ button:not(:disabled),
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Number inputs that are driven by their own +/- buttons: the native spinner
+   would be a second, smaller set of controls sitting on top of them. */
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

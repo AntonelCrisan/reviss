@@ -57,6 +57,12 @@ const planCards: SettingsCard[] = [
     icon: "card",
   },
   {
+    title: "Capacitate la bucată",
+    description: "Resurse vândute separat, peste alocarea planului.",
+    href: "/admin/settings/capacitate",
+    icon: "card",
+  },
+  {
     title: "AI Credits și cost",
     description: "Praguri de credite pe mărime și cost estimat per model AI.",
     href: "/admin/settings/ai-credite",

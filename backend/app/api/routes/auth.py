@@ -30,6 +30,7 @@ from app.schemas.auth import (
 from app.schemas.preferences import StudyPreferencesResponse, StudyPreferencesUpdate
 from app.schemas.usage import UsageResponse
 from app.schemas.user import UserPreferencesUpdate, UserResponse
+from app.services.addons import balance_of
 from app.services.ai_credits import (
     AiCreditsService,
     monthly_ai_credits,
@@ -50,7 +51,11 @@ from app.services.billing_window import current_billing_window
 from app.services.google_oauth import GoogleOAuthError
 from app.services.pdf_export import account_data_export_pdf
 from app.services.preferences import PreferencesService, StudyPreferences
-from app.services.projects import StudyProjectService, limits_for_user
+from app.services.projects import (
+    ProjectValidationError,
+    StudyProjectService,
+    limits_for_user,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
@@ -535,7 +540,15 @@ async def get_usage(
     )
 
     window_start, window_end = await current_billing_window(session, current_user)
-    limits = limits_for_user(current_user)
+    try:
+        limits = limits_for_user(current_user)
+    except ProjectValidationError as exc:
+        # No usable plan is the user's problem to fix, not a server fault: the
+        # dashboard shows the message and points at the plans page.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
     projects_used = await session.scalar(
         select(func.count(StudyProject.id)).where(
             StudyProject.user_id == current_user.id,
@@ -557,17 +570,26 @@ async def get_usage(
         current_user, window_start, window_end
     )
 
+    # Already attached to the user by the auth dependency, so the split between
+    # plan allowance and bought capacity costs nothing extra here.
+    extra = balance_of(current_user)
+
     return UsageResponse(
         projects_used=int(projects_used or 0),
         projects_limit=limits.active_projects,
+        projects_extra=extra.projects,
         materials_used=materials_used,
         materials_limit=limits.monthly_materials,
+        materials_extra=extra.materials,
         pages_processed=pages_processed,
         pages_limit=limits.monthly_page_limit,
+        pages_extra=extra.pages,
         ai_credits_used=ai_credits_used,
         ai_credits_limit=monthly_ai_credits(current_user),
+        ai_credits_extra=extra.ai_credits,
         ocr_pages_used=ocr_pages_used,
         ocr_pages_limit=monthly_ocr_pages(current_user),
+        ocr_pages_extra=extra.ocr_pages,
         reset_date=window_end,
     )
 
