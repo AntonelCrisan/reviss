@@ -22,3 +22,22 @@ class AuditLogResponse(BaseModel):
     ip_address: str | None
     user_agent: str | None
     created_at: datetime
+
+
+class AuditLogActionOption(BaseModel):
+    """One filterable action, with how often it has ever been recorded."""
+
+    action: str
+    total: int
+
+
+class AuditLogListResponse(BaseModel):
+    """A page of logs plus how many match the filter.
+
+    The total is what lets the admin see that a search found 400 events while
+    showing 50: a bare list cannot tell "no more results" apart from "the
+    window ended here".
+    """
+
+    items: list[AuditLogResponse]
+    total: int

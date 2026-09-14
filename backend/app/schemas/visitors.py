@@ -27,3 +27,10 @@ class VisitorVisitResponse(BaseModel):
     visit_date: date
     path: str | None
     created_at: datetime
+
+
+class VisitorVisitListResponse(BaseModel):
+    """A page of visits plus how many match the filter."""
+
+    items: list[VisitorVisitResponse]
+    total: int

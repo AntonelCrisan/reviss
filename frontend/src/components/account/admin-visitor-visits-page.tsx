@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { TablePagination } from "@/components/account/table-pagination";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
+  type Paged,
   type VisitorStats,
   type VisitorVisit,
   getAdminVisitorStats,
@@ -13,12 +15,13 @@ import {
 import { toast } from "@/lib/toast-store";
 
 type AdminVisitorVisitsPageProps = {
-  initialVisits: VisitorVisit[];
+  initialVisits: Paged<VisitorVisit>;
   initialStats: VisitorStats | null;
 };
 
 const numberFormatter = new Intl.NumberFormat("ro-RO");
-const VISITS_PAGE_SIZE = 15;
+const VISITS_PAGE_SIZE = 25;
+const SEARCH_DEBOUNCE_MS = 350;
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -60,38 +63,78 @@ export function AdminVisitorVisitsPage({
   initialVisits,
   initialStats,
 }: AdminVisitorVisitsPageProps) {
-  const [visits, setVisits] = useState(initialVisits);
+  const [page, setPage] = useState<Paged<VisitorVisit>>(initialVisits);
   const [stats, setStats] = useState(initialStats);
+  const [path, setPath] = useState("");
+  const [debouncedPath, setDebouncedPath] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
+  const isInitialRender = useRef(true);
 
-  const pageCount = Math.max(1, Math.ceil(visits.length / VISITS_PAGE_SIZE));
-  const safeCurrentPage = Math.min(currentPage, pageCount);
-  const paginatedVisits = useMemo(() => {
-    const start = (safeCurrentPage - 1) * VISITS_PAGE_SIZE;
-    return visits.slice(start, start + VISITS_PAGE_SIZE);
-  }, [visits, safeCurrentPage]);
+  const pageCount = Math.max(1, Math.ceil(page.total / VISITS_PAGE_SIZE));
+  const hasFilters = Boolean(path || dateFrom || dateTo);
 
-  async function refreshVisits() {
-    setIsRefreshing(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPath(path.trim());
+    }, SEARCH_DEBOUNCE_MS);
 
-    try {
-      const [nextVisits, nextStats] = await Promise.all([
-        getAdminVisitorVisits({ limit: 200 }),
-        getAdminVisitorStats().catch(() => null),
-      ]);
-      setVisits(nextVisits);
-      setStats(nextStats);
-      setCurrentPage(1);
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Vizitele nu au putut fi încărcate.",
-      );
-    } finally {
-      setIsRefreshing(false);
+    return () => clearTimeout(timer);
+  }, [path]);
+
+  useEffect(() => {
+    // The server already rendered this exact page, so the first run would
+    // only fetch it a second time.
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
     }
+
+    let cancelled = false;
+
+    getAdminVisitorVisits({
+      path: debouncedPath || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      limit: VISITS_PAGE_SIZE,
+      offset: (currentPage - 1) * VISITS_PAGE_SIZE,
+    })
+      .then((next) => {
+        if (!cancelled) setPage(next);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Vizitele nu au putut fi încărcate.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, dateFrom, dateTo, debouncedPath, reloadToken]);
+
+  function changeFilter(apply: () => void) {
+    setIsLoading(true);
+    setCurrentPage(1);
+    apply();
+  }
+
+  function resetFilters() {
+    changeFilter(() => {
+      setPath("");
+      setDebouncedPath("");
+      setDateFrom("");
+      setDateTo("");
+    });
   }
 
   return (
@@ -120,13 +163,21 @@ export function AdminVisitorVisitsPage({
 
           <button
             type="button"
-            onClick={refreshVisits}
-            disabled={isRefreshing}
+            onClick={() => {
+              setIsLoading(true);
+              setReloadToken((token) => token + 1);
+              // The counters move with the visits, so they are refreshed
+              // together; a failure here must not hide the table.
+              getAdminVisitorStats()
+                .then(setStats)
+                .catch(() => undefined);
+            }}
+            disabled={isLoading}
             className="inline-flex w-fit items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60"
           >
             <svg
               aria-hidden="true"
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -135,7 +186,7 @@ export function AdminVisitorVisitsPage({
               <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4" />
               <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4" />
             </svg>
-            <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            <span>{isLoading ? "Se încarcă..." : "Reîmprospătează"}</span>
           </button>
         </div>
 
@@ -155,20 +206,78 @@ export function AdminVisitorVisitsPage({
           <VisitorMetric
             label="Ultimele 30 de zile"
             value={
-              stats
-                ? numberFormatter.format(stats.visitors_last_30_days)
-                : "-"
+              stats ? numberFormatter.format(stats.visitors_last_30_days) : "-"
             }
             detail="vizitatori unici"
           />
           <VisitorMetric
             label="Total"
-            value={
-              stats ? numberFormatter.format(stats.total_visitors) : "-"
-            }
+            value={stats ? numberFormatter.format(stats.total_visitors) : "-"}
             detail="de la activarea urmăririi"
           />
         </div>
+
+        <section className="rounded-xl border border-subtle bg-surface p-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+            <label className="min-w-0">
+              <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                Pagină
+              </span>
+              <input
+                value={path}
+                onChange={(event) => {
+                  setIsLoading(true);
+                  setCurrentPage(1);
+                  setPath(event.target.value);
+                }}
+                placeholder="Caută după pagină, de exemplu /login..."
+                className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm text-content outline-none transition placeholder:text-muted focus:border-action"
+              />
+            </label>
+
+            <div className="min-w-0">
+              <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                De la
+              </span>
+              <DatePicker
+                value={dateFrom}
+                max={dateTo || undefined}
+                onChange={(next) => changeFilter(() => setDateFrom(next))}
+                placeholder="De la"
+                aria-label="De la"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                Până la
+              </span>
+              <DatePicker
+                value={dateTo}
+                min={dateFrom || undefined}
+                onChange={(next) => changeFilter(() => setDateTo(next))}
+                placeholder="Până la"
+                aria-label="Până la"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={resetFilters}
+              disabled={!hasFilters}
+              className="h-12 self-end rounded-md border border-subtle bg-app px-5 text-xs font-black text-muted transition hover:bg-surface-hover hover:text-content disabled:opacity-40"
+            >
+              Resetează
+            </button>
+          </div>
+
+          <p className="mt-3 text-xs leading-5 text-muted">
+            Se reține o singură intrare pe vizitator și pe zi, așa că
+            <span className="font-bold text-content"> Pagină </span>
+            este pagina pe care a intrat în ziua respectivă, nu tot parcursul
+            lui prin site.
+          </p>
+        </section>
 
         <section className="overflow-hidden rounded-xl border border-subtle bg-surface">
           <div className="data-table-scroll max-h-[34rem] overflow-auto">
@@ -181,7 +290,7 @@ export function AdminVisitorVisitsPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-subtle">
-                {paginatedVisits.map((visit) => (
+                {page.items.map((visit) => (
                   <tr
                     key={visit.id}
                     className="align-top transition hover:bg-surface-hover/45"
@@ -201,18 +310,23 @@ export function AdminVisitorVisitsPage({
             </table>
           </div>
 
-          {visits.length === 0 ? (
+          {page.items.length === 0 ? (
             <p className="border-t border-subtle p-5 text-sm text-muted">
-              Nu există vizite înregistrate momentan.
+              {hasFilters
+                ? "Nu există vizite pentru filtrele alese."
+                : "Nu există vizite înregistrate momentan."}
             </p>
           ) : null}
           <TablePagination
-            currentPage={safeCurrentPage}
+            currentPage={Math.min(currentPage, pageCount)}
             pageCount={pageCount}
             pageSize={VISITS_PAGE_SIZE}
-            totalItems={visits.length}
+            totalItems={page.total}
             itemLabel="vizite"
-            onPageChange={setCurrentPage}
+            onPageChange={(nextPage) => {
+              setIsLoading(true);
+              setCurrentPage(nextPage);
+            }}
           />
         </section>
       </section>

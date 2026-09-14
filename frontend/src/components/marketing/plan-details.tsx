@@ -231,7 +231,9 @@ export async function PlanDetails({ plan }: { plan: SubscriptionPlanPublic }) {
           ) : null}
         </div>
 
-        <aside className="rounded-md border border-subtle bg-surface p-6 shadow-sm lg:sticky lg:top-6">
+        {/* The marketing header is sticky and 4.5rem tall, so the card has to
+          stop below it; top-6 alone parks it underneath the header. */}
+        <aside className="rounded-md border border-subtle bg-surface p-6 shadow-sm lg:sticky lg:top-[6rem]">
           <p className="flex flex-wrap items-end gap-x-2 gap-y-1">
             <span className="font-serif text-5xl font-semibold leading-none">
               {price}

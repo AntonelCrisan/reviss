@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/select";
+
 import { useTranslations } from "next-intl";
 import { useOpenCloseTransition } from "@/components/use-open-close-transition";
 import Link from "next/link";
@@ -9919,24 +9921,28 @@ function ProgressQuizReviewPanel({ project }: { project: StudyProject }) {
               : t("greselileDinUltimaIncercareA")}
           </p>
         </div>
-        <label className="flex min-w-0 flex-col gap-2 text-sm font-semibold text-content lg:max-w-sm">
-          {t("afiseaza")}
-          <select
+        <div className="flex min-w-0 flex-col gap-2 text-sm font-semibold text-content lg:max-w-sm">
+          <span>{t("afiseaza")}</span>
+          <Select
             value={data.missingAttempt ? "missing" : selectedAttemptId ?? ""}
-            onChange={(event) => router.replace(
-              quizReviewHistoryHref(project.id, event.target.value), { scroll: false },
+            onChange={(next) => router.replace(
+              quizReviewHistoryHref(project.id, next), { scroll: false },
             )}
-            className="w-full rounded-md border border-subtle bg-app px-3 py-2 text-sm text-content"
-          >
-            <option value="">{t("ultimeleIncercari")}</option>
-            {data.missingAttempt ? <option value="missing" disabled>{t("incercareIndisponibila")}</option> : null}
-            {data.history.map(({ quiz, attempt }) => (
-              <option key={attempt.id} value={attempt.id}>
-                {quiz.title} · {formatQuizAttemptTimestamp(attempt.completed_at)} · {attempt.score_percent}%
-              </option>
-            ))}
-          </select>
-        </label>
+            options={[
+              { value: "", label: t("ultimeleIncercari") },
+              ...(data.missingAttempt
+                ? [{ value: "missing", label: t("incercareIndisponibila"), disabled: true }]
+                : []),
+              ...data.history.map(({ quiz, attempt }) => ({
+                value: attempt.id,
+                label: quiz.title,
+                description: `${formatQuizAttemptTimestamp(attempt.completed_at)} · ${attempt.score_percent}%`,
+              })),
+            ]}
+            triggerClassName="h-11 px-3 text-sm font-semibold"
+            aria-label={t("afiseaza")}
+          />
+        </div>
       </div>
 
       {data.selectedEntry ? (

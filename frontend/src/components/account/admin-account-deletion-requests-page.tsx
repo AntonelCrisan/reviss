@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { TablePagination } from "@/components/account/table-pagination";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
   deleteAccountFromDeletionRequest,
@@ -270,25 +271,20 @@ export function AdminAccountDeletionRequestsPage({
               />
             </label>
 
-            <label className="min-w-0">
-              <span className="sr-only">Filtrează după status</span>
-              <select
+            <div className="min-w-0">
+              <Select
                 value={requestStatus}
-                onChange={(event) => {
-                  setRequestStatus(
-                    event.target.value as AccountDeletionRequestStatus | "",
-                  );
+                onChange={(next) => {
+                  setRequestStatus(next as AccountDeletionRequestStatus | "");
                   setCurrentPage(1);
                 }}
-                className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm font-bold text-content outline-none transition focus:border-action"
-              >
-                {statusFilters.map((item) => (
-                  <option key={item.value || "all"} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={statusFilters.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+                aria-label="Filtrează după status"
+              />
+            </div>
           </div>
         </section>
 

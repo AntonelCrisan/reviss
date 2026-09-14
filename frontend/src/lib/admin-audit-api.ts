@@ -15,6 +15,17 @@ export type AuditLog = {
   created_at: string;
 };
 
+/** A page of rows plus how many match the filter, not just how many were sent. */
+export type Paged<T> = {
+  items: T[];
+  total: number;
+};
+
+export type AuditLogActionOption = {
+  action: string;
+  total: number;
+};
+
 type ApiErrorPayload = {
   detail?: string;
 };
@@ -29,36 +40,53 @@ export class AdminAuditApiError extends Error {
   }
 }
 
-type AuditLogFilters = {
+/**
+ * Turn a date picked in the browser into the instants that day spans.
+ *
+ * The table renders timestamps in the reader's own timezone, so the day has
+ * to be bounded there too. Sending a bare "2026-09-14" would leave the
+ * database server's timezone to decide where the day starts, which differs
+ * between development and production.
+ */
+export function dayBounds(day: string, { endOfDay = false } = {}): string {
+  const [year, month, date] = day.split("-").map(Number);
+  if (!year || !month || !date) return "";
+
+  // Local midnight; the end bound is exclusive, so it is the next midnight.
+  const instant = new Date(year, month - 1, date + (endOfDay ? 1 : 0));
+  return Number.isNaN(instant.getTime()) ? "" : instant.toISOString();
+}
+
+export type AuditLogFilters = {
   action?: string;
   actor?: string;
   status?: AuditLogStatus | "";
+  dateFrom?: string;
+  dateTo?: string;
   limit?: number;
+  offset?: number;
 };
 
-function auditQuery(filters: AuditLogFilters = {}) {
+export function auditQuery(filters: AuditLogFilters = {}) {
   const params = new URLSearchParams();
 
   if (filters.action) params.set("action", filters.action);
   if (filters.actor) params.set("actor", filters.actor);
   if (filters.status) params.set("status", filters.status);
+  if (filters.dateFrom) {
+    params.set("date_from", dayBounds(filters.dateFrom));
+  }
+  if (filters.dateTo) {
+    params.set("date_to", dayBounds(filters.dateTo, { endOfDay: true }));
+  }
   if (filters.limit) params.set("limit", String(filters.limit));
+  if (filters.offset) params.set("offset", String(filters.offset));
 
   const query = params.toString();
   return query ? `?${query}` : "";
 }
 
-export async function getAdminAuditLogs(
-  filters: AuditLogFilters = {},
-): Promise<AuditLog[]> {
-  const response = await fetch(`/api/admin/audit-logs${auditQuery(filters)}`, {
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-  });
-
+async function readJson<T>(response: Response, fallbackMessage: string) {
   if (!response.ok) {
     let payload: ApiErrorPayload = {};
     try {
@@ -67,12 +95,41 @@ export async function getAdminAuditLogs(
       // The fallback below handles non-JSON upstream errors.
     }
     throw new AdminAuditApiError(
-      payload.detail || "Jurnalul de activitate nu a putut fi încărcat.",
+      payload.detail || fallbackMessage,
       response.status,
     );
   }
 
-  return (await response.json()) as AuditLog[];
+  return (await response.json()) as T;
+}
+
+const jsonRequest: RequestInit = {
+  credentials: "same-origin",
+  headers: { "Content-Type": "application/json" },
+  cache: "no-store",
+};
+
+export async function getAdminAuditLogs(
+  filters: AuditLogFilters = {},
+): Promise<Paged<AuditLog>> {
+  const response = await fetch(
+    `/api/admin/audit-logs${auditQuery(filters)}`,
+    jsonRequest,
+  );
+
+  return readJson<Paged<AuditLog>>(
+    response,
+    "Jurnalul de activitate nu a putut fi încărcat.",
+  );
+}
+
+export async function getAdminAuditLogActions(): Promise<AuditLogActionOption[]> {
+  const response = await fetch("/api/admin/audit-logs/actions", jsonRequest);
+
+  return readJson<AuditLogActionOption[]>(
+    response,
+    "Lista de acțiuni nu a putut fi încărcată.",
+  );
 }
 
 export type VisitorStats = {
@@ -83,28 +140,12 @@ export type VisitorStats = {
 };
 
 export async function getAdminVisitorStats(): Promise<VisitorStats> {
-  const response = await fetch("/api/admin/visitor-stats", {
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch("/api/admin/visitor-stats", jsonRequest);
 
-  if (!response.ok) {
-    let payload: ApiErrorPayload = {};
-    try {
-      payload = (await response.json()) as ApiErrorPayload;
-    } catch {
-      // The fallback below handles non-JSON upstream errors.
-    }
-    throw new AdminAuditApiError(
-      payload.detail || "Statisticile vizitatorilor nu au putut fi încărcate.",
-      response.status,
-    );
-  }
-
-  return (await response.json()) as VisitorStats;
+  return readJson<VisitorStats>(
+    response,
+    "Statisticile vizitatorilor nu au putut fi încărcate.",
+  );
 }
 
 export type VisitorVisit = {
@@ -115,36 +156,37 @@ export type VisitorVisit = {
   created_at: string;
 };
 
-export async function getAdminVisitorVisits(
-  filters: { limit?: number } = {},
-): Promise<VisitorVisit[]> {
-  const params = new URLSearchParams();
-  if (filters.limit) params.set("limit", String(filters.limit));
-  const query = params.toString();
+export type VisitorVisitFilters = {
+  dateFrom?: string;
+  dateTo?: string;
+  path?: string;
+  limit?: number;
+  offset?: number;
+};
 
+export function visitorQuery(filters: VisitorVisitFilters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.dateFrom) params.set("date_from", filters.dateFrom);
+  if (filters.dateTo) params.set("date_to", filters.dateTo);
+  if (filters.path) params.set("path", filters.path);
+  if (filters.limit) params.set("limit", String(filters.limit));
+  if (filters.offset) params.set("offset", String(filters.offset));
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
+export async function getAdminVisitorVisits(
+  filters: VisitorVisitFilters = {},
+): Promise<Paged<VisitorVisit>> {
   const response = await fetch(
-    `/api/admin/visitor-visits${query ? `?${query}` : ""}`,
-    {
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    },
+    `/api/admin/visitor-visits${visitorQuery(filters)}`,
+    jsonRequest,
   );
 
-  if (!response.ok) {
-    let payload: ApiErrorPayload = {};
-    try {
-      payload = (await response.json()) as ApiErrorPayload;
-    } catch {
-      // The fallback below handles non-JSON upstream errors.
-    }
-    throw new AdminAuditApiError(
-      payload.detail || "Vizitele nu au putut fi încărcate.",
-      response.status,
-    );
-  }
-
-  return (await response.json()) as VisitorVisit[];
+  return readJson<Paged<VisitorVisit>>(
+    response,
+    "Vizitele nu au putut fi încărcate.",
+  );
 }

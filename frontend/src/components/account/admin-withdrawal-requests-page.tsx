@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { TablePagination } from "@/components/account/table-pagination";
+import { Select } from "@/components/ui/select";
 import {
   type AdminWithdrawalRequest,
   getAdminWithdrawalRequests,
@@ -236,23 +237,20 @@ export function AdminWithdrawalRequestsPage({
               />
             </label>
 
-            <label className="min-w-0">
-              <span className="sr-only">Filtrează după status email</span>
-              <select
+            <div className="min-w-0">
+              <Select
                 value={emailStatus}
-                onChange={(event) => {
-                  setEmailStatus(event.target.value);
+                onChange={(next) => {
+                  setEmailStatus(next);
                   setCurrentPage(1);
                 }}
-                className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm font-bold text-content outline-none transition focus:border-action"
-              >
-                {emailStatusFilters.map((item) => (
-                  <option key={item.value || "all"} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={emailStatusFilters.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+                aria-label="Filtrează după status email"
+              />
+            </div>
           </div>
         </section>
 

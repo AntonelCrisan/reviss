@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.search import contains
 from app.models import VisitorVisit
 from app.schemas.visitors import VisitorStatsResponse
 
@@ -82,14 +83,63 @@ async def get_visitor_stats(session: AsyncSession) -> VisitorStatsResponse:
     )
 
 
+def _apply_visit_filters(
+    query,
+    *,
+    date_from: date | None,
+    date_to: date | None,
+    path: str | None,
+):
+    if date_from:
+        query = query.where(VisitorVisit.visit_date >= date_from)
+
+    if date_to:
+        query = query.where(VisitorVisit.visit_date <= date_to)
+
+    term = path.strip() if path else ""
+    if term:
+        query = query.where(contains(VisitorVisit.path, term))
+
+    return query
+
+
+async def count_visitor_visits(
+    session: AsyncSession,
+    *,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    path: str | None = None,
+) -> int:
+    query = _apply_visit_filters(
+        select(func.count(VisitorVisit.id)),
+        date_from=date_from,
+        date_to=date_to,
+        path=path,
+    )
+    return await session.scalar(query) or 0
+
+
 async def list_visitor_visits(
     session: AsyncSession,
     *,
     limit: int,
+    offset: int = 0,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    path: str | None = None,
 ) -> list[VisitorVisit]:
-    query = (
-        select(VisitorVisit)
-        .order_by(VisitorVisit.created_at.desc())
-        .limit(limit)
+    query = _apply_visit_filters(
+        select(VisitorVisit),
+        date_from=date_from,
+        date_to=date_to,
+        path=path,
     )
-    return list((await session.scalars(query)).all())
+    # visit_date leads the sort because it carries the index; created_at only
+    # breaks ties inside a day, and id makes the order total so paging cannot
+    # show the same row twice.
+    query = query.order_by(
+        VisitorVisit.visit_date.desc(),
+        VisitorVisit.created_at.desc(),
+        VisitorVisit.id.desc(),
+    )
+    return list((await session.scalars(query.offset(offset).limit(limit))).all())

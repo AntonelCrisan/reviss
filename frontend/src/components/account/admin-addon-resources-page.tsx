@@ -1,4 +1,5 @@
 "use client";
+import { Select } from "@/components/ui/select";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -318,21 +319,21 @@ export function AdminAddonResourcesPage() {
                   <span className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
                     Resursă
                   </span>
-                  <select
+                  <Select
                     value={resource.resource_key}
-                    onChange={(event) =>
+                    onChange={(next) =>
                       update(index, {
-                        resource_key: event.target.value as AddonResourceKey,
+                        resource_key: next as AddonResourceKey,
                       })
                     }
-                    className="mt-2 h-11 w-full rounded-md border border-subtle bg-app px-4 text-sm font-semibold text-content"
-                  >
-                    {RESOURCE_OPTIONS.map((option) => (
-                      <option key={option.key} value={option.key}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={RESOURCE_OPTIONS.map((option) => ({
+                      value: option.key,
+                      label: option.label,
+                    }))}
+                    className="mt-2"
+                    triggerClassName="h-11 px-4 text-sm font-semibold"
+                    aria-label="Tipul resursei"
+                  />
                 </label>
                 <TextField
                   label="Nume afișat"

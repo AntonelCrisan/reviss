@@ -109,6 +109,60 @@ def _stripe_form(data: dict[str, str]) -> bytes:
     return urllib.parse.urlencode(data).encode("utf-8")
 
 
+# Stripe delivers far more event types than the ones acted on here. The full
+# payload of every delivery is already kept in `stripe_events`; the audit log
+# only carries the ones that move money or entitlements, so it stays readable.
+AUDITED_WEBHOOK_EVENTS: frozenset[str] = frozenset(
+    {
+        "checkout.session.completed",
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+        "invoice.paid",
+        "invoice.payment_succeeded",
+        "invoice.payment_failed",
+    }
+)
+
+
+def _webhook_details(event_type: str, data: dict[str, Any]) -> dict[str, Any]:
+    """The few fields worth reading back, never the whole payload.
+
+    `stripe_events` already stores the delivery verbatim, so copying it here
+    would multiply the largest column in the database for no added answer.
+    """
+    if event_type.startswith("checkout.session"):
+        return {
+            "mode": _string_or_none(data.get("mode")),
+            "payment_status": _string_or_none(data.get("payment_status")),
+            "amount_total": data.get("amount_total"),
+            "currency": _string_or_none(data.get("currency")),
+            "subscription": _string_or_none(data.get("subscription")),
+        }
+
+    if event_type.startswith("customer.subscription"):
+        return {
+            "status": _string_or_none(data.get("status")),
+            "cancel_at_period_end": data.get("cancel_at_period_end"),
+            "canceled_at": data.get("canceled_at"),
+        }
+
+    return {
+        "number": _string_or_none(data.get("number")),
+        "billing_reason": _string_or_none(data.get("billing_reason")),
+        "amount_due": data.get("amount_due"),
+        "amount_paid": data.get("amount_paid"),
+        "currency": _string_or_none(data.get("currency")),
+        "attempt_count": data.get("attempt_count"),
+    }
+
+
+def _webhook_resource_id(event_type: str, data: dict[str, Any]) -> str | None:
+    return _string_or_none(data.get("id")) or _string_or_none(
+        data.get("subscription") if event_type.startswith("invoice") else None
+    )
+
+
 def _uuid_or_none(value: object) -> UUID | None:
     if value is None:
         return None
@@ -592,6 +646,70 @@ class StripePaymentService:
             return
 
         data_object = event.get("data", {}).get("object", {})
+        audited = event_type in AUDITED_WEBHOOK_EVENTS
+
+        # Captured as plain values before dispatch: the failure path rolls the
+        # session back, which would expire an attached User and make the audit
+        # entry for the failure itself raise.
+        actor = await self._webhook_actor(data_object) if audited else None
+        actor_fields = (
+            {
+                "actor_user_id": actor.id,
+                "actor_email": actor.email,
+                "actor_name": actor.full_name,
+            }
+            if actor is not None
+            else {}
+        )
+
+        try:
+            await self._dispatch_webhook_event(event_type, data_object)
+        except Exception as exc:
+            if not audited:
+                raise
+            # Stripe retries a failed delivery, so the event claim has to go
+            # back with the rest of the work; only the record of the failure
+            # is kept, in a transaction of its own.
+            await self._session.rollback()
+            add_audit_log(
+                self._session,
+                action=f"stripe.webhook.{event_type}",
+                status="failure",
+                resource_type="stripe_event",
+                resource_id=event_id,
+                details={
+                    **_webhook_details(event_type, data_object),
+                    "object_id": _webhook_resource_id(event_type, data_object),
+                    "error": f"{type(exc).__name__}: {exc}",
+                },
+                **actor_fields,
+            )
+            await self._session.commit()
+            raise
+
+        if audited:
+            add_audit_log(
+                self._session,
+                action=f"stripe.webhook.{event_type}",
+                resource_type="stripe_event",
+                resource_id=event_id,
+                details={
+                    **_webhook_details(event_type, data_object),
+                    "object_id": _webhook_resource_id(event_type, data_object),
+                    # A delivery nobody could be attached to is the shape of a
+                    # payment that never reached an account.
+                    "account_identified": actor is not None,
+                },
+                **actor_fields,
+            )
+
+        await self._session.commit()
+
+    async def _dispatch_webhook_event(
+        self,
+        event_type: str,
+        data_object: dict[str, Any],
+    ) -> None:
         if event_type == "checkout.session.completed":
             await self._handle_checkout_completed(data_object)
         elif event_type in {
@@ -607,7 +725,27 @@ class StripePaymentService:
         elif event_type == "invoice.payment_succeeded":
             await self._handle_invoice_paid(data_object, send_email=False)
 
-        await self._session.commit()
+    async def _webhook_actor(self, data: dict[str, Any]) -> User | None:
+        """Whose account the event belongs to, as far as the payload says.
+
+        Metadata is tried first: on a brand new checkout the customer is not
+        linked to the account yet, so the id is the only attribution there is.
+        """
+        metadata = data.get("metadata") or {}
+        parsed_user_id = _uuid_or_none(metadata.get("user_id"))
+        if parsed_user_id is None:
+            parsed_user_id = _uuid_or_none(data.get("client_reference_id"))
+        if parsed_user_id is not None:
+            user = await self._session.get(User, parsed_user_id)
+            if user is not None:
+                return user
+
+        customer_id = _string_or_none(data.get("customer"))
+        if customer_id is None:
+            return None
+        return await self._session.scalar(
+            select(User).where(User.stripe_customer_id == customer_id)
+        )
 
     async def sync_completed_checkout_session(
         self,

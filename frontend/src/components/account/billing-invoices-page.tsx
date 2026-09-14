@@ -12,6 +12,9 @@ import {
   type SubscriptionInvoice,
 } from "@/lib/payments-api";
 import { InvoicesPageSkeletonBody } from "@/components/account/account-page-skeletons";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Select } from "@/components/ui/select";
+import { toISODay } from "@/lib/calendar";
 
 const INVOICES_PAGE_SIZE = 8;
 
@@ -70,15 +73,80 @@ export function BillingInvoicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasLoadFailed, setHasLoadFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const hasFilters = Boolean(search || status || dateFrom || dateTo);
+
+  // Only the statuses actually present are offered: a filter for "void" on an
+  // account that has never had one is a dead end.
+  const statusOptions = useMemo(() => {
+    const present = Array.from(
+      new Set(invoices.map((invoice) => invoice.status).filter(Boolean)),
+    ).sort();
+    return [
+      { value: "", label: t("toateStatusurile") },
+      ...present.map((value) => ({ value, label: statusLabel(t, value) })),
+    ];
+  }, [invoices, t]);
+
+  // Filtering happens here rather than on the server: the endpoint returns one
+  // account's invoices, which is a handful of rows, so a round trip per
+  // keystroke would cost more than it saves.
+  const filteredInvoices = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    return invoices.filter((invoice) => {
+      if (status && invoice.status !== status) return false;
+
+      if (term) {
+        const haystack = [invoice.number, invoice.stripe_invoice_id]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(term)) return false;
+      }
+
+      if (dateFrom || dateTo) {
+        const stamp = invoice.paid_at ?? invoice.created_at;
+        const day = new Date(stamp);
+        if (Number.isNaN(day.getTime())) return false;
+        // Compared as calendar days in the reader's timezone, so an invoice
+        // issued late in the evening is not pushed into the next day.
+        const invoiceDay = toISODay(day);
+        if (dateFrom && invoiceDay < dateFrom) return false;
+        if (dateTo && invoiceDay > dateTo) return false;
+      }
+
+      return true;
+    });
+  }, [dateFrom, dateTo, invoices, search, status]);
+
   const pageCount = Math.max(
     1,
-    Math.ceil(invoices.length / INVOICES_PAGE_SIZE),
+    Math.ceil(filteredInvoices.length / INVOICES_PAGE_SIZE),
   );
   const safeCurrentPage = Math.min(currentPage, pageCount);
   const paginatedInvoices = useMemo(() => {
     const start = (safeCurrentPage - 1) * INVOICES_PAGE_SIZE;
-    return invoices.slice(start, start + INVOICES_PAGE_SIZE);
-  }, [invoices, safeCurrentPage]);
+    return filteredInvoices.slice(start, start + INVOICES_PAGE_SIZE);
+  }, [filteredInvoices, safeCurrentPage]);
+
+  function changeFilter(apply: () => void) {
+    setCurrentPage(1);
+    apply();
+  }
+
+  function resetFilters() {
+    changeFilter(() => {
+      setSearch("");
+      setStatus("");
+      setDateFrom("");
+      setDateTo("");
+    });
+  }
 
   const refreshInvoices = useCallback(() => {
     if (!user) return;
@@ -155,6 +223,73 @@ export function BillingInvoicesPage() {
           </div>
         </div>
 
+        {!isLoading && !hasLoadFailed && invoices.length > 0 ? (
+          <section className="rounded-xl border border-subtle bg-surface p-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto_auto]">
+              <label className="min-w-0">
+                <span className="sr-only">{t("cautaFactura")}</span>
+                <input
+                  value={search}
+                  onChange={(event) =>
+                    changeFilter(() => setSearch(event.target.value))
+                  }
+                  placeholder={t("cautaFactura")}
+                  className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm text-content outline-none transition placeholder:text-muted focus:border-action focus:ring-4 focus:ring-action-soft"
+                />
+              </label>
+
+              <div className="min-w-0">
+                <Select
+                  value={status}
+                  onChange={(next) => changeFilter(() => setStatus(next))}
+                  options={statusOptions}
+                  aria-label={t("filtreazaDupaStatus")}
+                />
+              </div>
+
+              <div className="min-w-0">
+                <DatePicker
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(next) => changeFilter(() => setDateFrom(next))}
+                  placeholder={t("deLa")}
+                  aria-label={t("deLa")}
+                  locale={locale}
+                />
+              </div>
+
+              <div className="min-w-0">
+                <DatePicker
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(next) => changeFilter(() => setDateTo(next))}
+                  placeholder={t("panaLa")}
+                  aria-label={t("panaLa")}
+                  locale={locale}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={resetFilters}
+                disabled={!hasFilters}
+                className="h-12 rounded-md border border-subtle bg-app px-5 text-xs font-black text-muted transition hover:bg-surface-hover hover:text-content disabled:opacity-40"
+              >
+                {t("reseteaza")}
+              </button>
+            </div>
+
+            {hasFilters ? (
+              <p className="mt-3 text-xs font-semibold text-muted">
+                {t("facturiGasite", {
+                  count: filteredInvoices.length,
+                  total: invoices.length,
+                })}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
         <div className="overflow-hidden border-y border-subtle">
           {isLoading ? (
             <div className="py-6 text-sm font-semibold text-muted">
@@ -167,6 +302,10 @@ export function BillingInvoicesPage() {
           ) : invoices.length === 0 ? (
             <div className="py-6 text-sm text-muted">
               {t("nuExistaIncaFacturiPentru")}
+            </div>
+          ) : filteredInvoices.length === 0 ? (
+            <div className="py-6 text-sm text-muted">
+              {t("nuExistaFacturiPentruFiltre")}
             </div>
           ) : (
             <div className="data-table-scroll max-h-[34rem] overflow-auto divide-y divide-subtle">
@@ -231,7 +370,7 @@ export function BillingInvoicesPage() {
               currentPage={safeCurrentPage}
               pageCount={pageCount}
               pageSize={INVOICES_PAGE_SIZE}
-              totalItems={invoices.length}
+              totalItems={filteredInvoices.length}
               itemLabel="facturi"
               onPageChange={setCurrentPage}
             />

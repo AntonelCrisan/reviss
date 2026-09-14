@@ -2,6 +2,7 @@ const allowedRoutes = [
   { method: "GET", pattern: /^account-deletion-requests$/ },
   { method: "DELETE", pattern: /^account-deletion-requests\/[^/]+\/user$/ },
   { method: "GET", pattern: /^audit-logs$/ },
+  { method: "GET", pattern: /^audit-logs\/actions$/ },
   { method: "GET", pattern: /^contact-messages$/ },
   { method: "GET", pattern: /^content-reports$/ },
   { method: "GET", pattern: /^withdrawal-requests$/ },

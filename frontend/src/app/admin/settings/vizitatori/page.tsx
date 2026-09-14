@@ -10,15 +10,17 @@ export const metadata: Metadata = {
   description: "Trafic anonim pe platforma Reviss.",
 };
 
+const VISITS_PAGE_SIZE = 25;
+
 export default async function AdminVisitorVisitsRoute() {
   const [visits, stats] = await Promise.all([
-    getServerAdminVisitorVisits({ limit: 200 }),
+    getServerAdminVisitorVisits({ limit: VISITS_PAGE_SIZE }),
     getServerAdminVisitorStats(),
   ]);
 
   return (
     <AdminVisitorVisitsPage
-      initialVisits={visits ?? []}
+      initialVisits={visits ?? { items: [], total: 0 }}
       initialStats={stats}
     />
   );

@@ -1,4 +1,5 @@
 "use client";
+import { Select } from "@/components/ui/select";
 
 import { useState } from "react";
 import {
@@ -329,18 +330,17 @@ function GrantManualPlanModal({
           <span className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
             Plan
           </span>
-          <select
+          <Select
             value={planSlug}
-            onChange={(event) => setPlanSlug(event.target.value)}
+            onChange={setPlanSlug}
             disabled={isSaving}
-            className="mt-2 w-full rounded-md border border-subtle bg-app px-4 py-3 text-sm font-semibold text-content disabled:opacity-60"
-          >
-            {plans.map((plan) => (
-              <option key={plan.slug} value={plan.slug}>
-                {plan.name}
-              </option>
-            ))}
-          </select>
+            options={plans.map((plan) => ({
+              value: plan.slug,
+              label: plan.name,
+            }))}
+            className="mt-2"
+            aria-label="Planul acordat"
+          />
         </label>
 
         <label className="mt-4 block">

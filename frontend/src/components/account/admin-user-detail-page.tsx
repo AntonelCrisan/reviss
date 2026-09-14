@@ -1,4 +1,5 @@
 "use client";
+import { Select } from "@/components/ui/select";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -357,17 +358,17 @@ export function AdminUserDetailPage({
                 <span className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
                   Rol utilizator
                 </span>
-                <select
+                <Select
                   value={user.role}
-                  onChange={(event) =>
-                    void changeRole(event.target.value as AdminUser["role"])
-                  }
+                  onChange={(next) => void changeRole(next as AdminUser["role"])}
                   disabled={isSavingRole || isCurrentUser}
-                  className="mt-3 h-12 w-full rounded-lg border border-subtle bg-surface px-4 text-sm font-bold text-content outline-none transition focus:border-action disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <option value="user">Utilizator</option>
-                  <option value="admin">Administrator</option>
-                </select>
+                  options={[
+                    { value: "user", label: "Utilizator" },
+                    { value: "admin", label: "Administrator" },
+                  ]}
+                  className="mt-3"
+                  aria-label="Rolul contului"
+                />
               </label>
               <p className="mt-3 text-xs leading-5 text-muted">
                 Rolul decide accesul la setarile administrative. La schimbarea

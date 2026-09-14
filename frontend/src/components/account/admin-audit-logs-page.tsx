@@ -1,21 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
+import { actionLabel } from "@/components/account/audit-action-labels";
 import { TablePagination } from "@/components/account/table-pagination";
+import { Select } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   type AuditLog,
+  type AuditLogActionOption,
   type AuditLogStatus,
+  type Paged,
   getAdminAuditLogs,
 } from "@/lib/admin-audit-api";
 import { toast } from "@/lib/toast-store";
 
 type AdminAuditLogsPageProps = {
-  initialLogs: AuditLog[];
+  initialLogs: Paged<AuditLog>;
+  initialActions: AuditLogActionOption[];
+  initialFailureTotal: number;
 };
 
-const AUDIT_LOGS_PAGE_SIZE = 10;
+const AUDIT_LOGS_PAGE_SIZE = 25;
+const SEARCH_DEBOUNCE_MS = 350;
 
 const statusFilters: Array<{ value: AuditLogStatus | ""; label: string }> = [
   { value: "", label: "Toate" },
@@ -23,61 +31,7 @@ const statusFilters: Array<{ value: AuditLogStatus | ""; label: string }> = [
   { value: "failure", label: "Erori" },
 ];
 
-const auditActionLabels: Record<string, string> = {
-  "account.deletion_requested": "Ștergere cont solicitată",
-  "admin.account_deletion_request.completed":
-    "Solicitare ștergere cont rezolvată",
-  "admin.account_deletion_request.email_failed":
-    "Email ștergere cont eșuat",
-  "admin.subscription_plans.updated": "Planurile de abonament au fost actualizate",
-  "admin.legal_document_section.created": "Secțiune legală adăugată",
-  "admin.legal_document_section.deleted": "Secțiune legală ștearsă",
-  "admin.legal_document_section.updated": "Secțiune legală actualizată",
-  "admin.user.delete": "Utilizator sters",
-  "admin.user.delete_email_failed": "Email ștergere utilizator eșuat",
-  "admin.user.update": "Utilizator actualizat",
-  "admin.user.verification_email_failed": "Email de verificare esuat",
-  "admin.user.verification_email_requested": "Email de verificare trimis",
-  "auth.email_verified_and_registered": "Email verificat si cont creat",
-  "auth.email_verified_existing_user": "Email verificat pentru cont existent",
-  "auth.logged_in": "Autentificare reusita",
-  "auth.logged_out": "Delogare",
-  "auth.login_blocked_pending_email_confirmation":
-    "Autentificare blocata pana la confirmarea emailului",
-  "auth.login_failed": "Autentificare esuata",
-  "auth.logout_failed": "Delogare esuata",
-  "auth.password_reset_completed": "Parola resetata",
-  "auth.password_reset_duplicate_confirm_ignored":
-    "Confirmare duplicata resetare parola ignorata",
-  "auth.password_reset_email_failed": "Email resetare parola esuat",
-  "auth.password_reset_requested": "Resetare parola solicitata",
-  "auth.password_reset_requested_ignored": "Resetare parola ignorata",
-  "auth.password_reset_request_ignored_active_token":
-    "Resetare parola ignorata, token activ",
-  "auth.register_failed": "Inregistrare esuata",
-  "auth.registration_email_failed": "Email de confirmare inregistrare esuat",
-  "auth.registration_verification_requested":
-    "Email de confirmare inregistrare trimis",
-  "contact_email_failed": "Email contact esuat",
-  "contact_email_sent": "Email contact trimis",
-  "contact_email_skipped": "Email contact omis",
-  "contact_message_created": "Mesaj contact inregistrat",
-  "content_report_created": "Raportare continut inregistrata",
-  "content_report_email_failed": "Email raportare continut esuat",
-  "content_report_email_sent": "Email raportare continut trimis",
-  "content_report_email_skipped": "Email raportare continut omis",
-  "cookie_consent_changed": "Preferinte cookie actualizate",
-  "stripe.checkout_session.created": "Checkout Stripe creat",
-  "stripe.checkout_session.failed": "Checkout Stripe esuat",
-  "stripe.customer.subscription.created": "Abonament Stripe creat",
-  "stripe.customer.subscription.deleted": "Abonament Stripe anulat",
-  "stripe.customer.subscription.updated": "Abonament Stripe actualizat",
-  "stripe.invoice.paid": "Factura Stripe platita",
-  "stripe.invoice.payment_failed": "Plata factura Stripe esuata",
-  "stripe.webhook.failed": "Webhook Stripe esuat",
-  "withdrawal_request_created": "Cerere retragere inregistrata",
-  "user.preferences.updated": "Preferinte utilizator actualizate",
-};
+const numberFormatter = new Intl.NumberFormat("ro-RO");
 
 function formatDate(value: string | null) {
   if (!value) return "Niciodată";
@@ -108,18 +62,6 @@ function statusClass(status: AuditLogStatus) {
     : "border-danger-border bg-danger-soft text-danger";
 }
 
-function fallbackActionLabel(action: string) {
-  return action
-    .replace(/[_:.-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^./, (firstLetter) => firstLetter.toUpperCase());
-}
-
-function actionLabel(action: string) {
-  return auditActionLabels[action] ?? fallbackActionLabel(action);
-}
-
 function resourceLabel(log: AuditLog) {
   if (!log.resource_type && !log.resource_id) return "-";
   if (!log.resource_id) return log.resource_type ?? "-";
@@ -148,68 +90,97 @@ function LogMetric({
   );
 }
 
-export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
-  const [logs, setLogs] = useState(initialLogs);
+export function AdminAuditLogsPage({
+  initialLogs,
+  initialActions,
+  initialFailureTotal,
+}: AdminAuditLogsPageProps) {
+  const [page, setPage] = useState<Paged<AuditLog>>(initialLogs);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState<AuditLogStatus | "">("");
   const [action, setAction] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
+  const isInitialRender = useRef(true);
 
-  const actions = useMemo(
-    () =>
-      Array.from(new Set(logs.map((log) => log.action))).sort((first, second) =>
-        actionLabel(first).localeCompare(actionLabel(second), "ro"),
-      ),
-    [logs],
+  const recordedTotal = initialActions.reduce(
+    (total, option) => total + option.total,
+    0,
   );
-  const successCount = logs.filter((log) => log.status === "success").length;
-  const failureCount = logs.filter((log) => log.status === "failure").length;
-  const latestLog = logs[0] ?? null;
+  const latestLog = page.items[0] ?? null;
+  const pageCount = Math.max(1, Math.ceil(page.total / AUDIT_LOGS_PAGE_SIZE));
+  const hasFilters = Boolean(search || status || action || dateFrom || dateTo);
 
-  const filteredLogs = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+  // Typing sends one request when the admin stops, not one per keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, SEARCH_DEBOUNCE_MS);
 
-    return logs.filter((log) => {
-      const matchesStatus = !status || log.status === status;
-      const matchesAction = !action || log.action === action;
-      const matchesSearch =
-        !normalizedSearch ||
-        actorLabel(log).toLowerCase().includes(normalizedSearch) ||
-        log.action.toLowerCase().includes(normalizedSearch) ||
-        actionLabel(log.action).toLowerCase().includes(normalizedSearch) ||
-        resourceLabel(log).toLowerCase().includes(normalizedSearch) ||
-        (log.ip_address ?? "").toLowerCase().includes(normalizedSearch);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-      return matchesStatus && matchesAction && matchesSearch;
-    });
-  }, [action, logs, search, status]);
-
-  const pageCount = Math.max(
-    1,
-    Math.ceil(filteredLogs.length / AUDIT_LOGS_PAGE_SIZE),
-  );
-  const safeCurrentPage = Math.min(currentPage, pageCount);
-  const paginatedLogs = useMemo(() => {
-    const start = (safeCurrentPage - 1) * AUDIT_LOGS_PAGE_SIZE;
-    return filteredLogs.slice(start, start + AUDIT_LOGS_PAGE_SIZE);
-  }, [filteredLogs, safeCurrentPage]);
-
-  async function refreshLogs() {
-    setIsRefreshing(true);
-
-    try {
-      setLogs(await getAdminAuditLogs({ limit: 200 }));
-      setCurrentPage(1);
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Jurnalul de activitate nu a putut fi încărcat.",
-      );
-    } finally {
-      setIsRefreshing(false);
+  // Filtering happens in the database. Narrowing the rows already on screen
+  // would only ever search the newest page, so an event from last month could
+  // never be found however precise the filter.
+  useEffect(() => {
+    // The server already rendered this exact page, so the first run would
+    // only fetch it a second time.
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
     }
+
+    let cancelled = false;
+
+    getAdminAuditLogs({
+      action: action || undefined,
+      actor: debouncedSearch || undefined,
+      status: status || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      limit: AUDIT_LOGS_PAGE_SIZE,
+      offset: (currentPage - 1) * AUDIT_LOGS_PAGE_SIZE,
+    })
+      .then((next) => {
+        if (!cancelled) setPage(next);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Jurnalul de activitate nu a putut fi încărcat.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [action, currentPage, dateFrom, dateTo, debouncedSearch, reloadToken, status]);
+
+  function changeFilter(apply: () => void) {
+    setIsLoading(true);
+    setCurrentPage(1);
+    apply();
+  }
+
+  function resetFilters() {
+    changeFilter(() => {
+      setSearch("");
+      setDebouncedSearch("");
+      setStatus("");
+      setAction("");
+      setDateFrom("");
+      setDateTo("");
+    });
   }
 
   return (
@@ -231,19 +202,23 @@ export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
               Evenimente administrative, acțiuni de cont și erori importante din
-              platformă.
+              platformă. Filtrele caută în tot jurnalul, nu doar în pagina
+              afișată.
             </p>
           </div>
 
           <button
             type="button"
-            onClick={refreshLogs}
-            disabled={isRefreshing}
+            onClick={() => {
+              setIsLoading(true);
+              setReloadToken((token) => token + 1);
+            }}
+            disabled={isLoading}
             className="inline-flex w-fit items-center justify-center gap-2 rounded-md bg-action px-5 py-3 text-sm font-black text-on-action transition hover:bg-action-hover disabled:cursor-wait disabled:opacity-60"
           >
             <svg
               aria-hidden="true"
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -252,41 +227,44 @@ export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
               <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4" />
               <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4" />
             </svg>
-            <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            <span>{isLoading ? "Se încarcă..." : "Reîmprospătează"}</span>
           </button>
         </div>
 
         <div className="grid gap-5 md:grid-cols-3">
           <LogMetric
-            label="Evenimente"
-            value={String(logs.length)}
-            detail={`${filteredLogs.length} afișate`}
+            label="Total înregistrări"
+            value={numberFormatter.format(recordedTotal)}
+            detail={`${initialActions.length} tipuri de acțiuni`}
           />
           <LogMetric
-            label="Succes"
-            value={String(successCount)}
-            detail={`${failureCount} erori`}
+            label="Rezultate"
+            value={numberFormatter.format(page.total)}
+            detail={hasFilters ? "pentru filtrele alese" : "fără filtre active"}
           />
           <LogMetric
-            label="Ultimul log"
-            value={formatDate(latestLog?.created_at ?? null)}
+            label="Erori în total"
+            value={numberFormatter.format(initialFailureTotal)}
             detail={
-              latestLog ? actionLabel(latestLog.action) : "fără evenimente"
+              latestLog
+                ? `ultimul eveniment: ${formatDate(latestLog.created_at)}`
+                : "fără evenimente"
             }
           />
         </div>
 
         <section className="rounded-xl border border-subtle bg-surface p-4">
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_18rem] xl:items-center">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
             <label className="min-w-0">
               <span className="sr-only">Caută în jurnal</span>
               <input
                 value={search}
                 onChange={(event) => {
-                  setSearch(event.target.value);
+                  setIsLoading(true);
                   setCurrentPage(1);
+                  setSearch(event.target.value);
                 }}
-                placeholder="Caută după actor, acțiune, resursă sau IP..."
+                placeholder="Caută după nume, email sau IP (ID de resursă: exact)..."
                 className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm text-content outline-none transition placeholder:text-muted focus:border-action"
               />
             </label>
@@ -299,10 +277,7 @@ export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
                   <button
                     key={item.value || "all"}
                     type="button"
-                    onClick={() => {
-                      setStatus(item.value);
-                      setCurrentPage(1);
-                    }}
+                    onClick={() => changeFilter(() => setStatus(item.value))}
                     className={`rounded-md border px-4 py-2 text-xs font-black transition ${
                       isActive
                         ? "border-action bg-action text-on-action"
@@ -314,25 +289,62 @@ export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
                 );
               })}
             </div>
+          </div>
 
+          <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <label className="min-w-0">
-              <span className="sr-only">Filtrează după acțiune</span>
-              <select
+              <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                Acțiune
+              </span>
+              <Select
                 value={action}
-                onChange={(event) => {
-                  setAction(event.target.value);
-                  setCurrentPage(1);
-                }}
-                className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm font-bold text-content outline-none transition focus:border-action"
-              >
-                <option value="">Toate acțiunile</option>
-                {actions.map((currentAction) => (
-                  <option key={currentAction} value={currentAction}>
-                    {actionLabel(currentAction)}
-                  </option>
-                ))}
-              </select>
+                onChange={(next) => changeFilter(() => setAction(next))}
+                options={[
+                  { value: "", label: "Toate acțiunile" },
+                  ...initialActions.map((option) => ({
+                    value: option.action,
+                    label: actionLabel(option.action),
+                    description: `${option.total} înregistrări`,
+                  })),
+                ]}
+                aria-label="Filtrează după acțiune"
+              />
             </label>
+
+            <div className="min-w-0">
+              <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                De la
+              </span>
+              <DatePicker
+                value={dateFrom}
+                max={dateTo || undefined}
+                onChange={(next) => changeFilter(() => setDateFrom(next))}
+                placeholder="De la"
+                aria-label="De la"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                Până la
+              </span>
+              <DatePicker
+                value={dateTo}
+                min={dateFrom || undefined}
+                onChange={(next) => changeFilter(() => setDateTo(next))}
+                placeholder="Până la"
+                aria-label="Până la"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={resetFilters}
+              disabled={!hasFilters}
+              className="h-12 self-end rounded-md border border-subtle bg-app px-5 text-xs font-black text-muted transition hover:bg-surface-hover hover:text-content disabled:opacity-40"
+            >
+              Resetează
+            </button>
           </div>
         </section>
 
@@ -351,7 +363,7 @@ export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-subtle">
-                {paginatedLogs.map((log) => (
+                {page.items.map((log) => (
                   <tr
                     key={log.id}
                     className="align-top transition hover:bg-surface-hover/45"
@@ -401,18 +413,21 @@ export function AdminAuditLogsPage({ initialLogs }: AdminAuditLogsPageProps) {
             </table>
           </div>
 
-          {filteredLogs.length === 0 ? (
+          {page.items.length === 0 ? (
             <p className="border-t border-subtle p-5 text-sm text-muted">
               Nu există loguri pentru filtrele alese.
             </p>
           ) : null}
           <TablePagination
-            currentPage={safeCurrentPage}
+            currentPage={Math.min(currentPage, pageCount)}
             pageCount={pageCount}
             pageSize={AUDIT_LOGS_PAGE_SIZE}
-            totalItems={filteredLogs.length}
+            totalItems={page.total}
             itemLabel="loguri"
-            onPageChange={setCurrentPage}
+            onPageChange={(nextPage) => {
+              setIsLoading(true);
+              setCurrentPage(nextPage);
+            }}
           />
         </section>
       </section>

@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/select";
+
 import { useTranslations } from "next-intl";
 import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -899,6 +901,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
   const recaptcha = useRecaptcha(recaptchaSiteKey);
   const [state, setState] = useState<FormState>(initialState);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
+  const [category, setCategory] = useState("");
   const [isContactSubmitting, setIsContactSubmitting] = useState(false);
   const isSubmitButtonDisabled =
     isContactSubmitting ||
@@ -910,6 +913,7 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
   function handleAnotherMessage() {
     setIsContactSubmitting(false);
     setFieldErrors({});
+    setCategory("");
     setState(initialState);
     recaptcha.reset();
   }
@@ -978,6 +982,9 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
         recaptcha_token: recaptchaToken,
       });
       form.reset();
+      // form.reset() only clears native controls; the Select keeps its value
+      // in React state, so it has to be emptied by hand.
+      setCategory("");
       recaptcha.reset();
       setFieldErrors({});
       setState({
@@ -1056,25 +1063,33 @@ export function ContactForm({ recaptchaSiteKey }: ContactFormProps) {
           label={t("categorie")}
           description={t("directionamMesajulCorect")}
         >
-          <select
+          <Select
             name="category"
             required
-            aria-invalid={Boolean(fieldErrors.category)}
+            value={category}
+            onChange={(next) => {
+              setCategory(next);
+              clearFieldError(setFieldErrors, "category");
+            }}
+            options={[
+                  { value: "suport", label: t("suport") },
+                  { value: "facturare", label: t("facturare") },
+                  {
+                    value: "confidentialitate",
+                    label: t("confidentialitate"),
+                  },
+                  {
+                    value: "raportare_continut",
+                    label: t("raportareContinut"),
+                  },
+            ]}
+            placeholder={t("alegeCategoria")}
+            invalid={Boolean(fieldErrors.category)}
             aria-describedby={
               fieldErrors.category ? "contact-category-error" : undefined
             }
-            onChange={() => clearFieldError(setFieldErrors, "category")}
-            className={fieldClassName(
-              contactFieldInputClassName,
-              fieldErrors.category,
-            )}
-          >
-            <option value="">{t("alegeCategoria")}</option>
-            <option value="suport">{t("suport")}</option>
-            <option value="facturare">{t("facturare")}</option>
-            <option value="confidentialitate">{t("confidentialitate")}</option>
-            <option value="raportare_continut">{t("raportareContinut")}</option>
-          </select>
+            triggerClassName="h-11 px-3 text-sm font-semibold"
+          />
           <FieldError
             id="contact-category-error"
             message={fieldErrors.category}
@@ -1476,6 +1491,7 @@ export function ContentReportForm({
   const recaptcha = useRecaptcha(recaptchaSiteKey);
   const [state, setState] = useState<FormState>(initialState);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors>({});
+  const [reportType, setReportType] = useState("");
   const [isContentReportSubmitting, setIsContentReportSubmitting] =
     useState(false);
   const [selectedAttachments, setSelectedAttachments] = useState<
@@ -1492,6 +1508,7 @@ export function ContentReportForm({
 
   function handleAnotherReport() {
     setIsContentReportSubmitting(false);
+    setReportType("");
     setSelectedAttachments([]);
     if (attachmentInputRef.current) {
       attachmentInputRef.current.value = "";
@@ -1662,6 +1679,8 @@ export function ContentReportForm({
 
       const response = await postComplianceMultipart(t, "content-report", payload);
       form.reset();
+      // Controlled by React, so untouched by form.reset().
+      setReportType("");
       setSelectedAttachments([]);
       clearAttachmentInput();
       recaptcha.reset();
@@ -1758,25 +1777,30 @@ export function ContentReportForm({
           label={t("tip")}
           description={t("alegemFluxulPotrivit")}
         >
-          <select
+          <Select
             name="reportType"
             required
-            aria-invalid={Boolean(fieldErrors.reportType)}
+            value={reportType}
+            onChange={(next) => {
+              setReportType(next);
+              clearFieldError(setFieldErrors, "reportType");
+            }}
+            options={[
+                  { value: "drepturi_autor", label: t("drepturiDeAutor") },
+                  { value: "date_personale", label: t("datePersonale") },
+                  {
+                    value: "continut_incorect",
+                    label: t("continutIncorect"),
+                  },
+                  { value: "altul", label: t("altMotiv") },
+            ]}
+            placeholder={t("alegeTipul")}
+            invalid={Boolean(fieldErrors.reportType)}
             aria-describedby={
               fieldErrors.reportType ? "content-report-type-error" : undefined
             }
-            onChange={() => clearFieldError(setFieldErrors, "reportType")}
-            className={fieldClassName(
-              contactFieldInputClassName,
-              fieldErrors.reportType,
-            )}
-          >
-            <option value="">{t("alegeTipul")}</option>
-            <option value="drepturi_autor">{t("drepturiDeAutor")}</option>
-            <option value="date_personale">{t("datePersonale")}</option>
-            <option value="continut_incorect">{t("continutIncorect")}</option>
-            <option value="altul">{t("altMotiv")}</option>
-          </select>
+            triggerClassName="h-11 px-3 text-sm font-semibold"
+          />
           <FieldError
             id="content-report-type-error"
             message={fieldErrors.reportType}

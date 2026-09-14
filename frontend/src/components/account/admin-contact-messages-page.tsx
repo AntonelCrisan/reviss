@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { TablePagination } from "@/components/account/table-pagination";
+import { Select } from "@/components/ui/select";
 import {
   type AdminContactMessage,
   type ContactMessageCategory,
@@ -231,23 +232,20 @@ export function AdminContactMessagesPage({
               />
             </label>
 
-            <label className="min-w-0">
-              <span className="sr-only">Filtrează după categorie</span>
-              <select
+            <div className="min-w-0">
+              <Select
                 value={category}
-                onChange={(event) => {
-                  setCategory(event.target.value as ContactMessageCategory | "");
+                onChange={(next) => {
+                  setCategory(next as ContactMessageCategory | "");
                   setCurrentPage(1);
                 }}
-                className="h-12 w-full rounded-lg border border-subtle bg-app px-4 text-sm font-bold text-content outline-none transition focus:border-action"
-              >
-                {categoryFilters.map((item) => (
-                  <option key={item.value || "all"} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={categoryFilters.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+                aria-label="Filtrează după categorie"
+              />
+            </div>
           </div>
         </section>
 
