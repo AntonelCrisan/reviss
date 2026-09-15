@@ -70,12 +70,16 @@ function statusBadgeClass(active: boolean) {
 function DataRow({
   label,
   value,
+  className = "",
 }: {
   label: string;
   value: string | number;
+  className?: string;
 }) {
   return (
-    <div className="grid gap-1 py-3 text-sm sm:grid-cols-[13rem_1fr] sm:gap-5">
+    <div
+      className={`grid gap-1 py-3 text-sm sm:grid-cols-[13rem_1fr] sm:gap-5 ${className}`}
+    >
       <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
         {label}
       </dt>
@@ -504,13 +508,25 @@ export function AdminUserDetailPage({
             </span>
           </div>
 
-          <dl className="mt-4 grid gap-0 divide-y divide-subtle border-y border-subtle md:grid-cols-2 md:divide-x md:divide-y-0">
+          {/* Borders per cell, not divide-x: on two columns divide-x draws a
+              line down the left edge of the third cell, and md:divide-y-0
+              removes the one that belongs between the two rows. */}
+          <dl className="mt-4 grid gap-0 border-y border-subtle md:grid-cols-2">
             <DataRow label="Sesiuni totale" value={user.total_sessions} />
-            <DataRow label="Sesiuni active" value={user.active_sessions} />
-            <DataRow label="Ultima sesiune" value={formatDate(user.last_session_at)} />
+            <DataRow
+              label="Sesiuni active"
+              value={user.active_sessions}
+              className="border-t border-subtle md:border-l md:border-t-0"
+            />
+            <DataRow
+              label="Ultima sesiune"
+              value={formatDate(user.last_session_at)}
+              className="border-t border-subtle"
+            />
             <DataRow
               label="Ultima activitate"
               value={formatDate(user.last_seen_at)}
+              className="border-t border-subtle md:border-l"
             />
           </dl>
 

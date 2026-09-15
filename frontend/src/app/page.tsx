@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { BrandLogo } from "@/components/brand-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { FlashcardStory } from "@/components/marketing/flashcard-story";
+import { QuizPreview } from "@/components/marketing/quiz-preview";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import type { SubscriptionPlanPublic } from "@/lib/plans-api";
@@ -24,7 +25,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-type MarketingTranslator = Awaited<ReturnType<typeof getTranslations<"marketing">>>;
+type MarketingTranslator = Awaited<
+  ReturnType<typeof getTranslations<"marketing">>
+>;
 
 const localeTags = { ro: "ro-RO", en: "en-US", fr: "fr-FR" } as const;
 const openGraphLocales = { ro: "ro_RO", en: "en_US", fr: "fr_FR" } as const;
@@ -84,7 +87,11 @@ function ArrowIcon() {
       stroke="currentColor"
       strokeWidth="2"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5 12h14m-6-6 6 6-6 6"
+      />
     </svg>
   );
 }
@@ -103,6 +110,72 @@ function SparkIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 3.5 13.45 8a4 4 0 0 0 2.55 2.55L20.5 12 16 13.45A4 4 0 0 0 13.45 16L12 20.5 10.55 16A4 4 0 0 0 8 13.45L3.5 12 8 10.55A4 4 0 0 0 10.55 8L12 3.5Z"
+      />
+    </svg>
+  );
+}
+
+function SummaryIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6M9 17h4" />
+    </svg>
+  );
+}
+
+function QuestionIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.4 9.2a2.7 2.7 0 0 1 5.2.9c0 1.8-2.6 2.2-2.6 3.9"
+      />
+      <path strokeLinecap="round" d="M12 17.3h.01" />
+    </svg>
+  );
+}
+
+function RepeatIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M20 11a8 8 0 0 0-15.3-2M4 5v4h4"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 13a8 8 0 0 0 15.3 2M20 19v-4h-4"
       />
     </svg>
   );
@@ -133,8 +206,16 @@ function UploadIcon() {
       stroke="currentColor"
       strokeWidth="1.8"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0L7 9m5-5 5 5" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 16V4m0 0L7 9m5-5 5 5"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"
+      />
     </svg>
   );
 }
@@ -149,8 +230,41 @@ function LayersIcon() {
       stroke="currentColor"
       strokeWidth="1.8"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 9 5-9 5-9-5 9-5Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="m3 12 9 5 9-5M3 16l9 5 9-5" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m12 3 9 5-9 5-9-5 9-5Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m3 12 9 5 9-5M3 16l9 5 9-5"
+      />
+    </svg>
+  );
+}
+
+function PlanIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 3v4m8-4v4M4 10h16"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m9 15 2 2 4-4" />
     </svg>
   );
 }
@@ -165,20 +279,59 @@ function ChartIcon() {
       stroke="currentColor"
       strokeWidth="1.8"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 19V9m6 10V5m6 14v-7m4 7H2" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 19V9m6 10V5m6 14v-7m4 7H2"
+      />
     </svg>
   );
 }
 
 const workflowSteps = [
-  { id: "1", step: "01", icon: <UploadIcon />, tone: "border-info-border bg-info-soft text-info" },
-  { id: "2", step: "02", icon: <SparkIcon />, tone: "border-warning-border bg-warning-soft text-warning" },
-  { id: "3", step: "03", icon: <ChartIcon />, tone: "border-success-border bg-success-soft text-success" },
+  {
+    id: "1",
+    step: "01",
+    icon: <UploadIcon />,
+    tone: "border-info-border bg-info-soft text-info",
+  },
+  {
+    id: "2",
+    step: "02",
+    icon: <SparkIcon />,
+    tone: "border-warning-border bg-warning-soft text-warning",
+  },
+  {
+    id: "3",
+    step: "03",
+    icon: <ChartIcon />,
+    tone: "border-success-border bg-success-soft text-success",
+  },
 ] as const;
 
 const useCaseIds = ["1", "2", "3", "4"] as const;
 const statIds = ["1", "2", "3", "4"] as const;
 const sessionCardIds = ["1", "2", "3", "4"] as const;
+
+// One icon per card, matching what the card says. These used to alternate
+// between two icons by index, so the pictures said nothing about the text.
+
+const sessionCardIcons = {
+  "1": SummaryIcon,
+  "2": QuestionIcon,
+  "3": RepeatIcon,
+  "4": ChartIcon,
+} as const;
+
+// One icon per card, matching what the card says. These alternated between
+// two icons by position, so the pictures carried no meaning.
+const useCaseIcons = {
+  "1": SummaryIcon,
+  "2": LayersIcon,
+  "3": QuestionIcon,
+  "4": PlanIcon,
+} as const;
+
 const faqIds = ["1", "2", "3", "4", "5", "6"] as const;
 
 type PricingPlan = {
@@ -301,7 +454,9 @@ function toPricingPlans(
         name: plan.name,
         description: plan.description,
         price,
-        suffix: isFree ? t("pricing.free") : billingSuffix(t, plan.billing_interval),
+        suffix: isFree
+          ? t("pricing.free")
+          : billingSuffix(t, plan.billing_interval),
         features: uniqueFeatures([
           plan.material_limit,
           ...sortedFeatures.map((feature) => feature.label),
@@ -333,12 +488,6 @@ export default async function Home() {
     [t("preview.quizzes"), "3"],
     [t("preview.concepts"), "18"],
   ] as const;
-  const quizAnswers = [
-    t("benefits.quiz.answers.1"),
-    t("benefits.quiz.answers.2"),
-    t("benefits.quiz.answers.3"),
-  ];
-
   const homepageStructuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -420,7 +569,9 @@ export default async function Home() {
 
             <h1 className="mt-7 max-w-3xl font-serif text-5xl font-semibold leading-[1.03] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
               {t("hero.title.main")}
-              <span className="block italic text-muted">{t("hero.title.accent")}</span>
+              <span className="block italic text-muted">
+                {t("hero.title.accent")}
+              </span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-8 text-muted sm:text-lg">
@@ -444,18 +595,20 @@ export default async function Home() {
             </div>
 
             <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-sm font-medium text-muted">
-              {([
-                "hero.feature.files",
-                "hero.feature.quiz",
-                "hero.feature.progress",
-              ] as const).map((item) => (
-                  <span key={item} className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success-soft text-success">
-                      <CheckIcon />
-                    </span>
-                    {t(item)}
+              {(
+                [
+                  "hero.feature.files",
+                  "hero.feature.quiz",
+                  "hero.feature.progress",
+                ] as const
+              ).map((item) => (
+                <span key={item} className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success-soft text-success">
+                    <CheckIcon />
                   </span>
-                ))}
+                  {t(item)}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -496,7 +649,9 @@ export default async function Home() {
                       <p className="truncate text-xs font-bold">
                         Celula_capitolul_3.pdf
                       </p>
-                      <p className="mt-1 text-[10px] text-muted">{t("preview.pages")}</p>
+                      <p className="mt-1 text-[10px] text-muted">
+                        {t("preview.pages")}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
@@ -534,7 +689,9 @@ export default async function Home() {
               <div className="rounded-2xl border border-info-border bg-info-soft p-4 text-info">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold">{t("preview.nextSession")}</p>
+                    <p className="text-xs font-bold">
+                      {t("preview.nextSession")}
+                    </p>
                     <p className="mt-1 text-[10px] opacity-80">
                       {t("preview.nextSessionDetail")}
                     </p>
@@ -550,11 +707,26 @@ export default async function Home() {
       </section>
 
       <section className="border-y border-subtle bg-surface/55">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-subtle px-5 sm:grid-cols-4 sm:divide-y-0 sm:px-8">
-          {statIds.map((id) => (
-            <div key={id} className="px-4 py-7 text-center sm:px-6">
-              <p className="font-serif text-lg font-semibold">{t(`stats.${id}.title`)}</p>
-              <p className="mt-1 text-[11px] text-muted">{t(`stats.${id}.text`)}</p>
+        {/* Borders per cell rather than divide-x/divide-y: those add a border to
+            every child but the first, which on a two-column grid draws a line
+            down the left edge of the third cell and across the top of the
+            second. Which line a cell needs depends on where it sits. */}
+        <div className="mx-auto grid max-w-7xl grid-cols-2 px-5 sm:grid-cols-4 sm:px-8">
+          {statIds.map((id, index) => (
+            <div
+              key={id}
+              className={`border-subtle px-4 py-7 text-center sm:px-6 ${
+                index % 2 === 1 ? "border-l" : ""
+              } ${index > 0 ? "sm:border-l" : ""} ${
+                index >= 2 ? "border-t sm:border-t-0" : ""
+              }`}
+            >
+              <p className="font-serif text-lg font-semibold">
+                {t(`stats.${id}.title`)}
+              </p>
+              <p className="mt-1 text-[11px] text-muted">
+                {t(`stats.${id}.text`)}
+              </p>
             </div>
           ))}
         </div>
@@ -581,25 +753,29 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {useCaseIds.map((id, index) => (
-              <ScrollReveal
-                key={id}
-                direction={index % 2 === 0 ? "left" : "right"}
-                delay={index * 60}
-              >
-                <article className="h-full rounded-[2rem] border border-subtle bg-surface p-5 transition hover:-translate-y-1 hover:border-action/25 sm:p-6">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-action/20 bg-action-soft text-action">
-                    {index % 2 === 0 ? <SparkIcon /> : <CheckIcon />}
-                  </span>
-                  <h3 className="mt-6 font-serif text-2xl font-semibold">
-                    {t(`useCases.items.${id}.title`)}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-muted">
-                    {t(`useCases.items.${id}.description`)}
-                  </p>
-                </article>
-              </ScrollReveal>
-            ))}
+            {useCaseIds.map((id, index) => {
+              const CardIcon = useCaseIcons[id];
+
+              return (
+                <ScrollReveal
+                  key={id}
+                  direction={index % 2 === 0 ? "left" : "right"}
+                  delay={index * 60}
+                >
+                  <article className="h-full rounded-[2rem] border border-subtle bg-surface p-5 transition hover:-translate-y-1 hover:border-action/25 sm:p-6">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-action/20 bg-action-soft text-action">
+                      <CardIcon />
+                    </span>
+                    <h3 className="mt-6 font-serif text-2xl font-semibold">
+                      {t(`useCases.items.${id}.title`)}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-muted">
+                      {t(`useCases.items.${id}.description`)}
+                    </p>
+                  </article>
+                </ScrollReveal>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -673,21 +849,25 @@ export default async function Home() {
 
           <ScrollReveal direction="right">
             <div className="grid gap-3 sm:grid-cols-2">
-              {sessionCardIds.map((id, index) => (
-                <div
-                  key={id}
-                  className={`flex min-h-[12.5rem] flex-col items-center justify-center rounded-3xl border border-on-action/10 bg-on-action/5 p-6 text-center ${
-                    index % 2 ? "sm:translate-y-6" : ""
-                  }`}
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-on-action/10">
-                    {index % 2 ? <LayersIcon /> : <CheckIcon />}
-                  </span>
-                  <h3 className="mt-7 font-serif text-xl font-semibold">
-                    {t(`session.cards.${id}`)}
-                  </h3>
-                </div>
-              ))}
+              {sessionCardIds.map((id, index) => {
+                const CardIcon = sessionCardIcons[id];
+
+                return (
+                  <div
+                    key={id}
+                    className={`flex min-h-[12.5rem] flex-col items-center justify-center rounded-3xl border border-on-action/10 bg-on-action/5 p-6 text-center ${
+                      index % 2 ? "sm:translate-y-6" : ""
+                    }`}
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-on-action/10">
+                      <CardIcon />
+                    </span>
+                    <h3 className="mt-7 font-serif text-xl font-semibold">
+                      {t(`session.cards.${id}`)}
+                    </h3>
+                  </div>
+                );
+              })}
             </div>
           </ScrollReveal>
         </div>
@@ -713,38 +893,19 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-5 lg:grid-cols-12">
+        {/* items-start, not the default stretch: the quiz card grows when it
+            reveals feedback, and stretching made the two cards beside it
+            stretch with it, leaving a gap that changed on every answer. */}
+        <div className="mt-14 grid gap-5 lg:grid-cols-12 lg:items-start">
           <ScrollReveal direction="left" className="lg:col-span-7">
-            <article className="theme-shadow-card relative h-full min-h-[25rem] overflow-hidden rounded-[2rem] border border-subtle bg-surface p-6 sm:p-8">
+            <article className="theme-shadow-card relative min-h-[25rem] overflow-hidden rounded-[2rem] border border-subtle bg-surface p-6 sm:p-8">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
                 {t("benefits.quiz.eyebrow")}
               </p>
               <h3 className="mt-3 max-w-lg font-serif text-3xl font-semibold">
                 {t("benefits.quiz.title")}
               </h3>
-              <div className="mt-8 rounded-3xl border border-subtle bg-app/70 p-5">
-                <p className="text-xs font-bold text-muted">
-                  {t("benefits.quiz.question")}
-                </p>
-                <div className="mt-4 space-y-2">
-                  {quizAnswers.map((answer, index) => (
-                    <div
-                      key={answer}
-                      className={`flex items-center justify-between rounded-xl border px-4 py-3 text-xs font-semibold ${
-                        index === 1
-                          ? "border-success-border bg-success-soft text-success"
-                          : "border-subtle bg-surface text-muted"
-                      }`}
-                    >
-                      {answer}
-                      {index === 1 ? <CheckIcon /> : null}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-xl border border-info-border bg-info-soft p-4 text-xs leading-6 text-info">
-                  {t("benefits.quiz.explanation")}
-                </div>
-              </div>
+              <QuizPreview />
             </article>
           </ScrollReveal>
 

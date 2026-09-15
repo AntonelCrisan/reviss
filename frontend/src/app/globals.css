@@ -628,70 +628,7 @@ button:not(:disabled),
   }
 }
 
-@media (min-width: 560px) and (max-height: 760px) {
-  .flashcard-story-viewport {
-    padding-top: 5rem;
-    padding-bottom: 1rem;
-  }
-
-  .flashcard-story-layout {
-    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .flashcard-story-heading {
-    font-size: clamp(2.25rem, 4.8vw, 3.5rem);
-  }
-
-  .flashcard-story-description {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-  }
-
-  .flashcard-story-helper {
-    margin-top: 1.25rem;
-  }
-
-  .flashcard-story-active {
-    display: none;
-  }
-}
-
 @media (min-width: 560px) and (max-width: 1023px) and (max-height: 760px) {
-  .flashcard-story-layout {
-    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-    gap: 1rem;
-  }
-
-  .flashcard-story-copy {
-    align-self: center;
-  }
-
-  .flashcard-story-heading {
-    max-width: 10ch;
-    font-size: clamp(2rem, 4.25vw, 2.65rem);
-    line-height: 1.08;
-  }
-
-  .flashcard-story-description {
-    max-width: 30ch;
-    font-size: 0.8125rem;
-    line-height: 1.35rem;
-  }
-
-  .flashcard-story-helper {
-    max-width: 19rem;
-    font-size: 0.6875rem;
-  }
-
-  .flashcard-story-deck {
-    height: 23rem;
-    transform: scale(0.84);
-    transform-origin: top right;
-  }
-
   .flashcard-face {
     height: 21rem;
   }
@@ -713,34 +650,7 @@ button:not(:disabled),
   }
 }
 
-@media (min-width: 560px) and (max-width: 1023px) and (max-height: 660px) {
-  .flashcard-story-description {
-    display: none;
-  }
-
-  .flashcard-story-helper {
-    margin-top: 1rem;
-  }
-}
-
 @media (min-width: 560px) and (max-width: 700px) and (max-height: 760px) {
-  .flashcard-story-layout {
-    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
-    gap: 0.5rem;
-  }
-
-  .flashcard-story-heading {
-    font-size: 2rem;
-  }
-
-  .flashcard-story-helper {
-    padding-inline: 0.875rem;
-  }
-
-  .flashcard-story-deck {
-    transform: scale(0.8);
-  }
-
   .flashcard-face {
     padding: 1.5rem;
   }
@@ -756,33 +666,7 @@ button:not(:disabled),
 }
 
 @media (max-height: 560px) {
-  .flashcard-story-viewport {
-    padding-top: 3.5rem;
-    padding-bottom: 0.5rem;
-  }
-
-  .flashcard-story-layout {
-    gap: 1rem;
-  }
-
-  .flashcard-story-heading {
-    font-size: clamp(1.75rem, 4.5vw, 2.5rem);
-  }
-
   .flashcard-story-description,
-  .flashcard-story-active {
-    display: none;
-  }
-
-  .flashcard-story-helper {
-    margin-top: 0.75rem;
-  }
-
-  .flashcard-story-deck {
-    height: 20.5rem;
-    transform: scale(0.78);
-  }
-
   .flashcard-card-main {
     margin-top: 2rem;
   }
@@ -793,23 +677,6 @@ button:not(:disabled),
 }
 
 @media (max-height: 460px) {
-  .flashcard-story-viewport {
-    padding-top: 3rem;
-  }
-
-  .flashcard-story-heading {
-    font-size: 1.625rem;
-  }
-
-  .flashcard-story-helper {
-    padding-block: 0.375rem;
-  }
-
-  .flashcard-story-deck {
-    height: 16.5rem;
-    transform: scale(0.62);
-  }
-
   .flashcard-card-main {
     margin-top: 1.5rem;
   }
@@ -817,38 +684,6 @@ button:not(:disabled),
   .flashcard-card-footer {
     bottom: 1.25rem;
     padding-top: 0.75rem;
-  }
-}
-
-@media (max-height: 380px) {
-  .flashcard-story-deck {
-    height: 13.75rem;
-    transform: scale(0.52);
-  }
-}
-
-@media (max-width: 559px) and (max-height: 560px) {
-  .flashcard-story-copy {
-    display: none;
-  }
-
-  .flashcard-story-deck {
-    height: 21.75rem;
-    transform: scale(0.95);
-  }
-}
-
-@media (max-width: 559px) and (max-height: 460px) {
-  .flashcard-story-deck {
-    height: 18.75rem;
-    transform: scale(0.82);
-  }
-}
-
-@media (max-width: 559px) and (max-height: 380px) {
-  .flashcard-story-deck {
-    height: 15rem;
-    transform: scale(0.65);
   }
 }
 
@@ -865,14 +700,6 @@ button:not(:disabled),
   .flashcard-story-heading {
     font-size: clamp(1.85rem, 9vw, 2.2rem);
     line-height: 1.08;
-  }
-
-  .flashcard-story-helper {
-    width: 100%;
-    justify-content: center;
-    gap: 0.625rem;
-    padding-inline: 0.75rem;
-    font-size: 0.625rem;
   }
 
   .flashcard-story-deck {
@@ -1286,4 +1113,18 @@ button:not(:disabled),
 .no-spinner::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* The floating notification bell sits above the page at z-100, which is higher
+   than most dialogs in the app, so it stayed sharp on top of their backdrop
+   blur. Renumbering every dialog would fix the ones that exist today and
+   silently miss the next one; keying off the dialog itself covers all of them.
+
+   Only true modals count: `aria-modal="true"` marks a dialog that owns the
+   screen, while a popover such as the date picker deliberately leaves the rest
+   of the page usable and must not hide anything.
+
+   Where `:has()` is unsupported the bell simply behaves as it did before. */
+body:has([aria-modal="true"]) [data-global-bell] {
+  display: none;
 }

@@ -25,7 +25,9 @@ function presetsFor(resource: AddonResource) {
   const { min_quantity: min, max_quantity: max, step } = resource;
   return [min, min * 2, min * 5]
     .map((value) => Math.round(value / step) * step)
-    .filter((value, index, all) => value <= max && all.indexOf(value) === index);
+    .filter(
+      (value, index, all) => value <= max && all.indexOf(value) === index,
+    );
 }
 
 /**
@@ -112,7 +114,8 @@ export function AccountAddonsButton({ onPurchased }: AccountAddonsButtonProps) {
       });
   }, [refresh, t]);
 
-  const purchasable = offer?.resources.filter((item) => item.is_purchasable) ?? [];
+  const purchasable =
+    offer?.resources.filter((item) => item.is_purchasable) ?? [];
   if (!offer?.can_purchase || purchasable.length === 0) {
     return null;
   }
@@ -170,7 +173,8 @@ function AddonConfigurator({
       (quantities[resource.resource_key] ?? 0) < resource.min_quantity,
   );
   const offStep = chosen.filter(
-    (resource) => (quantities[resource.resource_key] ?? 0) % resource.step !== 0,
+    (resource) =>
+      (quantities[resource.resource_key] ?? 0) % resource.step !== 0,
   );
   const canSubmit =
     chosen.length > 0 &&
@@ -204,9 +208,7 @@ function AddonConfigurator({
       const { checkout_url } = await createAddonCheckoutSession(items);
       window.location.href = checkout_url;
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("plataNuAPutut"),
-      );
+      toast.error(error instanceof Error ? error.message : t("plataNuAPutut"));
       setIsSubmitting(false);
     }
   }
@@ -242,7 +244,11 @@ function AddonConfigurator({
 
             return (
               <div key={resource.id} className="py-5">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                {/* Stacked below sm, side by side above it, rather than left
+                    to wrap on its own. Wrapping put the total on the title's
+                    line or under it depending on a few pixels of container
+                    width, so the same card jumped between two layouts. */}
+                <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-2">
                   <div>
                     <p className="text-sm font-bold text-content">
                       {resource.name}
@@ -260,61 +266,71 @@ function AddonConfigurator({
                   </p>
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    aria-label={t("scade", { name: resource.name })}
-                    onClick={() =>
-                      setSteppedQuantity(resource, quantity - resource.step)
-                    }
-                    disabled={quantity <= 0 || isSubmitting}
-                    className={`${CONTROL_HEIGHT} w-10 rounded-md border border-subtle text-lg font-bold leading-none transition hover:bg-surface-hover disabled:opacity-40`}
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    // Empty rather than 0, so typing 20 does not read 020.
-                    value={quantity === 0 ? "" : quantity}
-                    placeholder="0"
-                    min={0}
-                    step={resource.step}
-                    max={resource.max_quantity}
-                    onChange={(event) =>
-                      setQuantity(resource, Number(event.target.value) || 0)
-                    }
-                    onBlur={() => setSteppedQuantity(resource, quantity)}
-                    disabled={isSubmitting}
-                    className={`no-spinner ${CONTROL_HEIGHT} w-24 rounded-md border border-subtle bg-app px-3 text-center text-sm font-bold text-content`}
-                  />
-                  <button
-                    type="button"
-                    aria-label={t("creste", { name: resource.name })}
-                    onClick={() =>
-                      setSteppedQuantity(resource, quantity + resource.step)
-                    }
-                    disabled={quantity >= resource.max_quantity || isSubmitting}
-                    className={`${CONTROL_HEIGHT} w-10 rounded-md border border-subtle text-lg font-bold leading-none transition hover:bg-surface-hover disabled:opacity-40`}
-                  >
-                    +
-                  </button>
-
-                  <span className="ml-1 text-xs text-muted">{t("sau")}</span>
-                  {presetsFor(resource).map((preset) => (
+                {/* One wrapping row squeezed the stepper, "or" and the
+                    presets into whatever order fitted, splitting them mid-group
+                    on a phone. Three explicit rows below sm, one row above. */}
+                <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start">
+                  <div className="flex items-center gap-2">
                     <button
-                      key={preset}
                       type="button"
-                      onClick={() => setSteppedQuantity(resource, preset)}
-                      disabled={isSubmitting}
-                      className={`${CONTROL_HEIGHT} rounded-md border px-4 text-xs font-bold transition disabled:opacity-60 ${
-                        quantity === preset
-                          ? "border-transparent bg-action text-on-action"
-                          : "border-subtle hover:bg-surface-hover"
-                      }`}
+                      aria-label={t("scade", { name: resource.name })}
+                      onClick={() =>
+                        setSteppedQuantity(resource, quantity - resource.step)
+                      }
+                      disabled={quantity <= 0 || isSubmitting}
+                      className={`${CONTROL_HEIGHT} w-10 rounded-md border border-subtle text-lg font-bold leading-none transition hover:bg-surface-hover disabled:opacity-40`}
                     >
-                      {preset}
+                      −
                     </button>
-                  ))}
+                    <input
+                      type="number"
+                      // Empty rather than 0, so typing 20 does not read 020.
+                      value={quantity === 0 ? "" : quantity}
+                      placeholder="0"
+                      min={0}
+                      step={resource.step}
+                      max={resource.max_quantity}
+                      onChange={(event) =>
+                        setQuantity(resource, Number(event.target.value) || 0)
+                      }
+                      onBlur={() => setSteppedQuantity(resource, quantity)}
+                      disabled={isSubmitting}
+                      className={`no-spinner ${CONTROL_HEIGHT} w-24 rounded-md border border-subtle bg-app px-3 text-center text-sm font-bold text-content`}
+                    />
+                    <button
+                      type="button"
+                      aria-label={t("creste", { name: resource.name })}
+                      onClick={() =>
+                        setSteppedQuantity(resource, quantity + resource.step)
+                      }
+                      disabled={
+                        quantity >= resource.max_quantity || isSubmitting
+                      }
+                      className={`${CONTROL_HEIGHT} w-10 rounded-md border border-subtle text-lg font-bold leading-none transition hover:bg-surface-hover disabled:opacity-40`}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <span className="text-xs text-muted sm:ml-1">{t("sau")}</span>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {presetsFor(resource).map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setSteppedQuantity(resource, preset)}
+                        disabled={isSubmitting}
+                        className={`${CONTROL_HEIGHT} rounded-md border px-4 text-xs font-bold transition disabled:opacity-60 ${
+                          quantity === preset
+                            ? "border-transparent bg-action text-on-action"
+                            : "border-subtle hover:bg-surface-hover"
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {isBelowMinimum ? (

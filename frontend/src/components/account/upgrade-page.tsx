@@ -228,10 +228,21 @@ export function UpgradePage({
     Boolean(activeSubscription?.current_period_end);
   // Shown only while the plan keeps auto-renewing.
   const showRenewalInfo = hasPeriodEnd && !cancellationPending;
+  // A paid plan with no Stripe subscription behind it was granted by an
+  // admin. There is genuinely no next payment to show, and saying so beats
+  // leaving the page silent about a plan the reader can see is active.
+  const isGrantedPlan = userPlanIsPaid && !activeSubscription;
+
   // Always render the period end for a paid plan, whichever way it is heading:
   // a renewal charge, or the day access stops.
   const billingNotice = !hasPeriodEnd
-    ? null
+    ? isGrantedPlan
+      ? {
+          tone: "neutral" as const,
+          title: t("planAcordatDeAdministrator", { currentPlanName }),
+          detail: t("faraPlataRecurenta"),
+        }
+      : null
     : cancellationPending
       ? {
           tone: "warning" as const,

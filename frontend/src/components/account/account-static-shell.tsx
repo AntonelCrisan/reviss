@@ -1,5 +1,7 @@
 "use client";
 
+import { AccountSidebarFooter } from "@/components/account/account-sidebar-footer";
+
 import { useTranslations } from "next-intl";
 import { useOpenCloseTransition } from "@/components/use-open-close-transition";
 import { AccountMobileTopBar } from "@/components/account/account-mobile-top-bar";
@@ -141,16 +143,6 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
   );
 }
 
-function initials(name: string) {
-  return (
-    name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "EQ"
-  );
-}
 
 function isAdminRole(role: string | undefined) {
   return role?.trim().toLowerCase() === "admin";
@@ -550,47 +542,13 @@ export function AccountStaticShell({
           </nav>
         </div>
 
-        <div className="shrink-0 border-t border-subtle p-3">
-          <div
-            className={`flex items-center gap-3 rounded-md px-2 py-2 ${
-              isSidebarCollapsed ? "lg:justify-center lg:gap-0 lg:px-0" : ""
-            }`}
-          >
-            <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-subtle bg-success-soft text-xs font-bold text-success ${
-                isSidebarCollapsed ? "lg:hidden" : ""
-              }`}
-            >
-              {initials(user.full_name)}
-            </span>
-            <span className={getAccountSidebarLabelClass(isSidebarCollapsed)}>
-              <span className="block truncate text-sm font-semibold text-content">
-                {user.full_name}
-              </span>
-              <span className="block truncate text-xs text-muted">
-                {user.email}
-              </span>
-            </span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className={`group/sidebar-item relative flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-action-soft hover:text-content disabled:cursor-wait disabled:opacity-60 ${
-                isSidebarCollapsed ? "lg:h-10 lg:w-10" : ""
-              }`}
-              aria-label={t("iesiDinCont")}
-            >
-              <Icon>
-                <path d="M10 17l5-5-5-5" />
-                <path d="M15 12H3" />
-                <path d="M21 19V5" />
-              </Icon>
-              <AccountSidebarTooltip enabled={isSidebarCollapsed}>
-                {t("iesiDinCont")}
-              </AccountSidebarTooltip>
-            </button>
-          </div>
-        </div>
+        <AccountSidebarFooter
+          fullName={user.full_name}
+          email={user.email}
+          isCollapsed={isSidebarCollapsed}
+          isLoggingOut={isLoggingOut}
+          onLogout={handleLogout}
+        />
       </aside>
 
       <div className="relative min-w-0 flex-1">
@@ -600,6 +558,7 @@ export function AccountStaticShell({
           {children}
         </main>
       </div>
+
     </div>
   );
 }

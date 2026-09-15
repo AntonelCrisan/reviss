@@ -35,6 +35,10 @@ export function GlobalNotificationBell() {
 
   return (
     <div
+      // Marked so a rule in globals.css can take it off screen while a modal
+      // is open: it floats above the page at z-100, which is higher than most
+      // dialogs, so it used to sit on top of their backdrop blur.
+      data-global-bell=""
       className={`fixed right-4 top-4 z-[100] ${
         hasTopBar ? "hidden lg:block" : ""
       }`}
