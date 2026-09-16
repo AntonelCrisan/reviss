@@ -25,26 +25,66 @@ class MistralOCRRequestError(Exception):
     pass
 
 
+# The media type Mistral needs for each kind of image we accept.
+IMAGE_MEDIA_TYPES: dict[str, str] = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+}
+
+
 async def extract_scanned_pdf_markdown(
     path: Path, settings: Settings
 ) -> tuple[str, int]:
-    return await to_thread.run_sync(_extract_scanned_pdf_markdown_sync, path, settings)
+    return await to_thread.run_sync(_extract_ocr_markdown_sync, path, settings, False)
 
 
-def _extract_scanned_pdf_markdown_sync(
+async def extract_image_markdown(
     path: Path, settings: Settings
+) -> tuple[str, int]:
+    """Read a photo of a page through the same OCR as a scanned document.
+
+    A picture of a course handout is a scanned document that happens to be
+    framed by hand, so it goes to the same service rather than a second one.
+    """
+    return await to_thread.run_sync(_extract_ocr_markdown_sync, path, settings, True)
+
+
+def _ocr_document_payload(path: Path, is_image: bool) -> dict[str, str]:
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+
+    if not is_image:
+        return {
+            "type": "document_url",
+            "document_url": f"data:application/pdf;base64,{encoded}",
+        }
+
+    media_type = IMAGE_MEDIA_TYPES.get(path.suffix.lower())
+    if media_type is None:
+        raise MistralOCRRequestError(
+            f"Formatul de imagine {path.suffix or '(fara extensie)'} nu poate fi citit."
+        )
+    return {
+        "type": "image_url",
+        "image_url": f"data:{media_type};base64,{encoded}",
+    }
+
+
+def _extract_ocr_markdown_sync(
+    path: Path, settings: Settings, is_image: bool
 ) -> tuple[str, int]:
     if settings.mistral_api_key is None:
         raise MistralOCRConfigurationError("MISTRAL_API_KEY nu este configurat.")
 
-    logger.info("Mistral OCR pornit pentru PDF scanat: %s", path.name)
-    base64_pdf = base64.b64encode(path.read_bytes()).decode("ascii")
+    logger.info(
+        "Mistral OCR pornit pentru %s: %s",
+        "imagine" if is_image else "PDF scanat",
+        path.name,
+    )
     payload = {
         "model": settings.mistral_ocr_model,
-        "document": {
-            "type": "document_url",
-            "document_url": f"data:application/pdf;base64,{base64_pdf}",
-        },
+        "document": _ocr_document_payload(path, is_image),
         "include_blocks": False,
         "include_image_base64": False,
         "table_format": "markdown",

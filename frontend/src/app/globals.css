@@ -878,6 +878,1203 @@ button:not(:disabled),
   }
 }
 
+/* Hero preview reel ------------------------------------------------------ */
+
+/*
+ * Every step of the reel is a transition keyed off `data-stage` on the root, so
+ * the React side only ever swaps one attribute. A cycle ends where it starts,
+ * and jumping straight back would play the whole thing in reverse - hence
+ * `data-resetting`, which parks transitions for the single frame of that jump.
+ */
+.hero-reel[data-resetting="true"] *,
+.hero-reel[data-resetting="true"] *::before,
+.hero-reel[data-resetting="true"] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+.hero-reel-status {
+  animation: hero-reel-status-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero-reel-status-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -0.35rem, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.hero-reel-file {
+  transition:
+    opacity 520ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 400ms ease;
+}
+
+.hero-reel[data-stage="upload"] .hero-reel-file {
+  opacity: 0.55;
+  transform: translate3d(0, -0.5rem, 0);
+}
+
+/* The tick only belongs on a file that finished uploading. */
+.hero-reel-file-check {
+  transition:
+    opacity 360ms ease,
+    transform 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hero-reel[data-stage="upload"] .hero-reel-file-check {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.hero-reel-bar {
+  /* Width is driven frame by frame from the count-up, so no transition here -
+     one would fight the animation and lag behind the percentage label. */
+  transition: opacity 400ms ease;
+}
+
+.hero-reel[data-stage="ready"] .hero-reel-bar,
+.hero-reel[data-stage="generate"] .hero-reel-bar {
+  opacity: 0.45;
+}
+
+/* Extracted lines: they draw themselves in while the course is being read. */
+.hero-reel-line {
+  width: 0;
+  transition: width 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--line-delay, 0ms);
+}
+
+.hero-reel[data-stage="process"] .hero-reel-line,
+.hero-reel[data-stage="generate"] .hero-reel-line,
+.hero-reel[data-stage="ready"] .hero-reel-line {
+  width: var(--line-width, 100%);
+}
+
+.hero-reel[data-stage="process"] .hero-reel-line {
+  animation: hero-reel-line-pulse 1200ms ease-in-out infinite;
+  animation-delay: var(--line-delay, 0ms);
+}
+
+@keyframes hero-reel-line-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* A light sweep across the uploaded-course panel while it is being read. */
+.hero-reel-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 35%,
+    var(--theme-action-soft) 50%,
+    transparent 65%
+  );
+}
+
+.hero-reel[data-stage="process"] .hero-reel-panel::after {
+  animation: hero-reel-scan 1500ms ease-in-out infinite;
+}
+
+@keyframes hero-reel-scan {
+  0% {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+  25%,
+  75% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+.hero-reel-spark {
+  color: var(--theme-muted);
+  transition:
+    color 400ms ease,
+    transform 400ms ease;
+}
+
+.hero-reel[data-stage="generate"] .hero-reel-spark {
+  animation: hero-reel-spark 1100ms ease-in-out infinite;
+}
+
+@keyframes hero-reel-spark {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.18) rotate(16deg);
+    opacity: 1;
+  }
+}
+
+.hero-reel-tile {
+  transition:
+    opacity 480ms ease,
+    transform 520ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  transition-delay: var(--tile-delay, 0ms);
+}
+
+.hero-reel[data-stage="upload"] .hero-reel-tile,
+.hero-reel[data-stage="process"] .hero-reel-tile {
+  opacity: 0;
+  transform: translate3d(0, 0.5rem, 0) scale(0.94);
+}
+
+.hero-reel-next {
+  transition:
+    opacity 520ms ease,
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-reel:not([data-stage="ready"]) .hero-reel-next {
+  opacity: 0;
+  transform: translate3d(0, 0.7rem, 0);
+}
+
+/* Workflow story --------------------------------------------------------- */
+
+/*
+ * One chapter is live at a time, and everything below keys off `data-state` on
+ * the chapter button or `data-active` on the scene. The resting look of every
+ * piece is its finished look, so a chapter that has not run yet, a paused reel
+ * and a reduced-motion visitor all see a complete picture; `data-static` on the
+ * root just stops the animations from running at all.
+ */
+.story {
+  --story-step: 3600ms;
+}
+
+.story[data-static="true"] .story-scene *,
+.story[data-static="true"] .story-scene *::before,
+.story[data-static="true"] .story-scene *::after,
+.story[data-static="true"] .story-rail > i {
+  animation: none !important;
+}
+
+/* Chapter list ----------------------------------------------------------- */
+
+.story-chapters {
+  display: none;
+  gap: 0.25rem;
+  align-content: start;
+}
+
+@media (min-width: 1024px) {
+  .story-chapters {
+    display: grid;
+  }
+}
+
+.story-chapter {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem 0.9rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 1.1rem;
+  border: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 350ms ease,
+    border-color 350ms ease,
+    opacity 350ms ease;
+}
+
+.story-chapter[data-state="idle"] {
+  opacity: 0.55;
+}
+
+.story-chapter[data-state="active"] {
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+.story-chapter:hover {
+  opacity: 1;
+}
+
+.story-number {
+  font-family: var(--font-serif, serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--theme-muted);
+  padding-top: 0.15rem;
+  transition: color 350ms ease;
+}
+
+.story-chapter[data-state="active"] .story-number {
+  color: var(--theme-action);
+}
+
+.story-chapter-body {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.story-chapter-title {
+  font-family: var(--font-serif, serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.story-chapter-text {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--theme-muted);
+}
+
+/* The rail spans the whole button, under both columns. */
+.story-rail {
+  grid-column: 1 / -1;
+  display: block;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--theme-hover);
+  overflow: hidden;
+}
+
+.story-rail > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--theme-action);
+}
+
+.story-chapter[data-state="done"] .story-rail > i {
+  width: 100%;
+}
+
+.story-chapter[data-state="active"] .story-rail > i {
+  animation: story-rail-fill var(--story-step) linear forwards;
+}
+
+@keyframes story-rail-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Stage ------------------------------------------------------------------ */
+
+.story-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: 28.5rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 1.75rem;
+  background: var(--theme-surface);
+  overflow: hidden;
+}
+
+.story-stage-chip {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.45rem;
+  background: var(--theme-app);
+  color: var(--theme-muted);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.story-screen {
+  position: relative;
+  flex: 1;
+}
+
+.story-scene {
+  position: absolute;
+  inset: 0;
+  padding: 1.25rem;
+  opacity: 0;
+  transform: translate3d(0, 0.7rem, 0);
+  pointer-events: none;
+  transition:
+    opacity 480ms ease,
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.story-scene[data-active="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+.story-scene-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Rows marked this way share the leftover height instead of overflowing. */
+.story-scene-body > .grid {
+  min-height: 0;
+}
+
+.story-grow {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.story-panel {
+  overflow: hidden;
+}
+
+.story-caption {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--theme-muted);
+}
+
+/* Chapter 1: the upload panel -------------------------------------------- */
+
+/*
+ * The drop zone and the file rows follow the app's upload panel; the page stack
+ * between them is what is being handed over. The stack flexes, so the scene
+ * fits whatever height the stage ends up with.
+ */
+.story-drop {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+}
+
+.story-drop-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.1rem;
+  width: 2.1rem;
+  flex-shrink: 0;
+  border-radius: 0.55rem;
+  background: var(--theme-app);
+  color: var(--theme-content);
+}
+
+.story-scene[data-active="true"] .story-drop-icon {
+  animation: story-drop-lift 1800ms ease-in-out infinite;
+}
+
+@keyframes story-drop-lift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -0.2rem, 0);
+  }
+}
+
+.story-drop-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.story-drop-hint {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--theme-muted);
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.story-drop-action {
+  flex-shrink: 0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.4rem;
+  background: var(--theme-action);
+  color: var(--theme-on-action);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.story-scene[data-active="true"] .story-drop-action {
+  animation: story-drop-pulse 1800ms ease-in-out infinite;
+}
+
+@keyframes story-drop-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 4px var(--theme-action-soft);
+  }
+}
+
+/* The stack of pages being handed over. */
+.story-pages {
+  position: relative;
+  flex: 1;
+  min-height: 3.5rem;
+}
+
+.story-page {
+  position: absolute;
+  top: calc(var(--page-depth) * 0.4rem);
+  left: calc(var(--page-depth) * 0.7rem);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  width: 9.5rem;
+  height: calc(100% - 1rem);
+  padding: 0.6rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.7rem;
+  background: var(--theme-surface);
+  overflow: hidden;
+}
+
+.story-page-tag {
+  padding: 0.12rem 0.32rem;
+  border-radius: 0.3rem;
+  background: var(--theme-danger-bg);
+  color: var(--theme-danger-text);
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.story-page-lines {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+}
+
+.story-page-lines i {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--theme-hover);
+}
+
+.story-page-lines i:nth-child(2) {
+  width: 80%;
+}
+
+.story-page-lines i:last-child {
+  width: 55%;
+}
+
+.story-scene[data-active="true"] .story-page {
+  animation: story-page-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc((2 - var(--page-depth)) * 140ms);
+}
+
+@keyframes story-page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.1rem, 0) rotate(-3deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+/* The upload queue. */
+.story-files {
+  display: grid;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.story-file {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.6rem;
+  background: var(--theme-surface);
+}
+
+.story-scene[data-active="true"] .story-file {
+  animation: story-pop 520ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: var(--file-delay, 0ms);
+}
+
+.story-file-tag {
+  padding: 0.1rem 0.28rem;
+  border-radius: 0.25rem;
+  background: var(--theme-danger-bg);
+  color: var(--theme-danger-text);
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.story-file-name {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.story-file-bar {
+  display: block;
+  height: 3px;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  background: var(--theme-hover);
+  overflow: hidden;
+}
+
+.story-file-bar > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--theme-action);
+}
+
+.story-scene[data-active="true"] .story-file-bar > i {
+  animation: story-fill var(--file-bar-duration, 1200ms) ease-out
+    var(--file-bar-delay, 0ms) both;
+}
+
+.story-file-check {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--theme-success-text);
+}
+
+.story-scene[data-active="true"] .story-file-check {
+  animation: story-pop 400ms cubic-bezier(0.34, 1.5, 0.64, 1) both;
+  animation-delay: var(--file-check-delay, 0ms);
+}
+
+.story-upload > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--theme-action);
+}
+
+.story-scene[data-active="true"] .story-upload > i {
+  animation: story-fill 1600ms ease-out 400ms both;
+}
+
+@keyframes story-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Chapter 2: the page being read ----------------------------------------- */
+
+.story-sheet {
+  position: relative;
+  display: grid;
+  align-content: space-between;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.9rem;
+  background: var(--theme-app);
+  overflow: hidden;
+}
+
+.story-line {
+  display: block;
+  height: 5px;
+  width: var(--line-width, 100%);
+  border-radius: 999px;
+  background: var(--theme-hover);
+}
+
+.story-line[data-marked="true"] {
+  background: var(--theme-action-soft);
+  box-shadow: 0 0 0 3px var(--theme-action-soft);
+}
+
+.story-scene[data-active="true"] .story-line[data-marked="true"] {
+  animation: story-mark 500ms ease both;
+  animation-delay: calc(550ms + var(--line-delay, 0ms));
+}
+
+@keyframes story-mark {
+  from {
+    background: var(--theme-hover);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  to {
+    background: var(--theme-action-soft);
+    box-shadow: 0 0 0 3px var(--theme-action-soft);
+  }
+}
+
+/* The reading sweep. */
+.story-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2.5rem;
+  opacity: 0;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--theme-action-soft),
+    transparent
+  );
+}
+
+.story-scene[data-active="true"] .story-scan {
+  animation: story-scan 2000ms ease-in-out infinite;
+}
+
+@keyframes story-scan {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -2.5rem, 0);
+  }
+  20%,
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 16rem, 0);
+  }
+}
+
+/* Equal rows, so the ideas reach the bottom of the column whatever its height. */
+.story-concepts {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 0.35rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.story-concept {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.6rem;
+  background: var(--theme-surface);
+  color: var(--theme-content);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.story-scene[data-active="true"] .story-concept {
+  animation: story-pop 560ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: var(--concept-delay, 0ms);
+}
+
+@keyframes story-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(-0.6rem, 0, 0) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Chapter 3: the pack ----------------------------------------------------- */
+
+.story-scene[data-active="true"] .story-tile {
+  animation: story-tile-in 620ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: var(--tile-delay, 0ms);
+}
+
+@keyframes story-tile-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.7rem, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.story-scene[data-active="true"] .story-spark {
+  animation: story-spark 1300ms ease-in-out infinite;
+}
+
+@keyframes story-spark {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.18) rotate(16deg);
+    opacity: 1;
+  }
+}
+
+/* Chapter 4: the flashcard and the quiz ----------------------------------- */
+
+/*
+ * Both halves copy the design they already have on this page: the deck's card
+ * (surface, soft shadow, serif question, a footer rule with the flip hint) and
+ * the quiz card (lettered options that turn green when the right one lands).
+ */
+.story-flip {
+  perspective: 900px;
+  height: 7.5rem;
+  /* The deck's own proportion: a 36rem-wide card standing 17.5rem tall. Height
+     drives the width here, so the card never stretches across the stage. */
+  aspect-ratio: 552 / 280;
+  max-width: 100%;
+  margin-inline: auto;
+  flex-shrink: 0;
+}
+
+.story-flip-inner {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* At rest the card shows its answer - that is the point of the chapter. */
+  transform: rotateY(180deg);
+}
+
+.story-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 1.25rem;
+  background: var(--theme-surface);
+  box-shadow: 0 12px 30px var(--theme-shadow);
+  backface-visibility: hidden;
+}
+
+.story-face-text {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  font-family: var(--font-serif, serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.story-face-foot {
+  display: block;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--theme-border);
+  color: var(--theme-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.story-face-back {
+  transform: rotateY(180deg);
+}
+
+.story-scene[data-active="true"] .story-flip-inner {
+  animation: story-flip 850ms cubic-bezier(0.4, 0, 0.2, 1) 650ms both;
+}
+
+@keyframes story-flip {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(180deg);
+  }
+}
+
+.story-answer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+  color: var(--theme-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.story-answer-letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.55rem;
+  width: 1.55rem;
+  flex-shrink: 0;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  font-family: var(--font-serif, serif);
+  font-size: 11px;
+}
+
+.story-answer[data-correct="true"] {
+  border-color: var(--theme-success-border);
+  background: var(--theme-success-bg);
+  color: var(--theme-success-text);
+}
+
+.story-answer[data-correct="true"] .story-answer-letter {
+  border-color: var(--theme-success-border);
+}
+
+.story-answer-check {
+  display: flex;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.story-answer[data-correct="true"] .story-answer-check {
+  opacity: 1;
+}
+
+.story-scene[data-active="true"] .story-answer[data-correct="true"] {
+  animation: story-answer-right 520ms ease both;
+  animation-delay: var(--answer-delay, 0ms);
+}
+
+@keyframes story-answer-right {
+  from {
+    border-color: var(--theme-border);
+    background: var(--theme-surface);
+    color: var(--theme-muted);
+  }
+  to {
+    border-color: var(--theme-success-border);
+    background: var(--theme-success-bg);
+    color: var(--theme-success-text);
+  }
+}
+
+.story-scene[data-active="true"] .story-correct {
+  animation: story-reveal 480ms ease both;
+  animation-delay: 2050ms;
+}
+
+@keyframes story-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Chapter 5: the progress panel ------------------------------------------- */
+
+/*
+ * A compressed copy of the progress tab: the highlighted readiness KPI, the
+ * score trend with its dashed grid, the weekday bars that pick out the busiest
+ * day, and the readiness gauge with its target mark.
+ */
+.story-kpi {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+}
+
+.story-kpi-strong {
+  border-color: transparent;
+  background: var(--theme-action);
+  color: var(--theme-on-action);
+  box-shadow: 0 12px 30px var(--theme-shadow);
+}
+
+.story-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.story-kpi-value {
+  margin-top: 0.25rem;
+  font-family: var(--font-serif, serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.story-kpi-foot {
+  margin-top: 0.35rem;
+  color: var(--theme-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.story-kpi-bar {
+  display: block;
+  height: 5px;
+  margin-top: 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-on-action) 22%, transparent);
+  overflow: hidden;
+}
+
+.story-kpi-bar > i {
+  display: block;
+  height: 100%;
+  width: 82%;
+  border-radius: inherit;
+  background: var(--theme-success-text);
+}
+
+.story-scene[data-active="true"] .story-kpi-bar > i {
+  animation: story-kpi-fill 1000ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
+}
+
+@keyframes story-kpi-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 82%;
+  }
+}
+
+.story-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0.55rem 0.7rem 0.6rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+}
+
+.story-panel-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--theme-content);
+}
+
+/* Score trend */
+
+.story-trend {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.3rem;
+}
+
+.story-trend-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.story-scene[data-active="true"] .story-trend-line {
+  animation: story-draw 1000ms cubic-bezier(0.4, 0, 0.2, 1) 250ms forwards;
+}
+
+@keyframes story-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.story-trend-area,
+.story-trend-dot {
+  opacity: 1;
+}
+
+.story-scene[data-active="true"] .story-trend-area {
+  animation: story-reveal 600ms ease 700ms both;
+}
+
+.story-scene[data-active="true"] .story-trend-dot {
+  animation: story-reveal 320ms ease both;
+  animation-delay: var(--dot-delay, 0ms);
+}
+
+/* Weekday activity */
+
+.story-weeks {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.4rem;
+}
+
+.story-week {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 100%;
+}
+
+.story-week > i {
+  display: block;
+  width: 100%;
+  max-width: 1.1rem;
+  height: var(--week-height, 100%);
+  border-radius: 0.25rem;
+  background: var(--theme-success-bg);
+}
+
+.story-week > i[data-top="true"] {
+  background: var(--theme-action);
+}
+
+.story-week > i[data-empty="true"] {
+  background: var(--theme-app);
+}
+
+.story-week > em {
+  color: var(--theme-muted);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.story-scene[data-active="true"] .story-week > i {
+  animation: story-week-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--week-delay, 0ms);
+}
+
+@keyframes story-week-grow {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--week-height, 100%);
+  }
+}
+
+/* Readiness gauge */
+
+.story-gauge {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.3rem;
+}
+
+.story-gauge svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.story-gauge-value {
+  stroke-dasharray: 82 100;
+}
+
+.story-scene[data-active="true"] .story-gauge-value {
+  animation: story-gauge-sweep 1100ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+}
+
+@keyframes story-gauge-sweep {
+  from {
+    stroke-dasharray: 0 100;
+  }
+  to {
+    stroke-dasharray: 82 100;
+  }
+}
+
+.story-gauge-readout {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.story-gauge-readout > b {
+  font-family: var(--font-serif, serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.story-gauge-readout > em {
+  margin-top: 0.15rem;
+  color: var(--theme-muted);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.story-scene[data-active="true"] .story-review {
+  animation: story-pop 560ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: 1150ms;
+}
+
+@media (max-width: 640px) {
+  .story-stage {
+    min-height: 30rem;
+  }
+
+  .story-page {
+    width: 8.5rem;
+  }
+}
+
 .scroll-reveal {
   opacity: 0;
   transition:
@@ -1045,6 +2242,22 @@ button:not(:disabled),
     opacity: 1;
     transform: none;
   }
+
+  .hero-reel .hero-reel-file,
+  .hero-reel .hero-reel-file-check,
+  .hero-reel .hero-reel-tile,
+  .hero-reel .hero-reel-next {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-reel .hero-reel-line {
+    width: var(--line-width, 100%);
+  }
+
+  .hero-reel .hero-reel-panel::after {
+    display: none;
+  }
 }
 
 /* Toast notification centre --------------------------------------------- */
@@ -1127,4 +2340,294 @@ button:not(:disabled),
    Where `:has()` is unsupported the bell simply behaves as it did before. */
 body:has([aria-modal="true"]) [data-global-bell] {
   display: none;
+}
+
+/* Strategy roadmap -------------------------------------------------------- */
+
+/*
+ * The strategies panel draws its steps as a road: kerb, tarmac, driven stretch
+ * and lane markings are four strokes of the same measured path, with a pin
+ * standing on the tarmac at every milestone.
+ *
+ * `data-static` on the board is what the server renders and what an off-screen
+ * or reduced-motion visitor keeps: the road is already fully drawn, every pin
+ * already stood up, nothing pulses. Only the live milestone's `data-state`
+ * still colours anything, so the map reads complete without a frame of motion.
+ */
+.smap-board {
+  position: relative;
+  min-height: 12rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-surface);
+  background-image:
+    linear-gradient(to right, var(--theme-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--theme-border) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  overflow: hidden;
+}
+
+.smap-road {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+
+.smap-kerb,
+.smap-tarmac,
+.smap-driven,
+.smap-markings {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Kerb and tarmac share one draw-in: the road builds itself, then the pins
+   stand up along it. Both carry the normalised dash so the reveal is a single
+   offset sweep rather than a length this stylesheet would have to know. */
+.smap-kerb,
+.smap-tarmac {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.smap-board[data-static="false"] .smap-kerb,
+.smap-board[data-static="false"] .smap-tarmac {
+  animation: smap-draw 1100ms cubic-bezier(0.33, 1, 0.68, 1) backwards;
+}
+
+@keyframes smap-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.smap-kerb {
+  stroke: var(--theme-border);
+  stroke-width: 40;
+}
+
+.smap-tarmac {
+  stroke: var(--theme-app);
+  stroke-width: 34;
+}
+
+/* How far along the route the reader is. */
+.smap-driven {
+  stroke: var(--theme-action);
+  stroke-width: 34;
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset 900ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* Centre line, in real pixels rather than normalised units. */
+.smap-markings {
+  stroke: var(--theme-muted);
+  stroke-width: 2.5;
+  stroke-dasharray: 14 18;
+  opacity: 0.45;
+}
+
+/* Milestones -------------------------------------------------------------- */
+
+.smap-stop {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 9rem;
+  /* Anchored by its pin, which sits on the centre line of the road. */
+  transform: translate(-50%, -1.65rem);
+  cursor: pointer;
+}
+
+.smap-board[data-static="false"] .smap-stop {
+  animation: smap-stand 520ms cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+  animation-delay: calc(700ms + var(--smap-delay, 0ms));
+}
+
+@keyframes smap-stand {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -0.6rem) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -1.65rem) scale(1);
+  }
+}
+
+/*
+ * The pin is the 3D piece: a disc resting on the tarmac that lifts off it when
+ * live, with its shadow staying behind on the road. The lift is what separates
+ * the live milestone from the rest without changing the road under it.
+ */
+.smap-pin {
+  position: relative;
+  display: flex;
+  height: 3.3rem;
+  width: 3.3rem;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(0) scale(1);
+  transition: transform 420ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/*
+ * Parked on the centre line of the road: it counter-translates by exactly the
+ * lift, so the pin rises while its shadow stays where the pin was standing.
+ */
+.smap-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 0.5rem;
+  width: 1.5rem;
+  border-radius: 999px;
+  background: var(--theme-shadow-strong);
+  opacity: 0;
+  filter: blur(4px);
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 420ms ease,
+    width 420ms ease,
+    transform 420ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.smap-pin-face {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-surface);
+  color: var(--theme-muted);
+  font-size: 0.9rem;
+  font-weight: 900;
+  box-shadow: 0 2px 6px -2px var(--theme-shadow);
+  transition:
+    background-color 360ms ease,
+    border-color 360ms ease,
+    color 360ms ease,
+    box-shadow 360ms ease;
+}
+
+.smap-stop[data-state="done"] .smap-pin-face {
+  border-color: transparent;
+  background: var(--theme-action);
+  color: var(--theme-on-action);
+}
+
+/* The live milestone stands up off the road. */
+.smap-stop[data-state="active"] {
+  z-index: 2;
+}
+
+.smap-stop[data-state="active"] .smap-pin,
+.smap-stop:hover .smap-pin,
+.smap-stop:focus-visible .smap-pin {
+  /* Clears the disc's own radius, which is what lets the shadow show below it. */
+  transform: translateY(-2.2rem) scale(1.06);
+}
+
+.smap-stop[data-state="active"] .smap-pin::after,
+.smap-stop:hover .smap-pin::after,
+.smap-stop:focus-visible .smap-pin::after {
+  width: 2.2rem;
+  opacity: 0.45;
+  transform: translate(-50%, calc(-50% + 2.2rem));
+}
+
+.smap-stop[data-state="active"] .smap-pin-face {
+  border-color: transparent;
+  background: var(--theme-action);
+  color: var(--theme-on-action);
+  box-shadow:
+    0 10px 20px -8px var(--theme-shadow-strong),
+    0 0 0 0.35rem var(--theme-action-soft);
+}
+
+/* The "you are here" ripple, on the live milestone only. */
+.smap-stop[data-state="active"] .smap-pin-face::after {
+  content: "";
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: inherit;
+  border: 1px solid var(--theme-action);
+  animation: smap-pulse 2200ms ease-out infinite;
+}
+
+.smap-board[data-static="true"] .smap-pin-face::after {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes smap-pulse {
+  from {
+    opacity: 0.5;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.smap-stop:focus-visible {
+  outline: none;
+}
+
+.smap-stop:focus-visible .smap-pin-face {
+  box-shadow: 0 0 0 0.25rem var(--theme-selection);
+}
+
+/* Two lines is a signpost; more would be the wall of text this replaces. */
+.smap-stop-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  max-width: 8.5rem;
+  color: var(--theme-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  transition: color 300ms ease;
+}
+
+.smap-stop[data-state="active"] .smap-stop-label,
+.smap-stop:hover .smap-stop-label {
+  color: var(--theme-content);
+}
+
+/* Drawer ------------------------------------------------------------------ */
+
+.smap-scrim {
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.smap-scrim[data-open="true"] {
+  opacity: 1;
+}
+
+.smap-drawer {
+  transform: translate3d(100%, 0, 0);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.smap-drawer[data-open="true"] {
+  transform: translate3d(0, 0, 0);
 }

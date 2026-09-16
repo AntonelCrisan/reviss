@@ -66,6 +66,7 @@ from app.services.billing_window import (
 from app.services.mistral_ocr import (
     MistralOCRConfigurationError,
     MistralOCRRequestError,
+    extract_image_markdown,
     extract_scanned_pdf_markdown,
 )
 from app.services.notifications import NotificationService
@@ -108,6 +109,10 @@ ACTIVE_GENERATION_JOB_STATUSES = {"queued", "running"}
 GenerationTaskKey = tuple[uuid.UUID, str]
 _generation_tasks: dict[GenerationTaskKey, asyncio.Task[None]] = {}
 
+# Photographs of course material. They carry no extractable text, so they are
+# read by OCR exactly like a scanned PDF, and are gated on the same plan flag.
+ALLOWED_IMAGE_EXTENSIONS = {".jpeg", ".jpg", ".png", ".webp"}
+
 ALLOWED_EXTENSIONS = {
     ".csv",
     ".doc",
@@ -120,6 +125,7 @@ ALLOWED_EXTENSIONS = {
     ".txt",
     ".xls",
     ".xlsx",
+    *ALLOWED_IMAGE_EXTENSIONS,
 }
 LEGACY_OFFICE_TARGETS = {
     ".doc": ".docx",
@@ -497,6 +503,10 @@ def _validate_flashcard_image_signature(extension: str, signature: bytes) -> Non
 def _validate_project_file_signature(extension: str, signature: bytes) -> None:
     if extension == ".pdf" and not signature.startswith(b"%PDF"):
         raise ProjectValidationError("Fisierul PDF incarcat nu pare valid.")
+
+    if extension in ALLOWED_IMAGE_EXTENSIONS:
+        # Same magic-byte check the flashcard images already use.
+        _validate_flashcard_image_signature(extension, signature)
 
     if extension in {".docx", ".pptx", ".xlsx"} and not signature.startswith(b"PK"):
         raise ProjectValidationError("Fisierul Office incarcat nu pare valid.")
@@ -4441,6 +4451,23 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
         await self.session.flush()
 
         markdown_path = markdown_dir / f"{source_path.stem}.md"
+        extension = source_path.suffix.lower()
+
+        if extension in ALLOWED_IMAGE_EXTENSIONS:
+            markdown = await self._read_image_markdown(
+                source_path=source_path,
+                safe_name=safe_name,
+                file_model=file_model,
+                limits=limits,
+                user=user,
+            )
+            markdown_path.write_text(markdown, encoding="utf-8")
+            file_model.markdown_path = str(markdown_path)
+            file_model.markdown_content = markdown
+            file_model.markdown_char_count = len(markdown)
+            file_model.conversion_status = "converted"
+            return file_model
+
         try:
             markdown = await run_in_threadpool(_read_markdown, source_path)
         except (Exception, UnsupportedFormatException) as exc:  # noqa: BLE001
@@ -4524,6 +4551,76 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
         file_model.markdown_char_count = len(markdown)
         file_model.conversion_status = "converted"
         return file_model
+
+    async def _read_image_markdown(
+        self,
+        *,
+        source_path: Path,
+        safe_name: str,
+        file_model: StudyProjectFile,
+        limits: ProjectPlanLimits,
+        user: User,
+    ) -> str:
+        """Read a photographed page through OCR.
+
+        markitdown is skipped on purpose: its image converter only reads EXIF
+        metadata unless an LLM client is wired in, so it would return an empty
+        document and the upload would look like it worked.
+        """
+        if not limits.allow_scanned_documents:
+            file_model.conversion_status = "failed"
+            file_model.conversion_error = (
+                "Planul curent nu include incarcarea imaginilor."
+            )
+            raise ProjectValidationError(
+                f"Imaginea {safe_name} nu poate fi procesata. "
+                "Planul curent nu include incarcarea imaginilor."
+            )
+
+        credits_service = AiCreditsService(self.session)
+        window = await _current_billing_window(self.session, user)
+        # One photo is one page, so the budget is checked before the paid call.
+        await credits_service.ensure_ocr_budget(
+            user=user, pages_needed=1, window=window
+        )
+
+        try:
+            markdown, ocr_page_count = await extract_image_markdown(
+                source_path, self.settings
+            )
+        except MistralOCRConfigurationError as exc:
+            file_model.conversion_status = "failed"
+            file_model.conversion_error = str(exc)[:1000]
+            raise ProjectValidationError(
+                f"Imaginea {safe_name} nu a putut fi procesata, iar citirea "
+                "textului nu este configurata momentan. Incearca mai tarziu."
+            ) from exc
+        except MistralOCRRequestError as exc:
+            file_model.conversion_status = "failed"
+            file_model.conversion_error = str(exc)[:1000]
+            raise ProjectConversionError(
+                f"Imaginea {safe_name} nu a putut fi citita. Incearca o poza "
+                "mai clara, cu pagina dreapta si bine luminata."
+            ) from exc
+
+        await credits_service.charge(
+            user=user,
+            feature="ocr",
+            tier=None,
+            credits=0,
+            model=self.settings.mistral_ocr_model,
+            ocr_pages=ocr_page_count or 1,
+        )
+
+        if not markdown.strip():
+            file_model.conversion_status = "failed"
+            file_model.conversion_error = "Imaginea nu contine text lizibil."
+            raise ProjectConversionError(
+                f"Nu am gasit text in imaginea {safe_name}. Incearca o poza "
+                "mai clara, cu pagina dreapta si bine luminata."
+            )
+
+        return markdown
 
     async def _read_json_upload(self, upload: UploadFile) -> dict[str, Any]:
         filename = upload.filename or "ai-output.json"

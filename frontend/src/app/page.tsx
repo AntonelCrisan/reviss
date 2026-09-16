@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { BrandLogo } from "@/components/brand-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { FlashcardStory } from "@/components/marketing/flashcard-story";
+import { HeroPreview } from "@/components/marketing/hero-preview";
 import { QuizPreview } from "@/components/marketing/quiz-preview";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
+import { WorkflowStory } from "@/components/marketing/workflow-story";
 import type { SubscriptionPlanPublic } from "@/lib/plans-api";
 import {
   absoluteUrl,
@@ -196,30 +197,6 @@ function CheckIcon() {
   );
 }
 
-function UploadIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 16V4m0 0L7 9m5-5 5 5"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"
-      />
-    </svg>
-  );
-}
-
 function LayersIcon() {
   return (
     <svg
@@ -287,27 +264,6 @@ function ChartIcon() {
     </svg>
   );
 }
-
-const workflowSteps = [
-  {
-    id: "1",
-    step: "01",
-    icon: <UploadIcon />,
-    tone: "border-info-border bg-info-soft text-info",
-  },
-  {
-    id: "2",
-    step: "02",
-    icon: <SparkIcon />,
-    tone: "border-warning-border bg-warning-soft text-warning",
-  },
-  {
-    id: "3",
-    step: "03",
-    icon: <ChartIcon />,
-    tone: "border-success-border bg-success-soft text-success",
-  },
-] as const;
 
 const useCaseIds = ["1", "2", "3", "4"] as const;
 const statIds = ["1", "2", "3", "4"] as const;
@@ -482,12 +438,6 @@ export default async function Home() {
     question: t(`faq.items.${id}.question`),
     answer: t(`faq.items.${id}.answer`),
   }));
-  const previewStats = [
-    [t("preview.summary"), t("preview.summaryValue")],
-    [t("preview.flashcards"), "24"],
-    [t("preview.quizzes"), "3"],
-    [t("preview.concepts"), "18"],
-  ] as const;
   const homepageStructuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -612,97 +562,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-xl">
-            <div className="absolute -inset-4 rotate-2 rounded-[2.25rem] border border-subtle/70 bg-action-soft/55" />
-            <div className="theme-shadow relative overflow-hidden rounded-[2rem] border border-subtle bg-surface p-4 sm:p-6">
-              <div className="flex items-center justify-between border-b border-subtle pb-4">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-action text-on-action">
-                    <BrandLogo
-                      variant="mark"
-                      className="text-on-action"
-                      logoClassName="h-5 w-5"
-                    />
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold">{t("preview.course")}</p>
-                    <p className="mt-0.5 text-[10px] text-muted">
-                      {t("preview.processed")}
-                    </p>
-                  </div>
-                </div>
-                <span className="rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-bold text-success">
-                  {t("preview.ready")}
-                </span>
-              </div>
-
-              <div className="grid gap-4 py-5 sm:grid-cols-[0.85fr_1.15fr]">
-                <div className="rounded-2xl border border-subtle bg-app/70 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-muted">
-                    {t("preview.uploaded")}
-                  </p>
-                  <div className="mt-4 flex items-center gap-3 rounded-xl border border-subtle bg-surface p-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-danger-soft text-danger">
-                      PDF
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-bold">
-                        Celula_capitolul_3.pdf
-                      </p>
-                      <p className="mt-1 text-[10px] text-muted">
-                        {t("preview.pages")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    {[92, 78, 64].map((width) => (
-                      <div
-                        key={width}
-                        className="h-2 rounded-full bg-surface-hover"
-                        style={{ width: `${width}%` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-subtle bg-app/70 p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-muted">
-                      {t("preview.generated")}
-                    </p>
-                    <SparkIcon />
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    {previewStats.map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="rounded-xl border border-subtle bg-surface p-3"
-                      >
-                        <p className="text-lg font-bold">{value}</p>
-                        <p className="mt-1 text-[10px] text-muted">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-info-border bg-info-soft p-4 text-info">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold">
-                      {t("preview.nextSession")}
-                    </p>
-                    <p className="mt-1 text-[10px] opacity-80">
-                      {t("preview.nextSessionDetail")}
-                    </p>
-                  </div>
-                  <span className="rounded-md bg-info px-3 py-2 text-[10px] font-bold text-info-soft">
-                    {t("preview.nextSessionTime")}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <HeroPreview />
         </div>
       </section>
 
@@ -796,34 +656,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-5 lg:grid-cols-3">
-          {workflowSteps.map((item, index) => (
-            <ScrollReveal
-              key={item.step}
-              direction={index % 2 === 0 ? "left" : "right"}
-              delay={index * 70}
-            >
-              <article className="group h-full rounded-3xl border border-subtle bg-surface p-6 transition hover:-translate-y-1 hover:border-action/25 sm:p-8">
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${item.tone}`}
-                  >
-                    {item.icon}
-                  </span>
-                  <span className="font-serif text-2xl font-semibold text-muted/50">
-                    {item.step}
-                  </span>
-                </div>
-                <h3 className="mt-10 font-serif text-2xl font-semibold">
-                  {t(`workflow.steps.${item.id}.title`)}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-muted">
-                  {t(`workflow.steps.${item.id}.description`)}
-                </p>
-              </article>
-            </ScrollReveal>
-          ))}
-        </div>
+        <WorkflowStory />
       </section>
 
       <section className="overflow-hidden border-y border-subtle bg-action text-on-action">

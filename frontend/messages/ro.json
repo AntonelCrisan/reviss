@@ -52,6 +52,9 @@
       "course": "Biologie celulară",
       "processed": "Curs procesat de Reviss",
       "ready": "Gata de studiu",
+      "statusUploading": "Se încarcă",
+      "statusProcessing": "Se procesează",
+      "statusGenerating": "Se generează",
       "uploaded": "Curs încărcat",
       "pages": "28 pagini",
       "generated": "Pachet generat",
@@ -59,9 +62,9 @@
       "summaryValue": "6 min",
       "flashcards": "Flashcard-uri",
       "quizzes": "Quiz-uri",
-      "concepts": "Concepte",
+      "strategies": "Strategii",
       "nextSession": "Următoarea sesiune",
-      "nextSessionDetail": "12 flashcard-uri + quiz de 8 întrebări",
+      "nextSessionDetail": "{flashcards} flashcard-uri + {quizzes} quiz-uri",
       "nextSessionTime": "25 min"
     },
     "stats": {
@@ -107,21 +110,48 @@
     },
     "workflow": {
       "eyebrow": "Din material brut în progres clar",
-      "title": "Trei pași între curs și înțelegere.",
+      "title": "De la curs la înțelegere, pas cu pas.",
       "description": "Fără zeci de tab-uri și fără ore pierdute pregătind materiale. Reviss construiește spațiul de studiu, iar tu te concentrezi pe învățare.",
-      "steps": {
+      "chapters": {
         "1": {
-          "title": "Încarci materialul",
-          "description": "Adaugi PDF-ul, notițele sau suportul de curs. Fără să rescrii manual capitole întregi."
+          "title": "Încarci cursul",
+          "text": "PDF, notițe sau suport de curs. 28 de pagini pe care altfel le-ai citi ore în șir."
         },
         "2": {
-          "title": "AI-ul îl structurează",
-          "description": "Reviss identifică ideile importante și pregătește rezumatul, flashcard-urile și testele."
+          "title": "AI-ul îl citește",
+          "text": "Parcurge fiecare pagină, marchează ideile importante și scoate conceptele-cheie."
         },
         "3": {
-          "title": "Înveți activ",
-          "description": "Exersezi, primești explicații și vezi exact ce concepte trebuie recapitulate."
+          "title": "Primești pachetul",
+          "text": "Rezumat, flashcard-uri, quiz-uri și strategii — generate din materialul tău, nu generice."
+        },
+        "4": {
+          "title": "Exersezi activ",
+          "text": "Întorci flashcard-uri și răspunzi la quiz-uri. Primești explicația, nu doar scorul."
+        },
+        "5": {
+          "title": "Vezi unde ești",
+          "text": "Progresul crește vizibil, iar ce n-ai stăpânit se întoarce automat la recapitulare."
         }
+      },
+      "scene": {
+        "readTime": "≈ 3 ore de citit",
+        "reading": "Se citește pagina 14 din 28",
+        "keyIdeas": "Idei-cheie marcate",
+        "concept1": "Mitocondrie",
+        "concept2": "ATP",
+        "concept3": "Membrană celulară",
+        "concept4": "Ribozom",
+        "concept5": "Nucleu",
+        "concept6": "Citoplasmă",
+        "cardFront": "Ce produce mitocondria?",
+        "cardBack": "ATP — energia celulei",
+        "quizQuestion": "Care organit produce ATP?",
+        "quizAnswer1": "Ribozomul",
+        "quizAnswer2": "Mitocondria",
+        "quizAnswer3": "Nucleul",
+        "mastered": "Materie stăpânită",
+        "review": "Recapitulare mâine: 6 flashcard-uri"
       }
     },
     "session": {
@@ -1124,6 +1154,12 @@
     "proiecteLunare": "Proiecte lunare",
     "materiale": "Materiale",
     "paginiProcesate": "Pagini procesate",
+    "pasulValueDinLength": "Pasul {value} din {length}",
+    "pasulAnterior": "Pasul anterior",
+    "pasulUrmator": "Pasul următor",
+    "documenteScanateSiPoze": "Documente scanate și poze:",
+    "incluse": "incluse",
+    "neincluse": "neincluse",
     "aiCredits": "AI Credits",
     "paginiOcr": "Pagini OCR",
     "aiAtinsLimitaPlanuluiCurent": "Ai atins limita planului curent pentru „{label}\". Poti face upgrade la un plan superior.",
@@ -1541,7 +1577,9 @@
     "plataNuAPutut": "Plata nu a putut fi inițiată.",
     "labelExtra": "{label} extra",
     "indisponibil": "Indisponibil",
-    "resetarePe": "Resetare pe: {date}"
+    "resetarePe": "Resetare pe: {date}",
+    "traseuDeStudiuPentru": "Traseu de studiu pentru",
+    "alegeOStatieCaSa": "Apasă pe o oprire de pe traseu ca să deschizi strategia."
   },
   "accountShell": {
     "abonament": "Abonament",

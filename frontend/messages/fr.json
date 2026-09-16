@@ -52,6 +52,9 @@
       "course": "Biologie cellulaire",
       "processed": "Cours traité par Reviss",
       "ready": "Prêt à étudier",
+      "statusUploading": "Import en cours",
+      "statusProcessing": "Traitement",
+      "statusGenerating": "Génération",
       "uploaded": "Cours importé",
       "pages": "28 pages",
       "generated": "Pack généré",
@@ -59,9 +62,9 @@
       "summaryValue": "6 min",
       "flashcards": "Flashcards",
       "quizzes": "Quiz",
-      "concepts": "Concepts",
+      "strategies": "Stratégies",
       "nextSession": "Prochaine session",
-      "nextSessionDetail": "12 flashcards + un quiz de 8 questions",
+      "nextSessionDetail": "{flashcards} flashcards + {quizzes} quiz",
       "nextSessionTime": "25 min"
     },
     "stats": {
@@ -107,21 +110,48 @@
     },
     "workflow": {
       "eyebrow": "Du support brut à une progression claire",
-      "title": "Trois étapes entre le cours et la compréhension.",
+      "title": "Du cours à la compréhension, étape par étape.",
       "description": "Sans dizaines d’onglets ni heures perdues à préparer des supports. Reviss construit l’espace d’étude, et toi tu te concentres sur l’apprentissage.",
-      "steps": {
+      "chapters": {
         "1": {
-          "title": "Tu importes le support",
-          "description": "Ajoute le PDF, tes notes ou le polycopié. Sans réécrire des chapitres entiers à la main."
+          "title": "Tu importes le cours",
+          "text": "Un PDF, tes notes ou le polycopié. 28 pages que tu lirais autrement pendant des heures."
         },
         "2": {
-          "title": "L’IA le structure",
-          "description": "Reviss repère les idées importantes et prépare le résumé, les flashcards et les tests."
+          "title": "L'IA le lit",
+          "text": "Elle parcourt chaque page, marque les idées importantes et en extrait les concepts clés."
         },
         "3": {
-          "title": "Tu apprends activement",
-          "description": "Tu t’entraînes, tu reçois des explications et tu vois exactement quels concepts revoir."
+          "title": "Tu reçois le pack",
+          "text": "Résumé, flashcards, quiz et stratégies — créés à partir de ton support, pas génériques."
+        },
+        "4": {
+          "title": "Tu t'entraînes activement",
+          "text": "Tu retournes des flashcards et réponds aux quiz. Tu obtiens l'explication, pas juste le score."
+        },
+        "5": {
+          "title": "Tu vois où tu en es",
+          "text": "La progression devient visible et ce qui n'est pas acquis revient automatiquement en révision."
         }
+      },
+      "scene": {
+        "readTime": "≈ 3 heures de lecture",
+        "reading": "Lecture de la page 14 sur 28",
+        "keyIdeas": "Idées clés marquées",
+        "concept1": "Mitochondrie",
+        "concept2": "ATP",
+        "concept3": "Membrane cellulaire",
+        "concept4": "Ribosome",
+        "concept5": "Noyau",
+        "concept6": "Cytoplasme",
+        "cardFront": "Que produit la mitochondrie ?",
+        "cardBack": "L'ATP — l'énergie de la cellule",
+        "quizQuestion": "Quel organite produit l'ATP ?",
+        "quizAnswer1": "Le ribosome",
+        "quizAnswer2": "La mitochondrie",
+        "quizAnswer3": "Le noyau",
+        "mastered": "Matière maîtrisée",
+        "review": "Révision demain : 6 flashcards"
       }
     },
     "session": {
@@ -1124,6 +1154,12 @@
     "proiecteLunare": "Projets mensuels",
     "materiale": "Supports",
     "paginiProcesate": "Pages traitées",
+    "pasulValueDinLength": "Étape {value} sur {length}",
+    "pasulAnterior": "Étape précédente",
+    "pasulUrmator": "Étape suivante",
+    "documenteScanateSiPoze": "Documents scannés et photos :",
+    "incluse": "inclus",
+    "neincluse": "non inclus",
     "aiCredits": "AI Credits",
     "paginiOcr": "Pages OCR",
     "aiAtinsLimitaPlanuluiCurent": "Tu as atteint la limite de ton forfait actuel pour « {label} ». Tu peux passer à un forfait supérieur.",
@@ -1541,7 +1577,9 @@
     "plataNuAPutut": "Le paiement n’a pas pu être lancé.",
     "labelExtra": "{label} en plus",
     "indisponibil": "Indisponible",
-    "resetarePe": "Réinitialisation le : {date}"
+    "resetarePe": "Réinitialisation le : {date}",
+    "traseuDeStudiuPentru": "Parcours d'étude pour",
+    "alegeOStatieCaSa": "Cliquez sur une étape du parcours pour ouvrir sa stratégie."
   },
   "accountShell": {
     "abonament": "Abonnement",

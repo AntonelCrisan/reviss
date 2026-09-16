@@ -26,6 +26,7 @@ import { AccountSkeleton } from "@/components/account/account-skeleton";
 import { ProjectTabSkeleton } from "@/components/account/project-tab-skeletons";
 import { ProjectSlotsModal } from "@/components/account/project-slots-modal";
 import { QuizConfigModal } from "@/components/account/quiz-config-modal";
+import { StrategyMap } from "@/components/account/strategy-map";
 import {
   QuizClozeAnswer,
   QuizMatchingAnswer,
@@ -9478,133 +9479,79 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
 
   return (
     <section className="space-y-5">
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <article className="theme-shadow-card rounded-xl border border-subtle bg-surface">
-          <div className="border-b border-subtle p-5 sm:p-6">
+      <article className="theme-shadow-card overflow-hidden rounded-xl border border-subtle bg-surface">
+        <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div>
             <span className="inline-flex rounded-md border border-subtle bg-action-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
               {t("strategiiAi")}
             </span>
-            <h2 className="mt-4 max-w-3xl font-serif text-3xl font-semibold leading-tight text-content sm:text-4xl">
-              {t("planDeStudiuPentru")} {project.subjectName}.
+            <h2 className="mt-4 max-w-2xl font-serif text-3xl font-semibold leading-tight text-content sm:text-4xl">
+              {t("traseuDeStudiuPentru")} {project.subjectName}.
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-              {t("pasiiSuntGeneratiDinMaterialul")}
-            </p>
+            {strategies.length ? null : (
+              <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
+                {t("pasiiSuntGeneratiDinMaterialul")}
+              </p>
+            )}
           </div>
 
-          <div className="divide-y divide-subtle">
-            {strategies.map((strategy, index) => (
-              <StrategyPlanRow
-                key={strategy.title}
-                index={index}
-                title={strategy.title}
-                description={strategy.description}
-              />
-            ))}
-          </div>
-        </article>
-
-        <aside className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-            {t("context")}
-          </p>
-          <div className="mt-4 divide-y divide-subtle border-y border-subtle">
-            {stats.map(([label, value]) => (
-              <div
-                key={label}
-                className="flex items-center justify-between gap-4 py-3"
-              >
-                <span className="text-sm font-semibold text-muted">{label}</span>
-                <span className="font-serif text-2xl font-semibold text-content">
-                  {value}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-5 border-t border-subtle pt-4">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted">
-              {t("ritmRecomandat")}
-            </p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-content">
+          <div className="xl:text-right">
+            <dl className="flex flex-wrap gap-x-7 gap-y-3 xl:justify-end">
+              {stats.map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-[10px] font-black uppercase tracking-[0.14em] text-muted">
+                    {label}
+                  </dt>
+                  <dd className="font-serif text-2xl font-semibold text-content">
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-3 text-xs leading-5 text-muted">
+              <span className="font-bold">{t("ritmRecomandat")}:</span>{" "}
               {t("t2030MinPeSesiune")}
             </p>
           </div>
-        </aside>
-      </div>
+        </div>
 
-      <section className="rounded-xl border border-subtle bg-surface">
-        <div className="grid lg:grid-cols-[18rem_minmax(0,1fr)]">
-          <div className="border-b border-subtle p-5 sm:p-6 lg:border-b-0 lg:border-r">
-            <span className="inline-flex rounded-md border border-subtle bg-app px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
-              {t("baza")}
-            </span>
-            <h3 className="mt-4 font-serif text-2xl font-semibold leading-tight text-content">
-              {t("buneDeFolositLaOrice")}
-            </h3>
+        {strategies.length ? (
+          <div className="border-t border-subtle bg-app p-4 sm:p-6">
+            <StrategyMap steps={strategies} />
           </div>
-          <div className="divide-y divide-subtle">
-            {universalStrategies.map(([title, description], index) => (
-              <StrategyPlanRow
-                key={title}
-                index={index}
-                title={title}
-                description={description}
-                muted
-              />
-            ))}
-          </div>
+        ) : null}
+      </article>
+
+      <section className="rounded-xl border border-subtle bg-surface p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex rounded-md border border-subtle bg-app px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted">
+            {t("baza")}
+          </span>
+          <p className="text-sm font-semibold text-muted">
+            {t("buneDeFolositLaOrice")}
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {universalStrategies.map(([title, description], index) => (
+            <div
+              key={title}
+              className="rounded-lg border border-subtle bg-app p-4"
+            >
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-subtle bg-surface text-[11px] font-black text-muted">
+                  {index + 1}
+                </span>
+                <h3 className="text-sm font-bold leading-5 text-content">
+                  {title}
+                </h3>
+              </div>
+              <p className="mt-2 text-xs leading-6 text-muted">{description}</p>
+            </div>
+          ))}
         </div>
       </section>
     </section>
-  );
-}
-
-function StrategyPlanRow({
-  index,
-  title,
-  description,
-  muted = false,
-}: {
-  index: number;
-  title: string;
-  description: string;
-  muted?: boolean;
-}) {
-  return (
-    <div className="grid gap-4 p-5 sm:grid-cols-[3rem_minmax(0,1fr)] sm:p-6">
-      <span
-        className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-black ${
-          muted
-            ? "border-subtle bg-app text-muted"
-            : "border-success-border bg-success-soft text-success"
-        }`}
-      >
-        {muted ? (
-          index + 1
-        ) : (
-          <Icon className="h-4 w-4">
-            <circle cx="12" cy="12" r="10" />
-            <path d="m16.2 7.8-2 6.4-6.4 2 2-6.4z" />
-          </Icon>
-        )}
-      </span>
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-serif text-2xl font-semibold leading-tight text-content">
-            {title}
-          </h3>
-          {!muted ? (
-            <span className="rounded-md border border-subtle bg-app px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-muted">
-              pas {index + 1}
-            </span>
-          ) : null}
-        </div>
-        <p className="mt-2 max-w-3xl text-sm leading-7 text-muted">
-          {description}
-        </p>
-      </div>
-    </div>
   );
 }
 
@@ -11459,7 +11406,18 @@ function NewProjectView({
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept=".pdf,.pptx,.docx,.txt,.md,.html,.csv,.xls,.xlsx"
+                // Photographs are read by OCR, which the plan has to include,
+                // so they are only offered where they would actually work.
+                //
+                // No `capture` attribute on purpose: it would force the camera
+                // and skip the picker, making documents unreachable. Listing
+                // image types is enough - a phone already offers the camera
+                // alongside the photo library and files.
+                accept={
+                  planLimits.allowScannedDocuments
+                    ? ".pdf,.pptx,.docx,.txt,.md,.html,.csv,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+                    : ".pdf,.pptx,.docx,.txt,.md,.html,.csv,.xls,.xlsx"
+                }
                 className="hidden"
                 onChange={(event) => {
                   onAddFiles(event.target.files);
@@ -11485,11 +11443,11 @@ function NewProjectView({
                       {planLimits.fileSizeMb} {t("mbFisier")}{" "}
                       {planLimits.projectSizeMb} {t("mbProiectCotaLunara")}{" "}
                       {planLimits.monthlyMaterials} {t("materialeSi")}{" "}
-                      {planLimits.monthlyPageLimit} pagini procesate. Documente
-                      scanate:{" "}
+                      {planLimits.monthlyPageLimit} {t("paginiProcesate")}{" "}
+                      {t("documenteScanateSiPoze")}{" "}
                       {planLimits.allowScannedDocuments
-                        ? "incluse"
-                        : "neincluse"}
+                        ? t("incluse")
+                        : t("neincluse")}
                       .
                     </p>
                   </span>

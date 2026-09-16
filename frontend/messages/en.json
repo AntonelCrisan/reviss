@@ -52,6 +52,9 @@
       "course": "Cell biology",
       "processed": "Course processed by Reviss",
       "ready": "Ready to study",
+      "statusUploading": "Uploading",
+      "statusProcessing": "Processing",
+      "statusGenerating": "Generating",
       "uploaded": "Uploaded course",
       "pages": "28 pages",
       "generated": "Generated pack",
@@ -59,9 +62,9 @@
       "summaryValue": "6 min",
       "flashcards": "Flashcards",
       "quizzes": "Quizzes",
-      "concepts": "Concepts",
+      "strategies": "Strategies",
       "nextSession": "Next session",
-      "nextSessionDetail": "12 flashcards + an 8-question quiz",
+      "nextSessionDetail": "{flashcards} flashcards + {quizzes} quizzes",
       "nextSessionTime": "25 min"
     },
     "stats": {
@@ -107,21 +110,48 @@
     },
     "workflow": {
       "eyebrow": "From raw material to clear progress",
-      "title": "Three steps between the course and understanding.",
+      "title": "From course to understanding, step by step.",
       "description": "No dozens of tabs and no hours lost preparing materials. Reviss builds the study space and you focus on learning.",
-      "steps": {
+      "chapters": {
         "1": {
-          "title": "Upload the material",
-          "description": "Add the PDF, your notes or the course handout. No rewriting entire chapters by hand."
+          "title": "You upload the course",
+          "text": "A PDF, your notes or the lecture handout. 28 pages you would otherwise read for hours."
         },
         "2": {
-          "title": "The AI structures it",
-          "description": "Reviss identifies the important ideas and prepares the summary, flashcards and tests."
+          "title": "The AI reads it",
+          "text": "It goes through every page, marks the important ideas and pulls out the key concepts."
         },
         "3": {
-          "title": "Learn actively",
-          "description": "Practise, get explanations and see exactly which concepts need revisiting."
+          "title": "You get the pack",
+          "text": "Summary, flashcards, quizzes and strategies — built from your material, not generic ones."
+        },
+        "4": {
+          "title": "You practise actively",
+          "text": "You flip flashcards and answer quizzes. You get the explanation, not just the score."
+        },
+        "5": {
+          "title": "You see where you stand",
+          "text": "Progress builds up visibly, and whatever you have not mastered comes back for review."
         }
+      },
+      "scene": {
+        "readTime": "≈ 3 hours of reading",
+        "reading": "Reading page 14 of 28",
+        "keyIdeas": "Key ideas marked",
+        "concept1": "Mitochondrion",
+        "concept2": "ATP",
+        "concept3": "Cell membrane",
+        "concept4": "Ribosome",
+        "concept5": "Nucleus",
+        "concept6": "Cytoplasm",
+        "cardFront": "What does the mitochondrion produce?",
+        "cardBack": "ATP — the cell's energy",
+        "quizQuestion": "Which organelle produces ATP?",
+        "quizAnswer1": "The ribosome",
+        "quizAnswer2": "The mitochondrion",
+        "quizAnswer3": "The nucleus",
+        "mastered": "Material mastered",
+        "review": "Tomorrow's review: 6 flashcards"
       }
     },
     "session": {
@@ -1124,6 +1154,12 @@
     "proiecteLunare": "Monthly projects",
     "materiale": "Materials",
     "paginiProcesate": "Processed pages",
+    "pasulValueDinLength": "Step {value} of {length}",
+    "pasulAnterior": "Previous step",
+    "pasulUrmator": "Next step",
+    "documenteScanateSiPoze": "Scanned documents and photos:",
+    "incluse": "included",
+    "neincluse": "not included",
     "aiCredits": "AI Credits",
     "paginiOcr": "OCR pages",
     "aiAtinsLimitaPlanuluiCurent": "You have reached your current plan's limit for \"{label}\". You can upgrade to a higher plan.",
@@ -1541,7 +1577,9 @@
     "plataNuAPutut": "The payment could not be started.",
     "labelExtra": "{label} extra",
     "indisponibil": "Unavailable",
-    "resetarePe": "Resets on: {date}"
+    "resetarePe": "Resets on: {date}",
+    "traseuDeStudiuPentru": "Study route for",
+    "alegeOStatieCaSa": "Click a stop on the road to open its strategy."
   },
   "accountShell": {
     "abonament": "Subscription",
