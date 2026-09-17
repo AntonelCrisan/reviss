@@ -110,3 +110,87 @@ def test_realistic_response_content_blocks_do_not_break_success():
         )
     )
     assert result.payload == payload
+
+
+def stream(events):
+    from app.services.openai_generation import OpenAIStreamUsage
+
+    async def event_stream():
+        for event in events:
+            yield event
+
+    generator = OpenAIStudyGenerator.__new__(OpenAIStudyGenerator)
+    generator._settings = SimpleNamespace(openai_request_timeout_seconds=60)
+    generator._client = SimpleNamespace(
+        responses=SimpleNamespace(
+            create=AsyncMock(return_value=event_stream())
+        ),
+    )
+    usage = OpenAIStreamUsage()
+
+    async def collect():
+        return [
+            delta
+            async for delta in generator.stream_text(
+                model="test-model",
+                instructions="Answer",
+                prompt="Question",
+                max_output_tokens=900,
+                reasoning_effort="low",
+                user_id="test-user",
+                project_id="test-project",
+                job_type="project_chat_stream",
+                usage=usage,
+            )
+        ]
+
+    return asyncio.run(collect()), usage, generator._client.responses.create
+
+
+def delta(text):
+    return SimpleNamespace(type="response.output_text.delta", delta=text)
+
+
+def test_stream_yields_text_as_written_and_records_usage():
+    completed = SimpleNamespace(
+        type="response.completed",
+        response=SimpleNamespace(
+            status="completed",
+            usage=SimpleNamespace(
+                input_tokens=40,
+                output_tokens=12,
+                output_tokens_details=SimpleNamespace(reasoning_tokens=3),
+            ),
+        ),
+    )
+    deltas, usage, create = stream(
+        [
+            SimpleNamespace(type="response.created"),
+            delta("Morala "),
+            delta("se învață."),
+            completed,
+        ]
+    )
+
+    assert deltas == ["Morala ", "se învață."]
+    assert usage.status == "completed"
+    assert (usage.input_tokens, usage.output_tokens) == (40, 12)
+    assert usage.reasoning_tokens == 3
+    assert usage.first_token_seconds is not None
+    kwargs = create.await_args.kwargs
+    assert kwargs["stream"] is True
+    # Plain text: no JSON schema is sent for a streamed answer.
+    assert "text" not in kwargs
+
+
+@pytest.mark.parametrize(
+    "event",
+    [
+        SimpleNamespace(type="response.refusal.delta", delta="Nu pot."),
+        SimpleNamespace(type="response.failed", response=None),
+        SimpleNamespace(type="error", message="boom"),
+    ],
+)
+def test_stream_failures_raise_after_the_text_already_sent(event):
+    with pytest.raises(OpenAIGenerationError):
+        stream([delta("Început "), event])

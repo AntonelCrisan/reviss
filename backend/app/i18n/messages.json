@@ -587,6 +587,10 @@
     "en": "Stripe-Signature is missing.",
     "fr": "Stripe-Signature est manquant."
   },
+  "Lotul repeta o intrebare din alt lot. Alege alte concepte din zona ta.": {
+    "en": "The batch repeats a question from another batch. Choose other concepts from your zone.",
+    "fr": "Le lot répète une question d'un autre lot. Choisissez d'autres concepts dans votre zone."
+  },
   "MISTRAL_API_KEY nu este configurat.": {
     "en": "MISTRAL_API_KEY is not configured.",
     "fr": "MISTRAL_API_KEY n'est pas configuré."
@@ -766,6 +770,14 @@
   "Partea selectata nu este valida.": {
     "en": "The selected side is not valid.",
     "fr": "La partie sélectionnée n'est pas valide."
+  },
+  "Partea {part_number}: niciun anchor_text nu identifica exact un paragraf de continut din summary_content. Copiaza fragmente unice din paragrafe, nu din titluri.": {
+    "en": "Part {part_number}: no anchor_text identifies exactly one body paragraph of summary_content. Copy unique passages from paragraphs, not from headings.",
+    "fr": "Partie {part_number} : aucun anchor_text n'identifie exactement un paragraphe de contenu de summary_content. Copiez des passages uniques des paragraphes, pas des titres."
+  },
+  "Partea {part_number}: summary_content nu contine paragrafe de rezumat.": {
+    "en": "Part {part_number}: summary_content contains no summary paragraphs.",
+    "fr": "Partie {part_number} : summary_content ne contient aucun paragraphe de résumé."
   },
   "Payload Stripe invalid.": {
     "en": "Invalid Stripe payload.",

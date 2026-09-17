@@ -14,6 +14,7 @@ const allowedRoutes = [
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/cancel-generation$/ },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/quizzes$/ },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/ai\/chat$/ },
+  { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/ai\/chat\/stream$/ },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/ai\/explain-selection$/ },
   {
     method: "POST",
@@ -132,6 +133,21 @@ async function proxyProjectsRequest(
     for (const headerName of ["content-type", "content-disposition"]) {
       const value = backendResponse.headers.get(headerName);
       if (value) responseHeaders.set(headerName, value);
+    }
+
+    // A streamed answer is passed on as it arrives; buffering it would make
+    // the student wait for the whole answer again.
+    if (
+      backendResponse.ok &&
+      backendResponse.body &&
+      responseHeaders.get("content-type")?.startsWith("application/x-ndjson")
+    ) {
+      responseHeaders.set("cache-control", "no-cache");
+      responseHeaders.set("x-accel-buffering", "no");
+      return new Response(backendResponse.body, {
+        status: backendResponse.status,
+        headers: responseHeaders,
+      });
     }
 
     if (backendResponse.status === 204 || backendResponse.status === 304) {

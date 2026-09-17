@@ -161,6 +161,8 @@ export type StudyProject = {
   flashcard_count: number;
   quiz_count: number;
   strategy_count: number;
+  /** The pack is ready but its strategies are still being written. */
+  strategies_pending: boolean;
   summary_highlight_count: number;
   markdown_download_url: string | null;
   prompt_download_url: string | null;
@@ -201,10 +203,6 @@ export type StudyProjectAiSelectionExplainResponse = {
 export type StudyProjectChatMessage = {
   role: "assistant" | "user";
   text: string;
-};
-
-export type StudyProjectChatResponse = {
-  answer: string;
 };
 
 type ApiErrorPayload = {
@@ -629,26 +627,77 @@ export async function explainStudyProjectFlashcardSelection(payload: {
   return parseProjectResponse<StudyProjectAiSelectionExplainResponse>(response);
 }
 
-export async function chatWithStudyProjectAi(payload: {
-  projectId: string;
-  message: string;
-  history: StudyProjectChatMessage[];
-  conversationSummary?: string;
-}): Promise<StudyProjectChatResponse> {
-  const response = await fetch(`/api/projects/${payload.projectId}/ai/chat`, {
-    method: "POST",
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
+type StudyProjectChatStreamEvent =
+  | { type: "delta"; text: string }
+  | { type: "done" }
+  | { type: "error"; message: string };
+
+/**
+ * Ask the project tutor and receive the answer while it is written.
+ * `onText` gets the whole answer so far after every piece; the promise
+ * resolves with the full answer. Refusals before the answer starts (plan
+ * limits, validation) reject with the same errors as the other calls.
+ */
+export async function streamChatWithStudyProjectAi(
+  payload: {
+    projectId: string;
+    message: string;
+    history: StudyProjectChatMessage[];
+    conversationSummary?: string;
+  },
+  options: { onText: (answer: string) => void; signal?: AbortSignal },
+): Promise<string> {
+  const response = await fetch(
+    `/api/projects/${payload.projectId}/ai/chat/stream`,
+    {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: payload.message,
+        history: payload.history,
+        conversation_summary: payload.conversationSummary?.trim() || undefined,
+      }),
+      cache: "no-store",
+      signal: options.signal,
     },
-    body: JSON.stringify({
-      message: payload.message,
-      history: payload.history,
-      conversation_summary: payload.conversationSummary?.trim() || undefined,
-    }),
-    cache: "no-store",
-  });
-  return parseProjectResponse<StudyProjectChatResponse>(response);
+  );
+  if (!response.ok || !response.body) {
+    await parseProjectResponse<never>(response);
+    throw new ProjectsApiError("Raspunsul nu a putut fi generat momentan.", 503);
+  }
+
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffered = "";
+  let answer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffered += value;
+    let newline = buffered.indexOf("\n");
+    while (newline !== -1) {
+      const line = buffered.slice(0, newline).trim();
+      buffered = buffered.slice(newline + 1);
+      newline = buffered.indexOf("\n");
+      if (!line) continue;
+      const event = JSON.parse(line) as StudyProjectChatStreamEvent;
+      if (event.type === "delta") {
+        answer += event.text;
+        options.onText(answer);
+      } else if (event.type === "error") {
+        throw new ProjectsApiError(event.message, 503);
+      } else if (event.type === "done") {
+        return answer;
+      }
+    }
+  }
+  // The connection ended without "done": keep what arrived, if anything.
+  if (!answer) {
+    throw new ProjectsApiError("Raspunsul nu a putut fi generat momentan.", 503);
+  }
+  return answer;
 }
 
 export async function createQuizMistakeFlashcard(payload: {

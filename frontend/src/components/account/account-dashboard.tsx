@@ -58,7 +58,7 @@ import {
   archiveStudyProject,
   cancelStudyProjectGeneration,
   cancelStudyProjectPrepare,
-  chatWithStudyProjectAi,
+  streamChatWithStudyProjectAi,
   completeQuiz,
   createManualStudyProjectFlashcard,
   createQuizMistakeFlashcard,
@@ -141,6 +141,7 @@ type StudyProject = {
   manualFlashcards: StudyFlashcardCard[];
   summaryHighlights: UserSummaryHighlight[];
   summaryNotes: UserSummaryNote[];
+  strategiesPending: boolean;
   strategies: Array<{
     title: string;
     description: string;
@@ -231,6 +232,8 @@ const generationSteps: DashboardKey[] = [
 ];
 
 const GENERATION_POLL_INTERVAL_MS = 2000;
+/** Strategies land a few seconds after the pack; the API expires the wait. */
+const STRATEGIES_POLL_INTERVAL_MS = 3000;
 const GENERATION_POLL_ATTEMPTS = 180;
 const QUIZ_GENERATION_POLL_ATTEMPTS = 450;
 const PROJECT_DETAIL_MIN_LENGTH = 2;
@@ -555,23 +558,31 @@ function mapApiProject(t: DashboardTranslator, project: ApiStudyProject): StudyP
     manualFlashcards: mapManualFlashcards(t, project.id, project.flashcards),
     summaryHighlights: mapSummaryHighlights(project.summary_highlights),
     summaryNotes: mapSummaryNotes(project.summary_notes),
+    strategiesPending: Boolean(project.strategies_pending),
     strategies: project.strategies.length
       ? project.strategies.map((strategy) => ({
           title: strategy.title,
           description: strategy.description,
         }))
-      : [
-          {
-            title:
-              project.status === "ready"
-                ? t("continuaCuRezumatulGenerat")
-                : t("asteaptaGenerareaPachetului"),
-            description:
-              project.status === "ready"
-                ? t("pachetulProiectuluiEsteGeneratSi")
-                : t("revissConvertesteMaterialeleSiSalveaza"),
-          },
-        ],
+      : project.strategies_pending
+        ? [
+            {
+              title: t("strategiileSePregatesc"),
+              description: t("strategiileAparInCateva"),
+            },
+          ]
+        : [
+            {
+              title:
+                project.status === "ready"
+                  ? t("continuaCuRezumatulGenerat")
+                  : t("asteaptaGenerareaPachetului"),
+              description:
+                project.status === "ready"
+                  ? t("pachetulProiectuluiEsteGeneratSi")
+                  : t("revissConvertesteMaterialeleSiSalveaza"),
+            },
+          ],
   };
 }
 
@@ -774,6 +785,39 @@ export function AccountDashboard({
       router.replace("/login");
     }
   }, [isLoading, router, user]);
+
+  // The study pack is ready before its strategies; refresh the projects still
+  // waiting on them in place, without moving the user to another project.
+  const strategiesPendingProjectIds = projects
+    .filter((project) => project.strategiesPending)
+    .map((project) => project.id)
+    .join(",");
+
+  useEffect(() => {
+    if (!strategiesPendingProjectIds) return;
+    const abortController = new AbortController();
+    const interval = window.setInterval(() => {
+      for (const projectId of strategiesPendingProjectIds.split(",")) {
+        getStudyProject(projectId, { signal: abortController.signal })
+          .then((apiProject) => {
+            const mappedProject = mapApiProject(t, apiProject);
+            setProjects((currentProjects) =>
+              currentProjects.map((project) =>
+                project.id === mappedProject.id ? mappedProject : project,
+              ),
+            );
+          })
+          .catch(() => {
+            // The next tick tries again; the API ends the wait on its own.
+          });
+      }
+    }, STRATEGIES_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(interval);
+      abortController.abort();
+    };
+  }, [strategiesPendingProjectIds, t]);
 
   useEffect(() => {
     if (isLoading || !user?.id) return;
@@ -3783,6 +3827,7 @@ function ProjectChatPanel({
   const t = useTranslations("dashboard");
   const streamTimerRef = useRef<number | null>(null);
   const chatRequestIdRef = useRef(0);
+  const chatAbortControllerRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [messages, setMessages] = useState<ProjectChatMessage[]>(() =>
@@ -3822,6 +3867,7 @@ function ProjectChatPanel({
       if (streamTimerRef.current) {
         window.clearInterval(streamTimerRef.current);
       }
+      chatAbortControllerRef.current?.abort();
       chatRequestIdRef.current += 1;
     };
   }, []);
@@ -3832,6 +3878,8 @@ function ProjectChatPanel({
       streamTimerRef.current = null;
     }
 
+    chatAbortControllerRef.current?.abort();
+    chatAbortControllerRef.current = null;
     chatRequestIdRef.current += 1;
     removeStoredProjectChatMessages(project.id);
     setMessages([createProjectChatIntro(t, project)]);
@@ -3930,22 +3978,58 @@ function ProjectChatPanel({
     }
     setIsGenerating(true);
 
+    const abortController = new AbortController();
+    chatAbortControllerRef.current?.abort();
+    chatAbortControllerRef.current = abortController;
+    let receivedAnswer = "";
+
     try {
-      const response = await chatWithStudyProjectAi({
-        projectId: project.id,
-        message: text,
-        history,
-        conversationSummary,
-      });
+      // The answer is shown as the model writes it, not after it is done.
+      const answer = await streamChatWithStudyProjectAi(
+        {
+          projectId: project.id,
+          message: text,
+          history,
+          conversationSummary,
+        },
+        {
+          signal: abortController.signal,
+          onText: (answerSoFar) => {
+            if (requestId !== chatRequestIdRef.current) {
+              return;
+            }
+            receivedAnswer = answerSoFar;
+            setMessages((currentMessages) =>
+              currentMessages.map((currentMessage) =>
+                currentMessage.id === assistantMessageId
+                  ? { ...currentMessage, text: answerSoFar }
+                  : currentMessage,
+              ),
+            );
+          },
+        },
+      );
 
       if (requestId !== chatRequestIdRef.current) {
         return;
       }
 
       void onUsageRefresh();
-      streamAssistantAnswer(assistantMessageId, response.answer);
+      if (answer.trim()) {
+        setIsGenerating(false);
+        setStreamingMessageId(null);
+      } else {
+        streamAssistantAnswer(assistantMessageId, "");
+      }
     } catch (error) {
       if (requestId !== chatRequestIdRef.current) {
+        return;
+      }
+
+      if (receivedAnswer.trim()) {
+        // Keep the part of the answer that already arrived.
+        setIsGenerating(false);
+        setStreamingMessageId(null);
         return;
       }
 
@@ -3954,6 +4038,10 @@ function ProjectChatPanel({
           ? error.message
           : t("raspunsulNuAPututFi");
       streamAssistantAnswer(assistantMessageId, fallbackAnswer);
+    } finally {
+      if (chatAbortControllerRef.current === abortController) {
+        chatAbortControllerRef.current = null;
+      }
     }
   }
 

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
+import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -15,6 +18,8 @@ from openai import (
 )
 
 from app.core.config import Settings
+
+logger = logging.getLogger("revizzio.openai")
 
 
 class OpenAIGenerationError(Exception):
@@ -46,6 +51,42 @@ class OpenAIGenerationResult:
     input_tokens: int
     output_tokens: int
     total_tokens: int
+    # Reasoning is output the student never sees but still waits for, and a
+    # cached prefix is input that was not paid for again: both are what tells
+    # a slow generation apart from a long one.
+    reasoning_tokens: int = 0
+    cached_input_tokens: int = 0
+    duration_seconds: float = 0.0
+
+
+@dataclass(slots=True)
+class OpenAIStreamUsage:
+    """Filled in while a text stream runs; complete once it has ended."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+    reasoning_tokens: int = 0
+    status: str | None = None
+    first_token_seconds: float | None = None
+
+
+def _generation_error(exc: APIError) -> OpenAIGenerationError:
+    if isinstance(exc, APIConnectionError | APITimeoutError):
+        return OpenAIGenerationError(
+            "Serviciul de generare nu a raspuns la timp. Incearca din nou."
+        )
+    if isinstance(exc, RateLimitError):
+        if getattr(exc, "code", None) == "insufficient_quota":
+            return OpenAIGenerationError(
+                "Generarea nu este disponibila momentan. Incearca din nou "
+                "in cateva minute."
+            )
+        return OpenAIGenerationError(
+            "Serviciul de generare este aglomerat momentan. Incearca din nou."
+        )
+    return OpenAIGenerationError(
+        "Pachetul nu a putut fi generat momentan. Incearca din nou."
+    )
 
 
 class OpenAIStudyGenerator:
@@ -92,6 +133,7 @@ class OpenAIStudyGenerator:
             timeout_seconds or self._settings.openai_request_timeout_seconds
         )
 
+        started_at = time.perf_counter()
         try:
             response = await self._client.responses.create(
                 model=model,
@@ -110,29 +152,41 @@ class OpenAIStudyGenerator:
                 safety_identifier=user_id[:64],
                 timeout=request_timeout,
             )
-        except (APIConnectionError, APITimeoutError) as exc:
-            raise OpenAIGenerationError(
-                "Serviciul de generare nu a raspuns la timp. Incearca din nou."
-            ) from exc
-        except RateLimitError as exc:
-            error_code = getattr(exc, "code", None)
-            if error_code == "insufficient_quota":
-                raise OpenAIGenerationError(
-                    "Generarea nu este disponibila momentan. Incearca din nou "
-                    "in cateva minute."
-                ) from exc
-            raise OpenAIGenerationError(
-                "Serviciul de generare este aglomerat momentan. Incearca din nou."
-            ) from exc
-        except APIError as exc:
-            raise OpenAIGenerationError(
-                "Pachetul nu a putut fi generat momentan. Incearca din nou."
-            ) from exc
+        except (APIConnectionError, APITimeoutError, APIError) as exc:
+            logger.warning(
+                "OpenAI %s failed after %.1fs: model=%s, effort=%s, error=%s",
+                job_type,
+                time.perf_counter() - started_at,
+                model,
+                reasoning_effort,
+                type(exc).__name__,
+            )
+            raise _generation_error(exc) from exc
+        duration_seconds = time.perf_counter() - started_at
 
         usage = getattr(response, "usage", None)
         input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
         output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
         total_tokens = int(getattr(usage, "total_tokens", 0) or 0)
+        output_details = getattr(usage, "output_tokens_details", None)
+        input_details = getattr(usage, "input_tokens_details", None)
+        reasoning_tokens = int(getattr(output_details, "reasoning_tokens", 0) or 0)
+        cached_input_tokens = int(getattr(input_details, "cached_tokens", 0) or 0)
+        status = getattr(response, "status", None)
+        logger.info(
+            "OpenAI %s finished in %.1fs: model=%s, effort=%s, status=%s, "
+            "input=%s, cached_input=%s, output=%s, reasoning=%s, max_output=%s",
+            job_type,
+            duration_seconds,
+            model,
+            reasoning_effort,
+            status,
+            input_tokens,
+            cached_input_tokens,
+            output_tokens,
+            reasoning_tokens,
+            max_output_tokens,
+        )
 
         # A refusal or an incomplete response may still have output_text.
         # Never mistake that text for a complete, usable study artifact.
@@ -142,7 +196,6 @@ class OpenAIStudyGenerator:
                     raise OpenAIGenerationError(
                         "Serviciul AI nu a putut genera continut pentru acest material."
                     )
-        status = getattr(response, "status", None)
         if status == "incomplete":
             details = getattr(response, "incomplete_details", None)
             reason = getattr(details, "reason", None)
@@ -186,7 +239,104 @@ class OpenAIStudyGenerator:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_tokens=total_tokens,
+            reasoning_tokens=reasoning_tokens,
+            cached_input_tokens=cached_input_tokens,
+            duration_seconds=duration_seconds,
         )
+
+
+    async def stream_text(
+        self,
+        *,
+        model: str,
+        instructions: str,
+        prompt: str,
+        max_output_tokens: int,
+        reasoning_effort: str,
+        user_id: str,
+        project_id: str,
+        job_type: str,
+        usage: OpenAIStreamUsage,
+        text_verbosity: str | None = None,
+    ) -> AsyncIterator[str]:
+        """Yield plain answer text as the model writes it.
+
+        The student starts reading after the first tokens instead of waiting
+        for the whole answer. Token usage lands in `usage` once the stream ends.
+        """
+        options: dict[str, Any] = {}
+        if text_verbosity:
+            options["text"] = {"verbosity": text_verbosity}
+        started_at = time.perf_counter()
+        try:
+            stream = await self._client.responses.create(
+                model=model,
+                instructions=instructions,
+                input=prompt,
+                max_output_tokens=max_output_tokens,
+                reasoning={"effort": reasoning_effort},
+                store=False,
+                metadata={
+                    "app": "reviss",
+                    "project_id": project_id,
+                    "job_type": job_type,
+                },
+                prompt_cache_key=_prompt_cache_key(job_type, project_id),
+                safety_identifier=user_id[:64],
+                timeout=self._settings.openai_request_timeout_seconds,
+                stream=True,
+                **options,
+            )
+            async for event in stream:
+                kind = getattr(event, "type", None)
+                if kind == "response.output_text.delta":
+                    if usage.first_token_seconds is None:
+                        usage.first_token_seconds = time.perf_counter() - started_at
+                    yield event.delta
+                elif kind in ("response.completed", "response.incomplete"):
+                    response = event.response
+                    response_usage = getattr(response, "usage", None)
+                    usage.status = getattr(response, "status", None)
+                    usage.input_tokens = int(
+                        getattr(response_usage, "input_tokens", 0) or 0
+                    )
+                    usage.output_tokens = int(
+                        getattr(response_usage, "output_tokens", 0) or 0
+                    )
+                    usage.reasoning_tokens = int(
+                        getattr(
+                            getattr(response_usage, "output_tokens_details", None),
+                            "reasoning_tokens",
+                            0,
+                        )
+                        or 0
+                    )
+                elif kind == "response.refusal.delta":
+                    raise OpenAIGenerationError(
+                        "Serviciul AI nu a putut genera continut pentru acest material."
+                    )
+                elif kind in ("response.failed", "error"):
+                    raise OpenAIGenerationError(
+                        "Serviciul AI nu a finalizat generarea. Incearca din nou."
+                    )
+        except APIError as exc:
+            raise _generation_error(exc) from exc
+        finally:
+            logger.info(
+                "OpenAI %s streamed in %.1fs (first token %s): model=%s, "
+                "effort=%s, status=%s, input=%s, output=%s, reasoning=%s",
+                job_type,
+                time.perf_counter() - started_at,
+                "-"
+                if usage.first_token_seconds is None
+                else f"{usage.first_token_seconds:.1f}s",
+                model,
+                reasoning_effort,
+                usage.status,
+                usage.input_tokens,
+                usage.output_tokens,
+                usage.reasoning_tokens,
+            )
 
 
 AI_EXPLANATION_SCHEMA: dict[str, Any] = {
@@ -216,24 +366,22 @@ AI_CHAT_RESPONSE_SCHEMA: dict[str, Any] = {
 }
 
 
-STUDY_PACK_SCHEMA: dict[str, Any] = {
+# The study pack is written one part of the course at a time, every part in
+# parallel, so each call only carries the summary, keywords and flashcards of
+# its own part. Strategies span the whole course and get a call of their own.
+STUDY_PACK_SECTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["schema_version", "summary", "keywords", "flashcards", "strategies"],
+    "required": ["schema_version", "summary_content", "keywords", "flashcards"],
     "properties": {
-        "schema_version": {"type": "string", "enum": ["reviss.study_pack.v1"]},
-        "summary": {
-            "type": "object",
-            "additionalProperties": False,
-            "required": ["content", "estimated_reading_minutes"],
-            "properties": {
-                "content": {"type": "string", "maxLength": 120000},
-                "estimated_reading_minutes": {"type": "integer"},
-            },
+        "schema_version": {
+            "type": "string",
+            "enum": ["reviss.study_pack_section.v1"],
         },
+        "summary_content": {"type": "string", "maxLength": 120000},
         "keywords": {
             "type": "array",
-            "maxItems": 80,
+            "maxItems": 40,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
@@ -260,9 +408,19 @@ STUDY_PACK_SCHEMA: dict[str, Any] = {
                 },
             },
         },
+    },
+}
+
+
+STUDY_STRATEGIES_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["schema_version", "strategies"],
+    "properties": {
+        "schema_version": {"type": "string", "enum": ["reviss.study_strategies.v1"]},
         "strategies": {
             "type": "array",
-            "maxItems": 30,
+            "maxItems": 8,
             "items": {
                 "type": "object",
                 "additionalProperties": False,

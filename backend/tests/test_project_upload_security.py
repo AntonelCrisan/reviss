@@ -31,7 +31,7 @@ from app.services.projects import (
     _quiz_mistake_flashcard_back,
     _safe_filename,
     _single_quiz_output_token_budget,
-    _study_pack_output_token_budget,
+    _study_pack_part_output_token_budget,
     _validate_flashcard_image_signature,
     _validate_generated_payload,
     _validate_project_file_signature,
@@ -329,8 +329,13 @@ def test_project_chat_prompt_is_course_scoped_and_compact(tmp_path) -> None:
 
 
 def test_openai_output_budgets_scale_with_requested_content() -> None:
-    assert _study_pack_output_token_budget(20) < _study_pack_output_token_budget(60)
-    assert _study_pack_output_token_budget(120) == 18_000
+    assert _study_pack_part_output_token_budget(
+        16_000, 4
+    ) < _study_pack_part_output_token_budget(16_000, 12)
+    assert _study_pack_part_output_token_budget(
+        8_000, 4
+    ) < _study_pack_part_output_token_budget(24_000, 4)
+    assert _study_pack_part_output_token_budget(1_000_000, 140) == 16_000
     assert _single_quiz_output_token_budget(5) < _single_quiz_output_token_budget(20)
     # The question count is clamped, so an absurd request cannot inflate the
     # budget past what 50 questions need.

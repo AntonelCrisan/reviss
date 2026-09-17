@@ -235,6 +235,8 @@ class StudyProjectResponse(BaseModel):
     flashcard_count: int = 0
     quiz_count: int = 0
     strategy_count: int = 0
+    # The pack is ready but its strategies are still being written.
+    strategies_pending: bool = False
     summary_highlight_count: int = 0
     markdown_download_url: str | None = None
     prompt_download_url: str | None = None

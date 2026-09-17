@@ -190,6 +190,11 @@ class StudyProject(Base):
         DateTime(timezone=True),
         nullable=True,
     )
+    # Set when the study pack was saved before its strategies finished.
+    strategies_requested_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     archive: Mapped[StudyProjectArchive | None] = relationship(
         back_populates="project",
         cascade="all, delete-orphan",

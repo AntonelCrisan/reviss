@@ -1,5 +1,7 @@
+import json
 import logging
 import uuid
+from collections.abc import AsyncIterator
 from typing import Annotated
 
 from fastapi import (
@@ -12,11 +14,12 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from app.api.dependencies import AppSettings, CurrentUser, DbSession
 from app.api.security import protect_state_changing_request
+from app.core.i18n import translate_message
 from app.core.rate_limit import _memory_rate_limit_buckets, consume_rate_limit
 from app.schemas.projects import (
     AccountWipeResponse,
@@ -549,7 +552,10 @@ async def cancel_project_generation(
             detail="Proiectul nu a fost gasit.",
         ) from exc
 
-    cancel_generation_task(project_id)
+    # A cancelled quiz leaves the project ready; only a cancelled pack fails it.
+    cancel_generation_task(
+        project_id, job_type="quiz_pack" if project.status == "ready" else None
+    )
     return service.to_response(project)
 
 
@@ -645,6 +651,68 @@ async def chat_with_project_ai(
         ) from exc
 
     return StudyProjectChatResponse(answer=answer)
+
+
+@router.post("/{project_id}/ai/chat/stream")
+async def stream_chat_with_project_ai(
+    project_id: uuid.UUID,
+    payload: StudyProjectChatRequest,
+    current_user: CurrentUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> StreamingResponse:
+    """The chat answer as newline-delimited JSON events, sent as it is written.
+
+    Every check that can refuse the request runs first, so those still come
+    back as ordinary HTTP errors. Events: {"type": "delta", "text": ...},
+    then {"type": "done"} or {"type": "error", "message": ...}.
+    """
+    await _enforce_ai_rate_limit(current_user)
+    service = _service(session, settings)
+    try:
+        prepared = await service.prepare_project_chat_stream(
+            user=current_user,
+            project_id=project_id,
+            message=payload.message,
+            history=[
+                {"role": item.role, "text": item.text} for item in payload.history
+            ],
+            conversation_summary=payload.conversation_summary,
+        )
+    except PlanLimitError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": exc.code, "message": str(exc)},
+        ) from exc
+    except ProjectNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Proiectul nu a fost gasit.",
+        ) from exc
+    except ProjectValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    async def events() -> AsyncIterator[str]:
+        try:
+            async for delta in service.stream_project_chat(
+                user=current_user, prepared=prepared
+            ):
+                yield json.dumps({"type": "delta", "text": delta}) + "\n"
+        except OpenAIGenerationError:
+            message = translate_message("Raspunsul nu a putut fi generat momentan.")
+            yield json.dumps({"type": "error", "message": message}) + "\n"
+            return
+        yield json.dumps({"type": "done"}) + "\n"
+
+    return StreamingResponse(
+        events(),
+        media_type="application/x-ndjson",
+        # Proxies must pass each event on as soon as it is written.
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post(
