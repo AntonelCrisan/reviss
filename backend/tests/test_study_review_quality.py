@@ -806,6 +806,92 @@ def test_quiz_batches_run_in_parallel_and_join_in_order(quiz_generation_context)
     context.session.commit.assert_awaited_once()
 
 
+def test_registry_sample_rotates_between_quizzes_and_reaches_the_end():
+    from app.services import projects as service_module
+
+    summary = "\n\n".join(
+        f"## Capitolul {chapter}\n\n" + f"Capitolul {chapter}: " + "text " * 400
+        for chapter in range(1, 101)
+    )
+    lines = service_module._quiz_registry_lines(summary)
+    sizes = {block["index"]: len(line) + 1 for block, line in lines}
+    samples = [
+        service_module._sample_quiz_registry(
+            lines,
+            service_module.QUIZ_PROMPT_SUMMARY_CHARS,
+            (rotation * 0.6180339887) % 1.0,
+        )
+        for rotation in range(5)
+    ]
+
+    for sample in samples:
+        assert sum(sizes[index] for index in sample) <= (
+            service_module.QUIZ_PROMPT_SUMMARY_CHARS
+        )
+        # Spread to the end of the course, not cut at the budget.
+        assert max(sample) >= lines[-4][0]["index"]
+    # Successive quizzes see different blocks, and together the whole course.
+    assert len(samples[0] & samples[1]) < len(samples[0]) / 2
+    assert set().union(*samples) == set(sizes)
+
+
+def test_hard_quiz_batches_reason_more_and_report_cached_tokens(
+    quiz_generation_context,
+):
+    import asyncio
+    from unittest.mock import AsyncMock, Mock
+
+    context = quiz_generation_context
+    context.project.summary.content = LONG_SUMMARY
+    context.service._build_single_quiz_prompt = Mock(
+        side_effect=lambda **kwargs: f"lot {kwargs['batch'].number}"
+    )
+    blocks = body_blocks(LONG_SUMMARY)
+    batches = _plan_quiz_batches(
+        summary=LONG_SUMMARY,
+        complexity="exam",
+        question_count=8,
+        question_types=["single_choice"],
+    )
+    async def responder(**kwargs):
+        number = int(kwargs["prompt"].split()[1])
+        await asyncio.sleep(0.01)
+        zone = [b for b in blocks if b["index"] in batches[number - 1].zone_indices]
+        return SimpleNamespace(
+            payload={
+                "schema_version": "reviss.quiz.v2",
+                "quiz": {
+                    "title": f"Quiz {number}",
+                    "description": "Descriere.",
+                    "complexity": "exam",
+                    "questions": [
+                        choice_question(zone[index], f"{number}.{index}")
+                        for index in range(4)
+                    ],
+                },
+            },
+            input_tokens=1000,
+            output_tokens=200,
+            cached_input_tokens=0 if number == 1 else 800,
+        )
+
+    context.generator.generate_json = AsyncMock(side_effect=responder)
+    asyncio.run(
+        context.service.generate_single_quiz(
+            user=context.user,
+            project_id=context.project.id,
+            complexity="exam",
+            question_count=8,
+            question_types=["single_choice"],
+        )
+    )
+
+    calls = context.generator.generate_json.await_args_list
+    assert all(call.kwargs["reasoning_effort"] == "medium" for call in calls)
+    charge = context.credits.charge.await_args.kwargs
+    assert (charge["input_tokens"], charge["cached_tokens"]) == (2000, 800)
+
+
 def test_batch_repeating_another_batch_is_regenerated_alone(
     quiz_generation_context,
 ):

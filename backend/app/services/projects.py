@@ -1738,29 +1738,37 @@ def _quiz_registry_lines(summary: str) -> list[tuple[dict[str, Any], str]]:
 
 
 def _sample_quiz_registry(
-    lines: list[tuple[dict[str, Any], str]], budget: int
+    lines: list[tuple[dict[str, Any], str]], budget: int, phase: float = 0.0
 ) -> set[int]:
     """Blocks that fit the budget, spread evenly over the lines given.
 
     Cutting at the budget used to drop the end of a long summary, so the last
-    chapters could never be asked about.
+    chapters could never be asked about. `phase` (0 to 1) shifts which blocks
+    are picked, so successive quizzes do not all see the same sample.
     """
-    total = sum(len(line) + 1 for _, line in lines)
+    sizes = [len(line) + 1 for _, line in lines]
+    total = sum(sizes)
     if total <= budget:
         return {block["index"] for block, _ in lines}
-    ratio = budget / total
-    # Starts with a full credit, so the sample opens on the first block.
-    allowance = float(len(lines[0][1]) + 1) if lines else 0.0
-    used = 0
-    chosen: set[int] = set()
-    for block, line in lines:
-        size = len(line) + 1
-        if allowance >= size and used + size <= budget:
-            chosen.add(block["index"])
-            allowance -= size
-            used += size
-        allowance += size * ratio
-    return chosen
+    # Every n-th block whatever its length: a pick weighted by length kept
+    # choosing the same short blocks, so rotating the phase changed little.
+    # The rate shrinks until the picks fit, so the end is never cut off.
+    rate = budget / total
+    while True:
+        # One step short of a pick at phase 0, so that sample opens on the
+        # first block; other phases shift the whole grid.
+        position = (1.0 - rate + phase) % 1.0
+        chosen: set[int] = set()
+        used = 0
+        for (block, _), size in zip(lines, sizes, strict=True):
+            position += rate
+            if position >= 1.0:
+                position -= 1.0
+                chosen.add(block["index"])
+                used += size
+        if used <= budget:
+            return chosen
+        rate *= budget / used * 0.99
 
 
 def _quiz_summary_context(summary: str, indices: set[int] | None = None) -> str:
@@ -1793,6 +1801,7 @@ def _plan_quiz_batches(
     complexity: str,
     question_count: int,
     question_types: list[str],
+    rotation: int = 0,
 ) -> list[QuizBatch]:
     """Split a quiz into batches written at the same time.
 
@@ -1830,19 +1839,26 @@ def _plan_quiz_batches(
         len(zone) < QUIZ_BATCH_MIN_ZONE_BLOCKS for zone in zones
     )
 
+    # Golden-ratio steps: successive quizzes sample different blocks when a
+    # zone or the rest of the course does not fit whole.
+    phase = (rotation * 0.6180339887) % 1.0
+
     def registry(zone: list[tuple[dict[str, Any], str]]) -> set[int] | None:
         if batch_count == 1:
             return None
-        chosen = _sample_quiz_registry(zone, QUIZ_PROMPT_SUMMARY_CHARS)
+        chosen = _sample_quiz_registry(zone, QUIZ_PROMPT_SUMMARY_CHARS, phase)
         if not wide:
             return chosen
-        # The zone first, then the rest of the summary in what budget is left,
-        # so hard questions can connect the zone to other chapters.
+        # The whole zone first, then the rest of the summary in what budget is
+        # left, so hard questions can connect the zone to other chapters. A
+        # shared registry for every batch was tried for the prompt cache: the
+        # cache never hit, and with less of its zone visible each batch
+        # reasoned twice as long (exam quiz 49s -> 95s).
         used = sum(len(line) + 1 for block, line in zone if block["index"] in chosen)
         zone_indices = {block["index"] for block, _ in zone}
         others = [entry for entry in lines if entry[0]["index"] not in zone_indices]
         return chosen | _sample_quiz_registry(
-            others, max(0, QUIZ_PROMPT_SUMMARY_CHARS - used)
+            others, max(0, QUIZ_PROMPT_SUMMARY_CHARS - used), phase
         )
 
     return [
@@ -3755,6 +3771,7 @@ class StudyProjectService:
                 complexity=complexity,
                 question_count=question_count,
                 question_types=question_types,
+                rotation=len(project.quizzes),
             )
             prompts = [
                 self._build_single_quiz_prompt(
@@ -3814,7 +3831,7 @@ class StudyProjectService:
             )
             # Every call appends here, failed attempts included, so the job
             # and the charge account for everything that was paid for.
-            usage: list[tuple[int, int]] = []
+            usage: list[tuple[int, int, int]] = []
 
             def batch_call(
                 batch: QuizBatch,
@@ -3861,8 +3878,9 @@ class StudyProjectService:
                 if len(batch_payloads) == 1
                 else _merge_quiz_batches(batch_payloads, complexity)
             )
-            total_input_tokens = sum(tokens for tokens, _ in usage)
-            total_output_tokens = sum(tokens for _, tokens in usage)
+            total_input_tokens = sum(tokens for tokens, _, _ in usage)
+            total_output_tokens = sum(tokens for _, tokens, _ in usage)
+            total_cached_tokens = sum(tokens for _, _, tokens in usage)
             await self._ensure_generation_can_continue(
                 project, expected_status="generating_quizzes"
             )
@@ -3905,13 +3923,14 @@ class StudyProjectService:
             )
             await self.session.commit()
             logger.info(
-                "Quiz generation completed for project %s in %.1fs: quizzes=%s, batches=%s, calls=%s, input_tokens=%s, output_tokens=%s.",
+                "Quiz generation completed for project %s in %.1fs: quizzes=%s, batches=%s, calls=%s, input_tokens=%s, cached_input_tokens=%s, output_tokens=%s.",
                 project.id,
                 time.perf_counter() - started_at,
                 len(project.quizzes),
                 len(batches),
                 len(usage),
                 total_input_tokens,
+                total_cached_tokens,
                 total_output_tokens,
             )
             await self._notify_project_ready(
@@ -3925,6 +3944,7 @@ class StudyProjectService:
                 model=self.settings.openai_quiz_model,
                 input_tokens=total_input_tokens,
                 output_tokens=total_output_tokens,
+                cached_tokens=total_cached_tokens,
             )
             return await self.get_project(user, project.id)
         except ProjectGenerationCancelledError:
@@ -3951,7 +3971,7 @@ class StudyProjectService:
         batch_count: int,
         complexity: str,
         reasoning_effort: str,
-        usage: list[tuple[int, int]],
+        usage: list[tuple[int, int, int]],
         rejected: tuple[str, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """One batch of a quiz, retried on its own.
@@ -3994,7 +4014,13 @@ class StudyProjectService:
                     timeout_seconds=self.settings.openai_quiz_request_timeout_seconds,
                     prompt_cache_key=f"reviss:quiz_pack:{project.id}",
                 )
-                usage.append((result.input_tokens, result.output_tokens))
+                usage.append(
+                    (
+                        result.input_tokens,
+                        result.output_tokens,
+                        getattr(result, "cached_input_tokens", 0),
+                    )
+                )
                 previous_payload = result.payload
                 _repair_quiz_review_references(result.payload, summary)
                 _validate_generated_single_quiz(
@@ -4007,7 +4033,7 @@ class StudyProjectService:
                 return result.payload
             except (ProjectValidationError, OpenAIOutputError) as exc:
                 if isinstance(exc, OpenAIOutputError):
-                    usage.append((exc.input_tokens, exc.output_tokens))
+                    usage.append((exc.input_tokens, exc.output_tokens, 0))
                     if exc.reason == "max_output_tokens":
                         max_output_tokens = min(48_000, max_output_tokens * 3 // 2)
                 if attempt == attempts - 1:
