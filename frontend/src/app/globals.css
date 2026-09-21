@@ -2439,7 +2439,8 @@ body:has([aria-modal="true"]) [data-global-bell] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 9rem;
+  /* Narrows with the screen so a signpost never runs off the board. */
+  width: min(12rem, 46vw);
   /* Anchored by its pin, which sits on the centre line of the road. */
   transform: translate(-50%, -1.65rem);
   cursor: pointer;
@@ -2527,6 +2528,73 @@ body:has([aria-modal="true"]) [data-global-bell] {
   color: var(--theme-on-action);
 }
 
+/*
+ * Phone layout: the road descends and each signpost sits beside its pin,
+ * taking the width the road leaves it, instead of under a pin where it would
+ * be a column two words wide.
+ */
+.smap-stop[data-layout="side"] {
+  width: auto;
+  max-width: calc(100% - 5.5rem);
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  /* Anchored by its pin's centre, which sits on the road. */
+  transform: translate(-1.65rem, -50%);
+  text-align: left;
+}
+
+.smap-board[data-static="false"] .smap-stop[data-layout="side"] {
+  animation-name: smap-stand-side;
+}
+
+@keyframes smap-stand-side {
+  from {
+    opacity: 0;
+    transform: translate(-1.65rem, -50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-1.65rem, -50%) scale(1);
+  }
+}
+
+.smap-stop[data-layout="side"] .smap-pin {
+  flex-shrink: 0;
+}
+
+/* The pin lifts straight off the tarmac in rows; beside it there is nothing
+   to lift over, so it only grows. */
+.smap-stop[data-layout="side"][data-state="active"] .smap-pin,
+.smap-stop[data-layout="side"]:hover .smap-pin,
+.smap-stop[data-layout="side"]:focus-visible .smap-pin {
+  transform: translateY(0) scale(1.08);
+}
+
+.smap-stop[data-layout="side"][data-state="active"] .smap-pin::after,
+.smap-stop[data-layout="side"]:hover .smap-pin::after,
+.smap-stop[data-layout="side"]:focus-visible .smap-pin::after {
+  opacity: 0;
+}
+
+.smap-stop[data-layout="side"] .smap-stop-label {
+  margin-top: 0;
+  max-width: none;
+  text-align: left;
+}
+
+/* A narrower road, so the descending route leaves room for the signposts. */
+@media (max-width: 34.9375rem) {
+  .smap-kerb {
+    stroke-width: 30;
+  }
+
+  .smap-tarmac,
+  .smap-driven {
+    stroke-width: 24;
+  }
+}
+
 /* The live milestone stands up off the road. */
 .smap-stop[data-state="active"] {
   z-index: 2;
@@ -2590,15 +2658,12 @@ body:has([aria-modal="true"]) [data-global-bell] {
   box-shadow: 0 0 0 0.25rem var(--theme-selection);
 }
 
-/* Two lines is a signpost; more would be the wall of text this replaces. */
+/* A signpost reads in full: a strategy cut off mid-title is unusable, and the
+   row spacing is sized for the three lines the longest titles need. */
 .smap-stop-label {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
   margin-top: 0.5rem;
-  max-width: 8.5rem;
+  max-width: min(11rem, 44vw);
+  text-wrap: balance;
   color: var(--theme-muted);
   font-size: 0.6875rem;
   font-weight: 700;

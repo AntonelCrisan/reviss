@@ -39,6 +39,7 @@ from app.schemas.projects import (
     StudyProjectQuizMistakeFlashcardCreate,
     StudyProjectRenameRequest,
     StudyProjectResponse,
+    StudyProjectStrategyCompletionUpdate,
     StudyProjectSummaryHighlightColorUpdate,
     StudyProjectSummaryHighlightCreate,
     StudyProjectSummaryNoteCreate,
@@ -1152,6 +1153,43 @@ async def update_flashcard_review(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Flashcardul nu a fost gasit.",
+        ) from exc
+
+    return service.to_response(project)
+
+
+@router.patch(
+    "/{project_id}/strategies/{strategy_id}",
+    response_model=StudyProjectResponse,
+)
+async def update_strategy_completion(
+    project_id: uuid.UUID,
+    strategy_id: uuid.UUID,
+    payload: StudyProjectStrategyCompletionUpdate,
+    current_user: CurrentUser,
+    session: DbSession,
+    settings: AppSettings,
+) -> StudyProjectResponse:
+    await _enforce_project_rate_limit(current_user, "study-actions")
+    service = _service(session, settings)
+    try:
+        project = await service.set_strategy_completed(
+            user=current_user,
+            project_id=project_id,
+            strategy_id=strategy_id,
+            completed=payload.completed,
+        )
+    except ProjectNotFoundError as exc:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Strategia nu a fost gasita.",
+        ) from exc
+    except ProjectValidationError as exc:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
         ) from exc
 
     return service.to_response(project)

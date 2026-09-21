@@ -194,3 +194,54 @@ def test_stream_yields_text_as_written_and_records_usage():
 def test_stream_failures_raise_after_the_text_already_sent(event):
     with pytest.raises(OpenAIGenerationError):
         stream([delta("Început "), event])
+
+
+def peak_parallel_calls(limit, bulk):
+    """How many calls the client lets through at once, given the slot limit."""
+    import app.services.openai_generation as module
+
+    module._bulk_slots = None
+    state = {"in_flight": 0, "peak": 0}
+
+    async def create(**_kwargs):
+        state["in_flight"] += 1
+        state["peak"] = max(state["peak"], state["in_flight"])
+        await asyncio.sleep(0.02)
+        state["in_flight"] -= 1
+        return response()
+
+    generator = OpenAIStudyGenerator.__new__(OpenAIStudyGenerator)
+    generator._settings = SimpleNamespace(
+        openai_request_timeout_seconds=60,
+        openai_max_parallel_generations=limit,
+    )
+    generator._client = SimpleNamespace(responses=SimpleNamespace(create=create))
+
+    async def call():
+        return await generator.generate_json(
+            model="test-model",
+            instructions="Return JSON",
+            prompt="Course material",
+            schema_name="test_schema",
+            schema={"type": "object"},
+            max_output_tokens=4000,
+            reasoning_effort="low",
+            user_id="test-user",
+            project_id="test-project",
+            job_type="study_pack_part_1",
+            bulk=bulk,
+        )
+
+    async def both():
+        await asyncio.gather(call(), call())
+
+    asyncio.run(both())
+    module._bulk_slots = None
+    return state["peak"]
+
+
+def test_bulk_calls_queue_on_the_shared_slots_while_chat_never_waits():
+    # Generation queues on the shared slots...
+    assert peak_parallel_calls(limit=1, bulk=True) == 1
+    # ...but a chat answer or an explanation never waits behind it.
+    assert peak_parallel_calls(limit=1, bulk=False) == 2

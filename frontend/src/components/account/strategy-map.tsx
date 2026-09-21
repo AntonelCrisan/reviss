@@ -21,25 +21,41 @@ import { useScrollLock } from "@/components/use-scroll-lock";
  * clicked.
  */
 export type StrategyMapStep = {
+  /** Null for the placeholder step shown before the strategies exist. */
+  id: string | null;
   title: string;
   description: string;
+  completed: boolean;
 };
 
 /** How long one milestone stays live while the route drives itself. */
 const STEP_MS = 6500;
 
 /** Road geometry, in CSS pixels - the board is measured, never guessed. */
-const ROW_GAP = 138;
-const PAD_X = 88;
-const PAD_Y = 74;
+/** Distance between two rows of the serpentine. */
+const ROW_GAP = 196;
+const PAD_X = 100;
+/** Room above the first row: the live pin lifts off the road. */
+const PAD_TOP = 88;
+/** How far a milestone sits above or below the line of its row. */
+const WAVE = 26;
+/** Room under the last row for a three-line signpost. */
+const LABEL_SPACE = 92;
 /** How far a U-turn swings past the end of its row. */
-const TURN = 56;
+const TURN = 64;
 /** Lead-in before the first milestone and run-out after the last. */
 const LEAD = 28;
 /** Narrowest a milestone slot may get before the road folds to another row. */
-const MIN_SLOT = 210;
+const MIN_SLOT = 185;
 /** Widest one gets before the road is centred rather than stretched thin. */
 const MAX_SLOT = 300;
+/** Under this width a signpost cannot sit under its pin and still be read. */
+const SIDE_WIDTH = 560;
+/** Descending layout: the road runs down the left, signposts beside it. */
+const SIDE_X = 52;
+const SIDE_WAVE = 16;
+const SIDE_GAP = 104;
+const SIDE_PAD_Y = 44;
 
 type Point = { x: number; y: number };
 
@@ -47,21 +63,64 @@ type RoadLayout = {
   height: number;
   path: string;
   points: Point[];
+  /** "row" folds the road into rows; "side" runs it down the page. */
+  layout: "row" | "side";
 };
 
 /**
- * Straight runs joined by rounded U-turns: the shape of every roadmap diagram,
- * and the one layout where a milestone can sit exactly on the tarmac at any
- * width. How many milestones share a row follows the measured width, so the
- * road folds into more rows on a narrow screen instead of cramming.
+ * The phone layout: one column of milestones with the road snaking down past
+ * them. Rows of milestones do not fit a phone - the signpost under a pin has
+ * nowhere to go - so on a narrow screen the route descends instead, and each
+ * signpost takes the width left beside its pin.
+ */
+function buildSideRoad(count: number): RoadLayout {
+  const round = (value: number) => Math.round(value * 10) / 10;
+  const points = Array.from({ length: count }, (_, index) => ({
+    x: SIDE_X + (index % 2 === 0 ? -SIDE_WAVE : SIDE_WAVE),
+    y: SIDE_PAD_Y + index * SIDE_GAP,
+  }));
+  const first = points[0];
+  const last = points[count - 1];
+  let path = `M ${round(first.x)} ${round(first.y - LEAD)}`;
+
+  for (let index = 1; index < count; index += 1) {
+    const from = points[index - 1];
+    const to = points[index];
+    const reach = (to.y - from.y) * 0.45;
+    path +=
+      ` C ${round(from.x)} ${round(from.y + reach)},` +
+      ` ${round(to.x)} ${round(to.y - reach)},` +
+      ` ${round(to.x)} ${round(to.y)}`;
+  }
+
+  path += ` L ${round(last.x)} ${round(last.y + LEAD)}`;
+
+  return {
+    height: SIDE_PAD_Y * 2 + (count - 1) * SIDE_GAP,
+    path,
+    points,
+    layout: "side",
+  };
+}
+
+/**
+ * A serpentine: the road swings above and below the line of its row between
+ * one milestone and the next, and turns back on itself at the end of a row.
+ * Straight runs read as a timeline; the bends read as a route you drive. Rows
+ * and slots follow the measured width, so on a narrow screen the road folds
+ * into more rows instead of cramming the signposts together.
  */
 function buildRoad(count: number, width: number): RoadLayout {
+  if (width < SIDE_WIDTH && count > 1) {
+    return buildSideRoad(count);
+  }
+
   const round = (value: number) => Math.round(value * 10) / 10;
   const available = Math.max(MIN_SLOT, width - PAD_X * 2);
   // Rows come from how many milestones the width can hold, but the row size is
   // then evened out over them: eight steps five-wide would leave a lone stop
   // hanging off the second row, where four and four reads as a route.
-  const capacity = Math.max(2, Math.min(5, Math.floor(available / MIN_SLOT)));
+  const capacity = Math.max(2, Math.min(4, Math.floor(available / MIN_SLOT)));
   const rows = Math.ceil(count / capacity);
   const perRow = Math.max(2, Math.ceil(count / rows));
   // Past a point, more width should leave the road centred rather than pull the
@@ -69,10 +128,14 @@ function buildRoad(count: number, width: number): RoadLayout {
   const span = Math.min(available, Math.max(MIN_SLOT, (perRow - 1) * MAX_SLOT));
   const left = (width - span) / 2;
   const right = left + span;
+  const rowOf = (index: number) => Math.floor(index / perRow);
 
   const points = Array.from({ length: count }, (_, index) => {
-    const row = Math.floor(index / perRow);
+    const row = rowOf(index);
     const progress = (index % perRow) / (perRow - 1);
+    // The wave carries on across the turns, so the road never repeats the
+    // same bend twice in a row.
+    const lift = index % 2 === 0 ? -WAVE : WAVE;
 
     return {
       x:
@@ -81,35 +144,50 @@ function buildRoad(count: number, width: number): RoadLayout {
           : row % 2 === 0
             ? left + progress * span
             : right - progress * span,
-      y: PAD_Y + row * ROW_GAP,
+      y: PAD_TOP + row * ROW_GAP + (count === 1 ? 0 : lift),
     };
   });
 
-  let path = `M ${round(points[0].x - LEAD)} ${PAD_Y}`;
+  const first = points[0];
+  const last = points[count - 1];
+  const lastDirection = rowOf(count - 1) % 2 === 0 ? 1 : -1;
+  let path = `M ${round(first.x - LEAD)} ${round(first.y)}`;
 
-  for (let row = 0; row < rows; row += 1) {
-    const y = PAD_Y + row * ROW_GAP;
-    const forward = row % 2 === 0;
-    const direction = forward ? 1 : -1;
-    const isLastRow = row === rows - 1;
-    const lastInRow = Math.min(count, (row + 1) * perRow) - 1;
-    const runEnd = isLastRow
-      ? points[lastInRow].x + direction * LEAD
-      : forward
-        ? right
-        : left;
+  for (let index = 1; index < count; index += 1) {
+    const from = points[index - 1];
+    const to = points[index];
 
-    path += ` L ${round(runEnd)} ${y}`;
-
-    if (!isLastRow) {
-      // The turn bulges outward into the side padding and drops a full row.
-      const bulge = round(runEnd + direction * TURN);
-      path += ` C ${bulge} ${y}, ${bulge} ${y + ROW_GAP}, ${round(runEnd)} ${y + ROW_GAP}`;
+    if (rowOf(index) === rowOf(index - 1)) {
+      // An S between two milestones: it leaves flat and arrives flat, so the
+      // pins stand on level tarmac however deep the swing between them is.
+      const reach = (to.x - from.x) * 0.45;
+      path +=
+        ` C ${round(from.x + reach)} ${round(from.y)},` +
+        ` ${round(to.x - reach)} ${round(to.y)},` +
+        ` ${round(to.x)} ${round(to.y)}`;
+      continue;
     }
+
+    // End of a row: the turn bulges out past the last milestone and comes
+    // back into the row below.
+    const direction = rowOf(index - 1) % 2 === 0 ? 1 : -1;
+    const bulge = TURN + LEAD;
+    path +=
+      ` C ${round(from.x + direction * bulge)} ${round(from.y)},` +
+      ` ${round(to.x + direction * bulge)} ${round(to.y)},` +
+      ` ${round(to.x)} ${round(to.y)}`;
   }
 
-  return { height: PAD_Y * 2 + (rows - 1) * ROW_GAP, path, points };
+  path += ` L ${round(last.x + lastDirection * LEAD)} ${round(last.y)}`;
+
+  return {
+    height: PAD_TOP + (rows - 1) * ROW_GAP + WAVE + LABEL_SPACE,
+    path,
+    points,
+    layout: "row",
+  };
 }
+
 
 type StrategyField = {
   label: string;
@@ -212,12 +290,19 @@ function CheckIcon() {
 function StrategyDrawer({
   steps,
   index,
+  doneCount,
+  isBusy,
   onGo,
+  onToggle,
   onClose,
 }: {
   steps: StrategyMapStep[];
   index: number;
+  /** How many steps at the start of the route are done. */
+  doneCount: number;
+  isBusy: boolean;
   onGo: (next: number) => void;
+  onToggle: (step: StrategyMapStep, completed: boolean) => void;
   onClose: () => void;
 }) {
   const t = useTranslations("dashboard");
@@ -235,6 +320,14 @@ function StrategyDrawer({
 
   const step = steps[shown];
   const total = steps.length;
+  // The route is walked in order: only the next step can be done, and only
+  // the last one done can be undone, so no gap is left behind.
+  const isNext = shown === doneCount;
+  const isLastDone = shown === doneCount - 1;
+  const canToggle = step?.completed ? isLastDone : isNext;
+  const lockedHint = step?.completed
+    ? t("anuleazaIntaiPasiiUrmatori")
+    : t("faiIntaiPasiiAnteriori");
 
   useEffect(() => {
     if (index < 0) {
@@ -282,9 +375,17 @@ function StrategyDrawer({
       >
         <header className="shrink-0 border-b border-subtle p-6">
           <div className="flex items-start justify-between gap-4">
-            <span className="inline-flex rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-success">
-              {t("pasulValueDinLength", { value: shown + 1, length: total })}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-success">
+                {t("pasulValueDinLength", { value: shown + 1, length: total })}
+              </span>
+              {step.completed ? (
+                <span className="inline-flex items-center gap-1 rounded-md border border-success-border bg-success px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-on-action">
+                  <CheckIcon />
+                  {t("pasFacut")}
+                </span>
+              ) : null}
+            </div>
             <button
               type="button"
               aria-label={t("inchide")}
@@ -324,6 +425,29 @@ function StrategyDrawer({
           )}
         </div>
 
+        {step.id ? (
+          <div className="shrink-0 border-t border-subtle p-4">
+            <button
+              type="button"
+              disabled={!canToggle || isBusy}
+              onClick={() => onToggle(step, !step.completed)}
+              className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                step.completed
+                  ? "border-subtle bg-app text-content hover:bg-surface-hover"
+                  : "border-action bg-action text-on-action hover:opacity-90"
+              }`}
+            >
+              <CheckIcon />
+              {step.completed ? t("anuleazaPasul") : t("amFacutPasul")}
+            </button>
+            {canToggle ? null : (
+              <p className="mt-2 text-center text-xs font-semibold text-muted">
+                {lockedHint}
+              </p>
+            )}
+          </div>
+        ) : null}
+
         {total > 1 ? (
           <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-subtle p-4">
             <button
@@ -349,11 +473,23 @@ function StrategyDrawer({
   );
 }
 
-export function StrategyMap({ steps }: { steps: StrategyMapStep[] }) {
+export function StrategyMap({
+  steps,
+  onToggle,
+}: {
+  steps: StrategyMapStep[];
+  onToggle: (strategyId: string, completed: boolean) => Promise<void>;
+}) {
   const t = useTranslations("dashboard");
   const boardRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
-  const [active, setActive] = useState(0);
+  // Steps are done from the start of the route, so their count is the
+  // progress along it.
+  const doneCount = steps.filter((step) => step.completed).length;
+  const [active, setActive] = useState(() =>
+    Math.min(doneCount, Math.max(steps.length - 1, 0)),
+  );
+  const [isSaving, setIsSaving] = useState(false);
   const [openIndex, setOpenIndex] = useState(-1);
   // Off until the board is on screen and motion is allowed. Until then the road
   // renders complete and still, which is also what the server sends.
@@ -430,6 +566,22 @@ export function StrategyMap({ steps }: { steps: StrategyMapStep[] }) {
     setOpenIndex(index);
   }, []);
 
+  const toggle = useCallback(
+    async (step: StrategyMapStep, completed: boolean) => {
+      if (!step.id || isSaving) {
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        await onToggle(step.id, completed);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [isSaving, onToggle],
+  );
+
   if (total === 0) {
     return null;
   }
@@ -460,21 +612,29 @@ export function StrategyMap({ steps }: { steps: StrategyMapStep[] }) {
                   pathLength={1}
                   // pathLength is normalised to 1, so the offset is simply the
                   // share of the road still ahead of the live milestone.
-                  style={{ strokeDashoffset: 1 - active / (total - 1) }}
+                  style={{
+                    strokeDashoffset:
+                      1 - Math.max(active, doneCount - 1) / (total - 1),
+                  }}
                 />
               ) : null}
               <path className="smap-markings" d={road.path} />
             </svg>
 
             {road.points.map((point, index) => {
-              const state =
-                index === active ? "active" : index < active ? "done" : "idle";
+              // A done step keeps its check whatever the animation is doing.
+              const state = steps[index]?.completed
+                ? "done"
+                : index === active
+                  ? "active"
+                  : "idle";
 
               return (
                 <button
                   key={steps[index]?.title ?? index}
                   type="button"
                   data-state={state}
+                  data-layout={road.layout}
                   className="smap-stop"
                   style={
                     {
@@ -513,7 +673,10 @@ export function StrategyMap({ steps }: { steps: StrategyMapStep[] }) {
       <StrategyDrawer
         steps={steps}
         index={openIndex}
+        doneCount={doneCount}
+        isBusy={isSaving}
         onGo={open}
+        onToggle={toggle}
         onClose={() => setOpenIndex(-1)}
       />
     </>

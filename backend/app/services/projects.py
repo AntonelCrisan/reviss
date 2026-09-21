@@ -100,6 +100,16 @@ logger = logging.getLogger("revizzio.projects")
 
 GENERATION_CANCELLED_MESSAGE = "Generarea proiectului a fost anulata."
 QUIZ_GENERATION_CANCELLED_MESSAGE = "Generarea quizului a fost anulata."
+GENERATION_INTERRUPTED_MESSAGE = (
+    "Generarea a fost intrerupta de o repornire a serverului. Incearca din nou."
+)
+# A generation older than this is not running any more: the longest real one
+# measured is around two minutes, and the provider calls time out well before
+# it. The grace period is what lets a new instance start while the old one is
+# still finishing a generation, as it does during a rolling deploy.
+STALE_GENERATION_AFTER = timedelta(minutes=20)
+# How often a running instance looks for generations its own process lost.
+STALE_GENERATION_SWEEP_SECONDS = 300
 SUPPORTED_GENERATION_LANGUAGES = {"ro", "en", "fr"}
 GENERATION_LANGUAGE_LABELS = {
     "ro": "Romanian with natural diacritics",
@@ -3697,6 +3707,7 @@ class StudyProjectService:
                     # Same key for every part and retry: they start with the
                     # same rules and outline, so the cached prefix is reused.
                     prompt_cache_key=f"reviss:study_pack:{project.id}",
+                    bulk=True,
                 )
                 usage.append((result.input_tokens, result.output_tokens))
                 return validate(result.payload)
@@ -3760,7 +3771,13 @@ class StudyProjectService:
             markdown = self._read_project_markdown(project)
             credits_service = AiCreditsService(self.session)
             window = await _current_billing_window(self.session, user)
-            quiz_tier = await credits_service.determine_tier("quiz", question_count)
+            # High and exam batches carry the whole summary and reason
+            # longer, so they cost about twice a medium quiz of the same size.
+            quiz_tier = await credits_service.determine_tier(
+                "quiz",
+                question_count
+                * (2 if complexity in QUIZ_WIDE_CONTEXT_COMPLEXITIES else 1),
+            )
             credits_needed = await credits_service.ensure_can_consume(
                 user=user, feature="quiz", tier=quiz_tier, window=window
             )
@@ -4013,6 +4030,7 @@ class StudyProjectService:
                     ),
                     timeout_seconds=self.settings.openai_quiz_request_timeout_seconds,
                     prompt_cache_key=f"reviss:quiz_pack:{project.id}",
+                    bulk=True,
                 )
                 usage.append(
                     (
@@ -4679,6 +4697,53 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
             raise ProjectNotFoundError("Flashcardul nu a fost gasit.")
 
         flashcard.review = review
+        await self.session.commit()
+        return await self.get_project(user, project.id)
+
+    async def set_strategy_completed(
+        self,
+        *,
+        user: User,
+        project_id: uuid.UUID,
+        strategy_id: uuid.UUID,
+        completed: bool,
+    ) -> StudyProject:
+        """Mark one step of the study route as done, or undo it.
+
+        The route is walked in order: a step opens only once the ones before
+        it are done, and only the last one done can be undone, so the route
+        never ends up with a gap in the middle.
+        """
+        project = await self.get_project(user, project_id)
+        strategies = sorted(project.strategies, key=lambda item: item.sort_order)
+        position = next(
+            (
+                index
+                for index, item in enumerate(strategies)
+                if item.id == strategy_id
+            ),
+            None,
+        )
+        if position is None:
+            raise ProjectNotFoundError("Strategia nu a fost gasita.")
+
+        strategy = strategies[position]
+        if completed:
+            if any(item.completed_at is None for item in strategies[:position]):
+                raise ProjectValidationError(
+                    "Marcheaza mai intai pasii anteriori ai traseului."
+                )
+            if strategy.completed_at is None:
+                strategy.completed_at = datetime.now(UTC)
+        else:
+            if any(
+                item.completed_at is not None for item in strategies[position + 1 :]
+            ):
+                raise ProjectValidationError(
+                    "Anuleaza mai intai pasii urmatori ai traseului."
+                )
+            strategy.completed_at = None
+
         await self.session.commit()
         return await self.get_project(user, project.id)
 
@@ -6367,6 +6432,100 @@ Quizuri disponibile:
 Intrebarea curenta a studentului:
 \"\"\"{message}\"\"\"
 """.strip()
+
+
+async def fail_interrupted_generations() -> int:
+    """Clear generations that are not running any more, so none stays stuck.
+
+    A generation lives in the memory of the process that started it. When that
+    process goes away mid-run - a deploy, a crash - its project would sit in
+    "se genereaza" forever, because nothing is left to finish or fail it.
+
+    Only generations older than the grace period are touched, so an instance
+    starting up next to one that is still working leaves its work alone.
+    """
+    async with AsyncSessionFactory() as session:
+        now = datetime.now(UTC)
+        cutoff = now - STALE_GENERATION_AFTER
+        stale_jobs = select(StudyProjectGenerationJob.project_id).where(
+            StudyProjectGenerationJob.status.in_(list(ACTIVE_GENERATION_JOB_STATUSES)),
+            func.coalesce(
+                StudyProjectGenerationJob.started_at,
+                StudyProjectGenerationJob.created_at,
+            )
+            < cutoff,
+        )
+        stale_project_ids = list((await session.scalars(stale_jobs)).all())
+        jobs = await session.execute(
+            update(StudyProjectGenerationJob)
+            .where(
+                StudyProjectGenerationJob.status.in_(
+                    list(ACTIVE_GENERATION_JOB_STATUSES)
+                ),
+                func.coalesce(
+                    StudyProjectGenerationJob.started_at,
+                    StudyProjectGenerationJob.created_at,
+                )
+                < cutoff,
+            )
+            .values(
+                status="failed",
+                error_message=GENERATION_INTERRUPTED_MESSAGE,
+                finished_at=now,
+            )
+        )
+        if stale_project_ids:
+            # A cut quiz leaves the project usable; a cut pack leaves it empty.
+            await session.execute(
+                update(StudyProject)
+                .where(
+                    StudyProject.id.in_(stale_project_ids),
+                    StudyProject.status == "generating_quizzes",
+                )
+                .values(status="ready", error_message=None, updated_at=now)
+            )
+            await session.execute(
+                update(StudyProject)
+                .where(
+                    StudyProject.id.in_(stale_project_ids),
+                    StudyProject.status.in_(["processing", "generating_study_pack"]),
+                )
+                .values(
+                    status="failed",
+                    error_message=GENERATION_INTERRUPTED_MESSAGE,
+                    updated_at=now,
+                )
+            )
+        # Strategies that were still on their way are not coming.
+        await session.execute(
+            update(StudyProject)
+            .where(StudyProject.strategies_requested_at < cutoff)
+            .values(strategies_requested_at=None)
+        )
+        await session.commit()
+        return jobs.rowcount or 0
+
+
+async def sweep_interrupted_generations() -> None:
+    """Keep clearing stuck generations while the instance runs.
+
+    The startup pass only sees what was already stale; a generation this
+    process loses later - a killed task, a lost worker - needs the sweep.
+    """
+    while True:
+        await asyncio.sleep(STALE_GENERATION_SWEEP_SECONDS)
+        try:
+            cleared = await fail_interrupted_generations()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Nu am putut curata generarile intrerupte.")
+            continue
+        if cleared:
+            logger.warning(
+                "%s generari blocate au fost marcate ca esuate.",
+                cleared,
+            )
 
 
 async def run_study_pack_generation_task(

@@ -1581,7 +1581,14 @@
     "indisponibil": "Indisponibil",
     "resetarePe": "Resetare pe: {date}",
     "traseuDeStudiuPentru": "Traseu de studiu pentru",
-    "alegeOStatieCaSa": "Apasă pe o oprire de pe traseu ca să deschizi strategia."
+    "alegeOStatieCaSa": "Apasă pe o oprire de pe traseu ca să deschizi strategia.",
+    "amFacutPasul": "Am făcut pasul",
+    "anuleazaPasul": "Anulează pasul",
+    "faiIntaiPasiiAnteriori": "Fă întâi pașii anteriori ai traseului.",
+    "anuleazaIntaiPasiiUrmatori": "Anulează întâi pașii următori.",
+    "pasiFacuti": "Pași făcuți",
+    "pasFacut": "Pas făcut",
+    "pasulNuAPututFi": "Pasul nu a putut fi actualizat."
   },
   "accountShell": {
     "abonament": "Abonament",

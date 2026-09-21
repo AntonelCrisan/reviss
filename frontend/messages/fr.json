@@ -1581,7 +1581,14 @@
     "indisponibil": "Indisponible",
     "resetarePe": "Réinitialisation le : {date}",
     "traseuDeStudiuPentru": "Parcours d'étude pour",
-    "alegeOStatieCaSa": "Cliquez sur une étape du parcours pour ouvrir sa stratégie."
+    "alegeOStatieCaSa": "Cliquez sur une étape du parcours pour ouvrir sa stratégie.",
+    "amFacutPasul": "J'ai fait cette étape",
+    "anuleazaPasul": "Annuler l'étape",
+    "faiIntaiPasiiAnteriori": "Faites d'abord les étapes précédentes du parcours.",
+    "anuleazaIntaiPasiiUrmatori": "Annulez d'abord les étapes suivantes.",
+    "pasiFacuti": "Étapes faites",
+    "pasFacut": "Étape faite",
+    "pasulNuAPututFi": "L'étape n'a pas pu être mise à jour."
   },
   "accountShell": {
     "abonament": "Abonnement",

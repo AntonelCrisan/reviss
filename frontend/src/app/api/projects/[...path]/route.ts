@@ -39,6 +39,10 @@ const allowedRoutes = [
     method: "POST",
     pattern: /^[0-9a-fA-F-]{36}\/quiz-mistake-flashcards$/,
   },
+  {
+    method: "PATCH",
+    pattern: /^[0-9a-fA-F-]{36}\/strategies\/[0-9a-fA-F-]{36}$/,
+  },
   { method: "POST", pattern: /^[0-9a-fA-F-]{36}\/summary-highlights$/ },
   { method: "DELETE", pattern: /^[0-9a-fA-F-]{36}\/summary-highlights$/ },
   {

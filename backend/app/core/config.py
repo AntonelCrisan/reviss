@@ -80,6 +80,10 @@ class Settings(BaseSettings):
     openai_request_timeout_seconds: int = Field(default=600, ge=30, le=1800)
     openai_quiz_request_timeout_seconds: int = Field(default=900, ge=60, le=1800)
     openai_max_input_chars: int = Field(default=1_000_000, ge=20_000, le=2_000_000)
+    # Generating one study pack opens up to 14 calls at once, so a handful of
+    # students together can run into the account's tokens-per-minute limit.
+    # Only bulk generation queues here; chat and explanations never wait.
+    openai_max_parallel_generations: int = Field(default=12, ge=1, le=64)
 
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 

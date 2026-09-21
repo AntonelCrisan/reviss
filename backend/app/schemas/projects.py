@@ -186,6 +186,12 @@ class StudyProjectStrategyResponse(BaseModel):
     title: str
     description: str
     sort_order: int
+    # Null until the student marks the step as done.
+    completed_at: datetime | None = None
+
+
+class StudyProjectStrategyCompletionUpdate(BaseModel):
+    completed: bool
 
 
 class QuizGenerationRequest(BaseModel):

@@ -103,6 +103,8 @@ export type StudyProjectStrategy = {
   title: string;
   description: string;
   sort_order: number;
+  /** Null until the student marks the step as done. */
+  completed_at: string | null;
 };
 
 export type SummaryHighlightColor =
@@ -698,6 +700,30 @@ export async function streamChatWithStudyProjectAi(
     throw new ProjectsApiError("Raspunsul nu a putut fi generat momentan.", 503);
   }
   return answer;
+}
+
+/**
+ * Mark one step of the study route as done, or undo it. The API keeps the
+ * route in order: a step opens only after the ones before it are done.
+ */
+export async function setStudyProjectStrategyCompletion(payload: {
+  projectId: string;
+  strategyId: string;
+  completed: boolean;
+}): Promise<StudyProject> {
+  const response = await fetch(
+    `/api/projects/${payload.projectId}/strategies/${payload.strategyId}`,
+    {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ completed: payload.completed }),
+      cache: "no-store",
+    },
+  );
+  return parseProjectResponse<StudyProject>(response);
 }
 
 export async function createQuizMistakeFlashcard(payload: {

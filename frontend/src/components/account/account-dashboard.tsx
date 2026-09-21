@@ -79,6 +79,7 @@ import {
   prepareStudyProject,
   renameStudyProject,
   setFlashcardReview,
+  setStudyProjectStrategyCompletion,
   updateSummaryHighlightColor,
   updateSummaryNote,
   type QuizGenerationConfig,
@@ -143,8 +144,11 @@ type StudyProject = {
   summaryNotes: UserSummaryNote[];
   strategiesPending: boolean;
   strategies: Array<{
+    /** Null for the placeholder shown when there are no strategies yet. */
+    id: string | null;
     title: string;
     description: string;
+    completed: boolean;
   }>;
 };
 
@@ -560,19 +564,26 @@ function mapApiProject(t: DashboardTranslator, project: ApiStudyProject): StudyP
     summaryNotes: mapSummaryNotes(project.summary_notes),
     strategiesPending: Boolean(project.strategies_pending),
     strategies: project.strategies.length
-      ? project.strategies.map((strategy) => ({
-          title: strategy.title,
-          description: strategy.description,
-        }))
+      ? [...project.strategies]
+          .sort((first, second) => first.sort_order - second.sort_order)
+          .map((strategy) => ({
+            id: strategy.id,
+            title: strategy.title,
+            description: strategy.description,
+            completed: Boolean(strategy.completed_at),
+          }))
       : project.strategies_pending
         ? [
             {
+              id: null,
               title: t("strategiileSePregatesc"),
               description: t("strategiileAparInCateva"),
+              completed: false,
             },
           ]
         : [
             {
+              id: null,
               title:
                 project.status === "ready"
                   ? t("continuaCuRezumatulGenerat")
@@ -581,6 +592,7 @@ function mapApiProject(t: DashboardTranslator, project: ApiStudyProject): StudyP
                 project.status === "ready"
                   ? t("pachetulProiectuluiEsteGeneratSi")
                   : t("revissConvertesteMaterialeleSiSalveaza"),
+              completed: false,
             },
           ],
   };
@@ -1486,6 +1498,32 @@ export function AccountDashboard({
     );
   }
 
+  async function toggleStrategyCompletion(
+    projectId: string,
+    strategyId: string,
+    completed: boolean,
+  ) {
+    try {
+      const apiProject = await setStudyProjectStrategyCompletion({
+        projectId,
+        strategyId,
+        completed,
+      });
+      const mappedProject = mapApiProject(t, apiProject);
+      setProjects((currentProjects) =>
+        currentProjects.map((project) =>
+          project.id === mappedProject.id ? mappedProject : project,
+        ),
+      );
+    } catch (error) {
+      // The API keeps the route in order; say why the step did not change.
+      toast.error(
+        t("pasulNuAPututFi"),
+        error instanceof Error ? error.message : undefined,
+      );
+    }
+  }
+
   async function saveQuizMistakeFlashcard(
     projectId: string,
     questionId: string | null,
@@ -2302,6 +2340,7 @@ export function AccountDashboard({
               onCancelQuizGeneration={cancelProjectQuizGeneration}
               onManualFlashcardCreate={addManualFlashcard}
               onToggleFlashcardReview={toggleFlashcardReview}
+              onToggleStrategy={toggleStrategyCompletion}
               onHighlightCreate={addSummaryHighlight}
               onHighlightColorChange={changeSummaryHighlightColor}
               onHighlightRemove={removeSummaryHighlight}
@@ -3219,6 +3258,7 @@ function ProjectView({
   onCancelQuizGeneration,
   onManualFlashcardCreate,
   onToggleFlashcardReview,
+  onToggleStrategy,
   onHighlightCreate,
   onHighlightColorChange,
   onHighlightRemove,
@@ -3263,6 +3303,11 @@ function ProjectView({
     projectId: string,
     flashcardId: string,
     review: boolean,
+  ) => Promise<void>;
+  onToggleStrategy: (
+    projectId: string,
+    strategyId: string,
+    completed: boolean,
   ) => Promise<void>;
   onHighlightCreate: (
     projectId: string,
@@ -3457,7 +3502,10 @@ function ProjectView({
               />
             ) : null}
             {activeTab === "strategii" ? (
-              <StrategiesPanel project={project} />
+              <StrategiesPanel
+                project={project}
+                onToggleStrategy={onToggleStrategy}
+              />
             ) : null}
             {activeTab === "progres" ? <ProgressPanel project={project} /> : null}
           </>
@@ -9541,9 +9589,21 @@ function QuizResultCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StrategiesPanel({ project }: { project: StudyProject }) {
+function StrategiesPanel({
+  project,
+  onToggleStrategy,
+}: {
+  project: StudyProject;
+  onToggleStrategy: (
+    projectId: string,
+    strategyId: string,
+    completed: boolean,
+  ) => Promise<void>;
+}) {
   const t = useTranslations("dashboard");
   const strategies = project.strategies;
+  const generatedSteps = strategies.filter((strategy) => strategy.id !== null);
+  const doneSteps = generatedSteps.filter((strategy) => strategy.completed);
   const universalStrategies = [
     [
       t("inchideCursulSiIncearcaSa"),
@@ -9560,7 +9620,10 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
   ];
   const readyFlashcards = getGeneratedFlashcards(project.flashcards).length;
   const stats = [
-    [t("strategiiAi"), String(strategies.length)],
+    [
+      t("pasiFacuti"),
+      `${doneSteps.length}/${generatedSteps.length || strategies.length}`,
+    ],
     [t("quizUri"), String(project.quizzes.length)],
     [t("flashcardUri"), String(readyFlashcards)],
   ];
@@ -9605,7 +9668,12 @@ function StrategiesPanel({ project }: { project: StudyProject }) {
 
         {strategies.length ? (
           <div className="border-t border-subtle bg-app p-4 sm:p-6">
-            <StrategyMap steps={strategies} />
+            <StrategyMap
+              steps={strategies}
+              onToggle={(strategyId, completed) =>
+                onToggleStrategy(project.id, strategyId, completed)
+              }
+            />
           </div>
         ) : null}
       </article>

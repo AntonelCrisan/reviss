@@ -613,5 +613,11 @@ class StudyProjectStrategy(Base):
     title: Mapped[str] = mapped_column(String(180), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Set when the student marks this step of the route as done. The steps are
+    # completed in order, so this is also the progress along the route.
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
 
     project: Mapped[StudyProject] = relationship(back_populates="strategies")

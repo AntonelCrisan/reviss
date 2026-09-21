@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -51,6 +52,10 @@ from app.core.rate_limit import (
 )
 from app.db.session import engine
 from app.services.plan_errors import PlanLimitError
+from app.services.projects import (
+    fail_interrupted_generations,
+    sweep_interrupted_generations,
+)
 
 logger = logging.getLogger("revizzio")
 settings = get_settings()
@@ -124,6 +129,13 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         logger.warning(
             "Redis nu este conectat; rate limiting foloseste memoria procesului."
         )
+    interrupted = await fail_interrupted_generations()
+    if interrupted:
+        logger.warning(
+            "%s generari intrerupte de o repornire au fost marcate ca esuate.",
+            interrupted,
+        )
+    sweeper = asyncio.create_task(sweep_interrupted_generations())
     if settings.mistral_api_key is not None:
         logger.info("Mistral OCR configurat pentru documente scanate pe planul Pro.")
     else:
@@ -136,6 +148,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         settings.environment,
     )
     yield
+    sweeper.cancel()
     await close_rate_limit_backend()
     await engine.dispose()
     logger.info("Reviss API a fost oprit.")

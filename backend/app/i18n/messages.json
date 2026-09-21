@@ -91,6 +91,10 @@
     "en": "Choose an active plan to continue.",
     "fr": "Choisissez un forfait actif pour continuer."
   },
+  "Anuleaza mai intai pasii urmatori ai traseului.": {
+    "en": "Undo the later steps of the route first.",
+    "fr": "Annulez d'abord les étapes suivantes du parcours."
+  },
   "Autentificarea este necesară.": {
     "en": "You need to be signed in.",
     "fr": "Vous devez être connecté."
@@ -375,6 +379,10 @@
     "en": "This AI feature is not available on your current plan. Upgrade to a higher plan for access.",
     "fr": "Cette fonctionnalité IA n'est pas disponible sur votre forfait actuel. Passez à un forfait supérieur pour y accéder."
   },
+  "Generarea a fost intrerupta de o repornire a serverului. Incearca din nou.": {
+    "en": "The generation was interrupted by a server restart. Try again.",
+    "fr": "La génération a été interrompue par un redémarrage du serveur. Réessayez."
+  },
   "Generarea nu este disponibila momentan. Incearca din nou in cateva minute.": {
     "en": "Generation is unavailable right now. Please try again in a few minutes.",
     "fr": "La génération est indisponible pour le moment. Réessayez dans quelques minutes."
@@ -594,6 +602,10 @@
   "MISTRAL_API_KEY nu este configurat.": {
     "en": "MISTRAL_API_KEY is not configured.",
     "fr": "MISTRAL_API_KEY n'est pas configuré."
+  },
+  "Marcheaza mai intai pasii anteriori ai traseului.": {
+    "en": "Mark the earlier steps of the route first.",
+    "fr": "Marquez d'abord les étapes précédentes du parcours."
   },
   "Materialele proiectului depasesc limita de {limits.total_project_mb}MB pentru planul curent.": {
     "en": "The project materials exceed the {limits.total_project_mb}MB limit of your current plan.",
@@ -1094,6 +1106,10 @@
   "Solicitările de ștergere nu pot fi încărcate momentan.": {
     "en": "Deletion requests cannot be loaded right now.",
     "fr": "Les demandes de suppression ne peuvent pas être chargées pour le moment."
+  },
+  "Strategia nu a fost gasita.": {
+    "en": "The strategy was not found.",
+    "fr": "La stratégie est introuvable."
   },
   "Stripe Price ID trebuie sa fie unic pentru fiecare plan.": {
     "en": "The Stripe Price ID must be unique for each plan.",

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
 import re
 import time
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, nullcontext
 from dataclasses import dataclass
 from typing import Any
 
@@ -36,6 +38,29 @@ class OpenAIOutputError(OpenAIGenerationError):
         self.reason = reason
         self.input_tokens = input_tokens
         self.output_tokens = output_tokens
+
+
+_bulk_slots: asyncio.Semaphore | None = None
+
+
+@asynccontextmanager
+async def _bulk_slot(limit: int) -> AsyncIterator[None]:
+    """One of the parallel generation slots the whole process shares.
+
+    Study packs and quizzes fan out into many calls at once; past a point the
+    provider answers with rate limits instead of content. Queuing here costs a
+    few seconds of waiting rather than a failed generation.
+    """
+    global _bulk_slots
+    if _bulk_slots is None:
+        _bulk_slots = asyncio.Semaphore(limit)
+
+    waited_from = time.perf_counter()
+    async with _bulk_slots:
+        waited = time.perf_counter() - waited_from
+        if waited > 1:
+            logger.info("Waited %.1fs for a generation slot.", waited)
+        yield
 
 
 def _prompt_cache_key(job_type: str, project_id: str) -> str:
@@ -116,6 +141,7 @@ class OpenAIStudyGenerator:
         timeout_seconds: int | None = None,
         prompt_cache_key: str | None = None,
         text_verbosity: str | None = None,
+        bulk: bool = False,
     ) -> OpenAIGenerationResult:
         text_config: dict[str, Any] = {
             "format": {
@@ -134,24 +160,30 @@ class OpenAIStudyGenerator:
         )
 
         started_at = time.perf_counter()
+        slot = (
+            _bulk_slot(self._settings.openai_max_parallel_generations)
+            if bulk
+            else nullcontext()
+        )
         try:
-            response = await self._client.responses.create(
-                model=model,
-                instructions=instructions,
-                input=prompt,
-                max_output_tokens=max_output_tokens,
-                reasoning={"effort": reasoning_effort},
-                text=text_config,
-                store=False,
-                metadata={
-                    "app": "reviss",
-                    "project_id": project_id,
-                    "job_type": job_type,
-                },
-                prompt_cache_key=cache_key[:64],
-                safety_identifier=user_id[:64],
-                timeout=request_timeout,
-            )
+            async with slot:
+                response = await self._client.responses.create(
+                    model=model,
+                    instructions=instructions,
+                    input=prompt,
+                    max_output_tokens=max_output_tokens,
+                    reasoning={"effort": reasoning_effort},
+                    text=text_config,
+                    store=False,
+                    metadata={
+                        "app": "reviss",
+                        "project_id": project_id,
+                        "job_type": job_type,
+                    },
+                    prompt_cache_key=cache_key[:64],
+                    safety_identifier=user_id[:64],
+                    timeout=request_timeout,
+                )
         except (APIConnectionError, APITimeoutError, APIError) as exc:
             logger.warning(
                 "OpenAI %s failed after %.1fs: model=%s, effort=%s, error=%s",

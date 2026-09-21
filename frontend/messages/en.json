@@ -1581,7 +1581,14 @@
     "indisponibil": "Unavailable",
     "resetarePe": "Resets on: {date}",
     "traseuDeStudiuPentru": "Study route for",
-    "alegeOStatieCaSa": "Click a stop on the road to open its strategy."
+    "alegeOStatieCaSa": "Click a stop on the road to open its strategy.",
+    "amFacutPasul": "I did this step",
+    "anuleazaPasul": "Undo step",
+    "faiIntaiPasiiAnteriori": "Do the earlier steps of the route first.",
+    "anuleazaIntaiPasiiUrmatori": "Undo the later steps first.",
+    "pasiFacuti": "Steps done",
+    "pasFacut": "Step done",
+    "pasulNuAPututFi": "The step could not be updated."
   },
   "accountShell": {
     "abonament": "Subscription",
