@@ -25,6 +25,15 @@ class MistralOCRRequestError(Exception):
     pass
 
 
+class MistralOCRServiceError(MistralOCRRequestError):
+    """The OCR service refused the call or could not be reached.
+
+    The document itself may be perfectly readable, so the student must not be
+    told to take a clearer photo: an account without OCR access, a rate limit
+    or an outage all end up here.
+    """
+
+
 # The media type Mistral needs for each kind of image we accept.
 IMAGE_MEDIA_TYPES: dict[str, str] = {
     ".jpg": "image/jpeg",
@@ -113,22 +122,33 @@ def _extract_ocr_markdown_sync(
     except urllib.error.HTTPError as exc:
         response_body = exc.read()
         detail = _mistral_error_message(response_body)
-        raise MistralOCRRequestError(
+        # The reason (a 429 with a limit of 0, a 401, an outage) is what tells
+        # an account problem from a bad document, so it has to reach the log.
+        logger.warning(
+            "Mistral OCR a raspuns %s pentru %s: %s (limita cereri/minut: %s)",
+            exc.code,
+            path.name,
+            detail,
+            exc.headers.get("x-ratelimit-limit-req-minute") if exc.headers else None,
+        )
+        raise MistralOCRServiceError(
             f"Mistral OCR a refuzat procesarea: {detail}"
         ) from exc
     except urllib.error.URLError as exc:
-        raise MistralOCRRequestError(
+        logger.warning("Mistral OCR nu a putut fi contactat: %s", exc.reason)
+        raise MistralOCRServiceError(
             "Mistral OCR nu a putut fi contactat."
         ) from exc
     except TimeoutError as exc:
-        raise MistralOCRRequestError(
+        logger.warning("Mistral OCR nu a raspuns in timp util pentru %s.", path.name)
+        raise MistralOCRServiceError(
             "Mistral OCR nu a raspuns in timp util."
         ) from exc
 
     try:
         response_payload = json.loads(response_body.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise MistralOCRRequestError(
+        raise MistralOCRServiceError(
             "Mistral OCR a returnat un raspuns invalid."
         ) from exc
 

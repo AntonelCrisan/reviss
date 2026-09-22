@@ -3,6 +3,7 @@ import uuid
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 from starlette.datastructures import UploadFile
@@ -20,6 +21,7 @@ from app.models import (
 from app.services import projects as projects_module
 from app.services.plan_errors import MaterialLimitReachedError
 from app.services.projects import (
+    ProjectConversionError,
     ProjectPlanLimits,
     ProjectValidationError,
     StudyProjectService,
@@ -490,6 +492,98 @@ def test_pro_scanned_pdf_uses_mistral_ocr(
     assert file_model.markdown_char_count == len(ocr_markdown)
     assert file_model.markdown_path is not None
     assert Path(file_model.markdown_path).read_text(encoding="utf-8") == ocr_markdown
+
+
+def test_pro_pdf_that_cannot_be_parsed_is_read_through_ocr(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(
+        **BASE_SETTINGS,
+        project_storage_dir=tmp_path,
+        mistral_api_key="mistral-test-key",
+    )
+    service = StudyProjectService(  # type: ignore[arg-type]
+        session=_StoreFileSession(),
+        settings=settings,
+    )
+    project = StudyProject(id=uuid.uuid4(), user_id=uuid.uuid4(), name="Semnat")
+
+    def broken_markdown(_: object) -> str:
+        # What a protected or oddly signed PDF does to the text parser.
+        raise RuntimeError("PDF could not be parsed")
+
+    async def fake_ocr(*_: object) -> tuple[str, int]:
+        return "Text citit prin OCR.", 2
+
+    monkeypatch.setattr(projects_module, "_read_markdown", broken_markdown)
+    monkeypatch.setattr(projects_module, "extract_scanned_pdf_markdown", fake_ocr)
+
+    file_model = asyncio.run(
+        service._store_and_convert_file(
+            user=_plan_limit_user(),  # type: ignore[arg-type]
+            project=project,
+            upload=_pdf_upload("raspuns-signed.pdf"),
+            upload_index=0,
+            source_dir=tmp_path / "source",
+            markdown_dir=tmp_path / "markdown",
+            max_upload_bytes=1024 * 1024,
+            max_upload_mb=1,
+            limits=_plan_limits(allow_scanned_documents=True),
+        )
+    )
+
+    assert file_model.conversion_status == "converted"
+    assert file_model.markdown_content == "Text citit prin OCR."
+
+
+PNG_SIGNATURE = bytes([0x89]) + b"PNG" + bytes([13, 10, 26, 10])
+
+
+def test_refused_image_ocr_does_not_blame_the_photo(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.services.mistral_ocr import MistralOCRServiceError
+
+    settings = Settings(
+        **BASE_SETTINGS,
+        project_storage_dir=tmp_path,
+        mistral_api_key="mistral-test-key",
+    )
+    service = StudyProjectService(  # type: ignore[arg-type]
+        session=_StoreFileSession(),
+        settings=settings,
+    )
+    project = StudyProject(id=uuid.uuid4(), user_id=uuid.uuid4(), name="Poze")
+
+    async def refused_ocr(*_: object) -> tuple[str, int]:
+        raise MistralOCRServiceError("Mistral OCR a refuzat procesarea: Rate limit")
+
+    # The plan has OCR pages left; it is the service that refuses.
+    credits = SimpleNamespace(ensure_ocr_budget=AsyncMock(), charge=AsyncMock())
+    monkeypatch.setattr(projects_module, "AiCreditsService", lambda _: credits)
+    monkeypatch.setattr(projects_module, "extract_image_markdown", refused_ocr)
+
+    with pytest.raises(
+        ProjectConversionError, match="indisponibila momentan"
+    ) as caught:
+        asyncio.run(
+            service._store_and_convert_file(
+                user=_plan_limit_user(),  # type: ignore[arg-type]
+                project=project,
+                upload=UploadFile(
+                    BytesIO(PNG_SIGNATURE + b"fake image"), filename="pagina.png"
+                ),
+                upload_index=0,
+                source_dir=tmp_path / "source",
+                markdown_dir=tmp_path / "markdown",
+                max_upload_bytes=1024 * 1024,
+                max_upload_mb=1,
+                limits=_plan_limits(allow_scanned_documents=True),
+            )
+        )
+    assert "poza mai clara" not in str(caught.value)
 
 
 def test_project_markdown_can_be_read_from_persisted_db_content(tmp_path) -> None:

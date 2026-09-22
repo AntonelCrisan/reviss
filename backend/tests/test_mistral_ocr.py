@@ -86,3 +86,39 @@ def test_mistral_ocr_requires_api_key(tmp_path) -> None:
 
     with pytest.raises(MistralOCRConfigurationError):
         asyncio.run(extract_scanned_pdf_markdown(pdf_path, settings))
+
+
+def test_a_refused_ocr_call_is_a_service_error_not_a_bad_document(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import io
+    import urllib.error
+    from email.message import Message
+
+    from app.services.mistral_ocr import (
+        MistralOCRServiceError,
+        extract_image_markdown,
+    )
+
+    image_path = tmp_path / "pagina.png"
+    image_path.write_bytes(b"\x89PNG\r\n\x1a\nfake image")
+    settings = Settings(**BASE_SETTINGS, mistral_api_key="mistral-test-key")
+
+    def refuse(request: urllib.request.Request, timeout: int) -> None:
+        # What an account without OCR access gets back: a 429 with a limit of 0.
+        headers = Message()
+        headers["x-ratelimit-limit-req-minute"] = "0"
+        body = json.dumps({"message": "Rate limit exceeded", "type": "rate_limited"})
+        raise urllib.error.HTTPError(
+            request.full_url,
+            429,
+            "Too Many Requests",
+            headers,
+            io.BytesIO(body.encode()),
+        )
+
+    monkeypatch.setattr(urllib.request, "urlopen", refuse)
+
+    with pytest.raises(MistralOCRServiceError, match="Rate limit exceeded"):
+        asyncio.run(extract_image_markdown(image_path, settings))

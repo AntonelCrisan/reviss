@@ -70,6 +70,7 @@ from app.services.billing_window import (
 from app.services.mistral_ocr import (
     MistralOCRConfigurationError,
     MistralOCRRequestError,
+    MistralOCRServiceError,
     extract_image_markdown,
     extract_scanned_pdf_markdown,
 )
@@ -5529,18 +5530,37 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
         try:
             markdown = await run_in_threadpool(_read_markdown, source_path)
         except (Exception, UnsupportedFormatException) as exc:  # noqa: BLE001
-            file_model.conversion_status = "failed"
-            file_model.conversion_error = str(exc)[:1000]
-            if isinstance(exc, LegacyOfficeFormatError):
-                raise ProjectValidationError(str(exc)) from exc
-            if isinstance(exc, UnsupportedFormatException):
+            # The cause used to vanish behind the generic message, leaving a
+            # failed upload with nothing to go on.
+            logger.warning(
+                "Conversia fisierului %s a esuat: %s: %s",
+                safe_name,
+                type(exc).__name__,
+                exc,
+                exc_info=True,
+            )
+            if (
+                extension == ".pdf"
+                and limits.allow_scanned_documents
+                and not isinstance(exc, LegacyOfficeFormatError)
+            ):
+                # A PDF whose text cannot be extracted - protected, signed in
+                # a way the parser trips on, or pages that are only images -
+                # can still be read page by page through OCR.
+                markdown = ""
+            else:
+                file_model.conversion_status = "failed"
+                file_model.conversion_error = str(exc)[:1000]
+                if isinstance(exc, LegacyOfficeFormatError):
+                    raise ProjectValidationError(str(exc)) from exc
+                if isinstance(exc, UnsupportedFormatException):
+                    raise ProjectConversionError(
+                        f"Fisierul {safe_name} nu este suportat pentru procesare. "
+                        "Incearca PDF, DOCX, PPTX, XLSX sau TXT."
+                    ) from exc
                 raise ProjectConversionError(
-                    f"Fisierul {safe_name} nu este suportat pentru procesare. "
-                    "Incearca PDF, DOCX, PPTX, XLSX sau TXT."
+                    f"Fisierul {safe_name} nu a putut fi convertit."
                 ) from exc
-            raise ProjectConversionError(
-                f"Fisierul {safe_name} nu a putut fi convertit."
-            ) from exc
 
         if _looks_like_scanned_pdf(source_path, markdown):
             if not limits.allow_scanned_documents:
@@ -5585,7 +5605,15 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
                     f"Documentul {safe_name} pare scanat, iar procesarea OCR "
                     "nu este configurata momentan. Incearca din nou mai tarziu."
                 ) from exc
+            except MistralOCRServiceError as exc:
+                file_model.conversion_status = "failed"
+                file_model.conversion_error = str(exc)[:1000]
+                raise ProjectConversionError(
+                    f"Documentul {safe_name} pare scanat, iar citirea textului "
+                    "este indisponibila momentan. Incearca din nou mai tarziu."
+                ) from exc
             except MistralOCRRequestError as exc:
+                logger.warning("OCR-ul nu a citit %s: %s", safe_name, exc)
                 file_model.conversion_status = "failed"
                 file_model.conversion_error = str(exc)[:1000]
                 raise ProjectConversionError(
@@ -5653,7 +5681,18 @@ Rescrie raspunsul pentru intrebarea curenta ca explicatie completa:
                 f"Imaginea {safe_name} nu a putut fi procesata, iar citirea "
                 "textului nu este configurata momentan. Incearca mai tarziu."
             ) from exc
+        except MistralOCRServiceError as exc:
+            # The photo may be fine; the service refused it. Asking for a
+            # clearer photo here sent students retaking good pictures.
+            file_model.conversion_status = "failed"
+            file_model.conversion_error = str(exc)[:1000]
+            raise ProjectConversionError(
+                f"Imaginea {safe_name} nu a putut fi procesata: citirea textului "
+                "din imagini este indisponibila momentan. Incearca din nou mai "
+                "tarziu."
+            ) from exc
         except MistralOCRRequestError as exc:
+            logger.warning("OCR-ul nu a citit imaginea %s: %s", safe_name, exc)
             file_model.conversion_status = "failed"
             file_model.conversion_error = str(exc)[:1000]
             raise ProjectConversionError(

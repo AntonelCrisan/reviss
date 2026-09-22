@@ -243,6 +243,10 @@
     "en": "The document {safe_name} looks scanned and could not be processed with OCR. Try again or upload a PDF with selectable text.",
     "fr": "Le document {safe_name} semble scanné et n'a pas pu être traité par OCR. Réessayez ou envoyez un PDF avec du texte sélectionnable."
   },
+  "Documentul {safe_name} pare scanat, iar citirea textului este indisponibila momentan. Incearca din nou mai tarziu.": {
+    "en": "The document {safe_name} looks scanned, and text reading is unavailable right now. Try again later.",
+    "fr": "Le document {safe_name} semble numérisé, et la lecture du texte est indisponible pour le moment. Réessayez plus tard."
+  },
   "Documentul {safe_name} pare scanat, iar procesarea OCR nu este configurata momentan. Incearca din nou mai tarziu.": {
     "en": "The document {safe_name} looks scanned and OCR processing is not configured right now. Please try again later.",
     "fr": "Le document {safe_name} semble scanné et le traitement OCR n'est pas configuré pour le moment. Réessayez plus tard."
@@ -446,6 +450,10 @@
   "Imaginea {safe_name} nu a putut fi procesata, iar citirea textului nu este configurata momentan. Incearca mai tarziu.": {
     "en": "The image {safe_name} could not be processed, and text reading is not configured right now. Please try again later.",
     "fr": "L'image {safe_name} n'a pas pu être traitée, et la lecture du texte n'est pas configurée pour le moment. Réessaye plus tard."
+  },
+  "Imaginea {safe_name} nu a putut fi procesata: citirea textului din imagini este indisponibila momentan. Incearca din nou mai tarziu.": {
+    "en": "The image {safe_name} could not be processed: reading text from images is unavailable right now. Try again later.",
+    "fr": "L'image {safe_name} n'a pas pu être traitée : la lecture du texte des images est indisponible pour le moment. Réessayez plus tard."
   },
   "Imaginea {safe_name} nu poate fi procesata. Planul curent nu include incarcarea imaginilor.": {
     "en": "The image {safe_name} cannot be processed. Your current plan does not include image uploads.",
