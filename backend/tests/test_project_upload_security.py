@@ -494,6 +494,30 @@ def test_pro_scanned_pdf_uses_mistral_ocr(
     assert Path(file_model.markdown_path).read_text(encoding="utf-8") == ocr_markdown
 
 
+def test_pdf_text_is_read_whole_and_a_scan_comes_back_empty(tmp_path) -> None:
+    from reportlab.pdfgen import canvas
+
+    from app.services.projects import _read_markdown
+
+    text_pdf = tmp_path / "curs.pdf"
+    page = canvas.Canvas(str(text_pdf))
+    page.drawString(72, 720, "Etica este importanta pentru a promova excelenta.")
+    page.save()
+
+    scanned_pdf = tmp_path / "scan.pdf"
+    page = canvas.Canvas(str(scanned_pdf))
+    page.rect(72, 600, 200, 100, fill=1)  # an image-only page has no text layer
+    page.save()
+
+    # The sentence stays whole, not split into table cells.
+    assert "Etica este importanta pentru a promova excelenta." in _read_markdown(
+        text_pdf
+    )
+    # A scan is not a failed conversion: it is empty, and goes to OCR or to the
+    # "your plan does not cover scans" message.
+    assert _read_markdown(scanned_pdf) == ""
+
+
 def test_pro_pdf_that_cannot_be_parsed_is_read_through_ocr(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

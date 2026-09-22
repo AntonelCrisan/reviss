@@ -2119,6 +2119,9 @@ def _convert_legacy_office_file(path: Path) -> Path:
 
 def _read_markdown(path: Path) -> str:
     convertible_path = _convert_legacy_office_file(path)
+    if convertible_path.suffix.lower() == ".pdf":
+        return _read_pdf_text(convertible_path)
+
     try:
         result = MarkItDown().convert(convertible_path)
         markdown = _clean_text(result.text_content)
@@ -2136,6 +2139,21 @@ def _read_markdown(path: Path) -> str:
     return _clean_text(result.text_content)
 
 
+def _read_pdf_text(path: Path) -> str:
+    """The text layer of a PDF, or "" when it has none.
+
+    markitdown's PDF converter needs pdfplumber, which reads the justified text
+    of a slide deck as a table and splits every sentence into cells - more than
+    twice the text, and harder for the model to follow. pdfminer keeps the
+    sentences whole. An empty result is a scanned PDF: the caller sends it to
+    OCR or tells the student their plan does not cover scans, instead of
+    reporting a failed conversion.
+    """
+    from pdfminer.high_level import extract_text
+
+    return _clean_text(extract_text(str(path)))
+
+
 def _read_markdown_fallback(path: Path) -> str:
     extension = path.suffix.lower()
 
@@ -2148,11 +2166,6 @@ def _read_markdown_fallback(path: Path) -> str:
 
             html = path.read_text(encoding="utf-8", errors="ignore")
             return _clean_text(BeautifulSoup(html, "html.parser").get_text("\n"))
-
-        if extension == ".pdf":
-            from pdfminer.high_level import extract_text
-
-            return _clean_text(extract_text(str(path)))
 
         if extension == ".docx":
             import mammoth
