@@ -20,7 +20,7 @@ class Notification(Base):
         CheckConstraint(
             "type IN ('project_ready', 'weak_concepts', 'daily_review', "
             "'weekly_progress', 'inactivity_reminder', 'streak_milestone', "
-            "'usage_limit', 'subscription_expiring')",
+            "'usage_limit', 'subscription_expiring', 'study_nudge')",
             name="ck_notifications_type",
         ),
     )

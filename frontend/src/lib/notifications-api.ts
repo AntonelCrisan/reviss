@@ -5,7 +5,8 @@ export type NotificationType =
   | "daily_review"
   | "weekly_progress"
   | "inactivity_reminder"
-  | "streak_milestone";
+  | "streak_milestone"
+  | "study_nudge";
 
 export type Notification = {
   id: string;

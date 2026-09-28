@@ -99,6 +99,23 @@ curl -X POST https://api.reviss.app/api/internal/notifications/run-daily \
   -H "Authorization: Bearer <same value as CRON_SECRET>"
 ```
 
+### Getting-started nudges (second cron)
+
+`POST /api/internal/nudges/run-daily` sends the tips and reminders to accounts
+that signed up and never studied. It is a second schedule on purpose: those
+emails land better in the morning, while the digest above runs in the evening,
+and running the digest twice a day would send it twice.
+
+```bash
+curl -X POST https://api.reviss.app/api/internal/nudges/run-daily \n  -H "X-Cron-Secret: <same value as CRON_SECRET>"
+```
+
+Recommended: the digest at 21:00 and the nudges at 09:00 Romanian time,
+which on Railway (UTC) is `0 18 * * *` and `0 6 * * *` through the summer,
+an hour earlier in local terms once the clocks go back. The nudges skip
+anyone who received a Reviss email in the previous 12 hours, so the two runs
+never pile up on the same person.
+
 Any scheduler that can make one daily HTTPS request works — a Railway
 service with a cron schedule running this `curl` command (e.g. the "Cron
 Trigger External Webhook URL" Railway template, which sends the secret as an

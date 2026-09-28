@@ -13,6 +13,7 @@ NotificationType = Literal[
     "streak_milestone",
     "usage_limit",
     "subscription_expiring",
+    "study_nudge",
 ]
 
 

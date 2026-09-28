@@ -19,6 +19,7 @@ class StudyPreferencesResponse(BaseModel):
     notify_alert_billing: bool
     automation_weekly_progress: bool
     automation_inactivity_reminder: bool
+    notify_tips_reminders: bool = True
     notify_alert_streak_milestone: bool
     notify_frequency: NotifyFrequency
     newsletter_consent: bool = False
@@ -34,6 +35,7 @@ class StudyPreferencesUpdate(BaseModel):
     notify_alert_billing: bool | None = None
     automation_weekly_progress: bool | None = None
     automation_inactivity_reminder: bool | None = None
+    notify_tips_reminders: bool | None = None
     notify_alert_streak_milestone: bool | None = None
     notify_frequency: NotifyFrequency | None = None
     newsletter_consent: bool | None = None

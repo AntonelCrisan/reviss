@@ -135,6 +135,16 @@ export function verifyEmail(token: string): Promise<AuthUser> {
   });
 }
 
+/** Stops the tips and reminders from the link in one of those emails. */
+export function unsubscribeFromTips(
+  token: string,
+): Promise<{ unsubscribed: boolean }> {
+  return authRequest<{ unsubscribed: boolean }>(
+    `notifications/unsubscribe?token=${encodeURIComponent(token)}`,
+    { method: "POST" },
+  );
+}
+
 export function requestPasswordReset(email: string): Promise<MessageResponse> {
   return authRequest<MessageResponse>("password-reset/request", {
     method: "POST",

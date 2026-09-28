@@ -569,7 +569,28 @@
         "feature1": "Confirmation depuis l'email envoyé à la nouvelle adresse",
         "feature2": "Lien à usage unique avec expiration",
         "feature3": "Le reste du compte reste inchangé"
+      },
+      "unsubscribe": {
+        "metaTitle": "Désabonnement",
+        "metaDescription": "Arrêtez les conseils et rappels de Reviss.",
+        "eyebrow": "Désabonnement",
+        "title": "Nous arrêtons les conseils et les rappels.",
+        "description": "Votre compte reste intact. Nous ne vous écrirons plus pour vous inviter à commencer ou à reprendre vos révisions.",
+        "alternateText": "Vous avez changé d'avis ?",
+        "alternateLabel": "Se connecter",
+        "asideTitle": "Vos autres e-mails ne changent pas.",
+        "asideDescription": "Les confirmations de compte, les factures et les alertes de consommation restent liées à votre compte.",
+        "feature1": "Réactivables à tout moment dans Paramètres, rubrique Notifications",
+        "feature2": "Rien n'est supprimé de votre compte",
+        "feature3": "Le lien fonctionne sans connexion"
       }
+    },
+    "unsubscribe": {
+      "working": "Arrêt des conseils et rappels...",
+      "done": "C'est fait. Nous n'enverrons plus de conseils ni de rappels. Vous pouvez les réactiver dans Paramètres, rubrique Notifications.",
+      "failed": "Ce lien n'est plus valable. Vous pouvez arrêter les conseils depuis votre compte, dans Paramètres, Notifications.",
+      "missingToken": "Le lien de désabonnement est incomplet.",
+      "goToSettings": "Ouvrir les paramètres"
     }
   },
   "settings": {
@@ -746,6 +767,10 @@
       "streakMilestone": {
         "title": "Séries et réussites",
         "description": "Quand tu atteins un certain nombre de jours d'étude consécutifs."
+      },
+      "tipsReminders": {
+        "title": "Conseils et rappels",
+        "description": "Des e-mails qui vous aident à commencer et à revenir à vos révisions. Vous pouvez les désactiver à tout moment, y compris depuis l'e-mail."
       }
     },
     "delivery": {

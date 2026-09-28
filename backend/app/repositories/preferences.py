@@ -47,6 +47,7 @@ class UserPreferencesRepository:
         notify_alert_billing: bool | None = None,
         automation_weekly_progress: bool | None = None,
         automation_inactivity_reminder: bool | None = None,
+        notify_tips_reminders: bool | None = None,
         notify_alert_streak_milestone: bool | None = None,
         notify_frequency: str | None = None,
     ) -> UserPreferences:
@@ -72,6 +73,8 @@ class UserPreferencesRepository:
             preferences.automation_inactivity_reminder = (
                 automation_inactivity_reminder
             )
+        if notify_tips_reminders is not None:
+            preferences.notify_tips_reminders = notify_tips_reminders
         if notify_alert_streak_milestone is not None:
             preferences.notify_alert_streak_milestone = (
                 notify_alert_streak_milestone

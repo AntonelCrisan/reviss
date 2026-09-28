@@ -134,6 +134,7 @@ const notificationAlertPreferenceKey = {
   billing: "notify_alert_billing",
   weeklyProgress: "automation_weekly_progress",
   inactivityReminder: "automation_inactivity_reminder",
+  tipsReminders: "notify_tips_reminders",
   streakMilestone: "notify_alert_streak_milestone",
 } as const satisfies Record<string, BooleanPreferenceKey>;
 

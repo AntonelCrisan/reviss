@@ -569,7 +569,28 @@
         "feature1": "Confirmation from the email sent to the new address",
         "feature2": "Single-use link that expires",
         "feature3": "The rest of the account stays unchanged"
+      },
+      "unsubscribe": {
+        "metaTitle": "Unsubscribe",
+        "metaDescription": "Stop the tips and reminders from Reviss.",
+        "eyebrow": "Unsubscribe",
+        "title": "We are stopping the tips and reminders.",
+        "description": "Your account stays untouched. We will not email you about getting started or coming back to studying.",
+        "alternateText": "Changed your mind?",
+        "alternateLabel": "Sign in",
+        "asideTitle": "Your other emails stay the same.",
+        "asideDescription": "Account confirmations, invoices and usage alerts belong to your account and keep coming.",
+        "feature1": "Turn them back on any time in Settings, under Notifications",
+        "feature2": "Nothing is deleted from your account",
+        "feature3": "The link works without signing in"
       }
+    },
+    "unsubscribe": {
+      "working": "Stopping the tips and reminders...",
+      "done": "Done. We will not send tips or reminders any more. You can turn them back on in Settings, under Notifications.",
+      "failed": "This link is no longer valid. You can stop the tips from your account, in Settings, under Notifications.",
+      "missingToken": "The unsubscribe link is incomplete.",
+      "goToSettings": "Open settings"
     }
   },
   "settings": {
@@ -746,6 +767,10 @@
       "streakMilestone": {
         "title": "Streaks and achievements",
         "description": "When you reach a number of consecutive study days."
+      },
+      "tipsReminders": {
+        "title": "Tips and reminders",
+        "description": "Emails that help you get started and come back to studying. You can turn them off any time, including from the email itself."
       }
     },
     "delivery": {

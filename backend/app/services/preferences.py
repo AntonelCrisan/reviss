@@ -39,6 +39,7 @@ class PreferencesService:
         notify_alert_billing: bool | None = None,
         automation_weekly_progress: bool | None = None,
         automation_inactivity_reminder: bool | None = None,
+        notify_tips_reminders: bool | None = None,
         notify_alert_streak_milestone: bool | None = None,
         notify_frequency: str | None = None,
         newsletter_consent: bool | None = None,
@@ -55,6 +56,7 @@ class PreferencesService:
             notify_alert_billing=notify_alert_billing,
             automation_weekly_progress=automation_weekly_progress,
             automation_inactivity_reminder=automation_inactivity_reminder,
+            notify_tips_reminders=notify_tips_reminders,
             notify_alert_streak_milestone=notify_alert_streak_milestone,
             notify_frequency=notify_frequency,
         )
@@ -77,6 +79,7 @@ class PreferencesService:
                 "notify_alert_billing": notify_alert_billing,
                 "automation_weekly_progress": automation_weekly_progress,
                 "automation_inactivity_reminder": automation_inactivity_reminder,
+                "notify_tips_reminders": notify_tips_reminders,
                 "notify_alert_streak_milestone": notify_alert_streak_milestone,
                 "notify_frequency": notify_frequency,
                 "newsletter_consent": newsletter_consent,

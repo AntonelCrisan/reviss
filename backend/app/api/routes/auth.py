@@ -13,6 +13,7 @@ from app.api.dependencies import (
 )
 from app.api.security import client_ip
 from app.core.rate_limit import _memory_rate_limit_buckets, consume_rate_limit
+from app.core.security import user_id_from_unsubscribe_token
 from app.models import StudyProject, User
 from app.schemas.auth import (
     ChangePasswordRequest,
@@ -25,6 +26,7 @@ from app.schemas.auth import (
     PasswordResetRequest,
     RegisterRequest,
     RequestEmailChangeRequest,
+    UnsubscribeResponse,
     UpdateFullNameRequest,
 )
 from app.schemas.preferences import StudyPreferencesResponse, StudyPreferencesUpdate
@@ -519,11 +521,39 @@ async def update_study_preferences(
         notify_alert_billing=payload.notify_alert_billing,
         automation_weekly_progress=payload.automation_weekly_progress,
         automation_inactivity_reminder=payload.automation_inactivity_reminder,
+        notify_tips_reminders=payload.notify_tips_reminders,
         notify_alert_streak_milestone=payload.notify_alert_streak_milestone,
         notify_frequency=payload.notify_frequency,
         newsletter_consent=payload.newsletter_consent,
     )
     return _study_preferences_response(study_preferences)
+
+
+@router.post("/notifications/unsubscribe", response_model=UnsubscribeResponse)
+async def unsubscribe_from_tips(
+    token: str,
+    session: DbSession,
+    settings: AppSettings,
+) -> UnsubscribeResponse:
+    """Turn the tips and reminders off from a link in an email.
+
+    No session required: the link has to work months later, from a phone that
+    was never signed in, and from the mail client's own one-click button.
+    """
+    user_id = user_id_from_unsubscribe_token(
+        token, settings.session_secret.get_secret_value()
+    )
+    if user_id is None:
+        # Nothing is revealed about whether the account exists.
+        return UnsubscribeResponse(unsubscribed=False)
+
+    user = await session.scalar(select(User).where(User.id == user_id))
+    if user is None:
+        return UnsubscribeResponse(unsubscribed=False)
+
+    await PreferencesService(session).update(user, notify_tips_reminders=False)
+    await session.commit()
+    return UnsubscribeResponse(unsubscribed=True)
 
 
 @router.get("/me/usage", response_model=UsageResponse)

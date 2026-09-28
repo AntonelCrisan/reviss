@@ -9,6 +9,7 @@ const allowedRoutes = new Map([
   ["POST:password-reset/request", "/api/auth/password-reset/request"],
   ["POST:register", "/api/auth/register"],
   ["POST:verify-email", "/api/auth/verify-email"],
+  ["POST:notifications/unsubscribe", "/api/auth/notifications/unsubscribe"],
   ["PATCH:me/password", "/api/auth/me/password"],
   ["PATCH:me/name", "/api/auth/me/name"],
   ["POST:me/email/change-request", "/api/auth/me/email/change-request"],
@@ -79,8 +80,12 @@ async function proxyAuthRequest(
   const body = request.method === "GET" ? undefined : await request.text();
   const isDelete = request.method === "DELETE";
 
+  // The query string carries ?token= for the unsubscribe link. Dropping it
+  // would leave the backend without the one thing that identifies the reader.
+  const queryString = new URL(request.url).search;
+
   async function callBackend(): Promise<Response> {
-    const backendResponse = await fetch(`${apiUrl}${backendPath}`, {
+    const backendResponse = await fetch(`${apiUrl}${backendPath}${queryString}`, {
       method: request.method,
       headers,
       body,

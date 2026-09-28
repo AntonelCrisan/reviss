@@ -85,6 +85,14 @@ class UserPreferences(Base):
         default=True,
         server_default="true",
     )
+    # Getting-started and come-back emails. Separate from the inactivity
+    # reminder: someone who studies may still not want us nudging them.
+    notify_tips_reminders: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default="true",
+    )
     notify_alert_streak_milestone: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,

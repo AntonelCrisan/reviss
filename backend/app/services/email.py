@@ -37,6 +37,10 @@ class EmailMessage:
     html: str
     text: str
     reply_to: str | None = None
+    # Extra SMTP headers, for List-Unsubscribe on the nudges: mail clients
+    # show their own unsubscribe button for them, which is what keeps a
+    # tired-of-us reader from pressing "spam" instead.
+    headers: dict[str, str] | None = None
 
 
 class EmailService:
@@ -59,6 +63,8 @@ class EmailService:
         }
         if message.reply_to:
             payload["reply_to"] = message.reply_to
+        if message.headers:
+            payload["headers"] = message.headers
         body = json.dumps(payload).encode("utf-8")
         request = urllib.request.Request(
             RESEND_EMAILS_URL,
@@ -179,6 +185,8 @@ def _email_shell(
     details_title: str | None = None,
     footer_note: str | None = None,
     preheader: str | None = None,
+    unsubscribe_url: str | None = None,
+    unsubscribe_label: str | None = None,
     language: str = "ro",
 ) -> str:
     safe_app_name = escape(app_name)
@@ -239,6 +247,14 @@ def _email_shell(
         "email.shell.footer_default", language, app_name=app_name
     )
     link_fallback = t("email.shell.link_fallback", language)
+    unsubscribe_block = ""
+    if unsubscribe_url and unsubscribe_label:
+        unsubscribe_block = f"""
+                          <p style="margin: 6px 0 0; color: #8d887f; font-size: 12px; line-height: 1.7;">
+                            <a href="{escape(unsubscribe_url, quote=True)}" style="color: #8d887f; text-decoration: underline;">{escape(unsubscribe_label)}</a>
+                          </p>
+        """
+
 
     return f"""
     <!doctype html>
@@ -308,6 +324,7 @@ def _email_shell(
                           <p style="margin: 6px 0 0; color: #8d887f; font-size: 12px; line-height: 1.7;">
                             {safe_app_name}
                           </p>
+{unsubscribe_block}
                         </td>
                       </tr>
                     </table>
@@ -979,6 +996,61 @@ def addon_invoice_paid_email(
         language=language,
     )
     return html, text
+
+
+def study_nudge_email(
+    *,
+    branch: str,
+    step: str,
+    tip: str | None,
+    action_url: str,
+    unsubscribe_url: str,
+    logo_html: str,
+    app_name: str = "Reviss",
+    language: str = "ro",
+) -> tuple[str, str, str]:
+    """A getting-started or come-back nudge, with its subject.
+
+    ``branch`` is "start" for an account with no project and "resume" for one
+    with a project nobody has studied; ``step`` is "first", "second" or
+    "repeat". The repeats carry a rotating ``tip`` so the fourth email does
+    not read like the third.
+    """
+    s = _strings(f"email.study_nudge.{branch}.{step}", language)
+    shared = _strings("email.study_nudge", language)
+
+    details: list[tuple[str, str | None]] = [
+        (s("detail1"), None),
+        (s("detail2"), None),
+        (s("detail3"), None),
+    ]
+    if tip:
+        details.append((tip, None))
+
+    html = _email_shell(
+        app_name=app_name,
+        eyebrow=shared("eyebrow"),
+        title=s("title"),
+        intro=s("intro"),
+        preheader=s("preheader"),
+        logo_html=logo_html,
+        cta_label=s("cta"),
+        action_url=action_url,
+        details_title=shared("details_title"),
+        details=details,
+        note=s("note"),
+        footer_note=shared("footer"),
+        unsubscribe_url=unsubscribe_url,
+        unsubscribe_label=shared("unsubscribe"),
+        language=language,
+    )
+    text = s(
+        "text",
+        url=action_url,
+        unsubscribe_url=unsubscribe_url,
+        app_name=app_name,
+    )
+    return s("subject"), html, text
 
 
 def usage_alert_email(

@@ -8,7 +8,8 @@ export type AuthPageKey =
   | "forgotPassword"
   | "resetPassword"
   | "verifyEmail"
-  | "confirmEmailChange";
+  | "confirmEmailChange"
+  | "unsubscribe";
 
 const alternateHrefs: Record<AuthPageKey, "/login" | "/register"> = {
   login: "/register",
@@ -17,6 +18,7 @@ const alternateHrefs: Record<AuthPageKey, "/login" | "/register"> = {
   resetPassword: "/login",
   verifyEmail: "/login",
   confirmEmailChange: "/login",
+  unsubscribe: "/login",
 };
 
 /** `generateMetadata` for an auth route: title and description from its messages. */

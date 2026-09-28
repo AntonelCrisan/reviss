@@ -569,7 +569,28 @@
         "feature1": "Confirmare din emailul trimis la adresa nouă",
         "feature2": "Link cu expirare și utilizare unică",
         "feature3": "Restul contului rămâne neschimbat"
+      },
+      "unsubscribe": {
+        "metaTitle": "Dezabonare",
+        "metaDescription": "Oprește sugestiile și memento-urile de la Reviss.",
+        "eyebrow": "Dezabonare",
+        "title": "Oprim sugestiile și memento-urile.",
+        "description": "Contul tău rămâne neatins. Nu îți mai trimitem emailuri care te îndeamnă să începi sau să revii la învățat.",
+        "alternateText": "Te-ai răzgândit?",
+        "alternateLabel": "Intră în cont",
+        "asideTitle": "Restul emailurilor rămân neschimbate.",
+        "asideDescription": "Confirmările de cont, facturile și alertele de consum sunt legate de contul tău și continuă să vină.",
+        "feature1": "Poți reactiva oricând din Setări, la Notificări",
+        "feature2": "Nu ștergem nimic din contul tău",
+        "feature3": "Link valabil și fără autentificare"
       }
+    },
+    "unsubscribe": {
+      "working": "Oprim sugestiile și memento-urile...",
+      "done": "Gata. Nu îți mai trimitem sugestii și memento-uri. Le poți reactiva oricând din Setări, la Notificări.",
+      "failed": "Linkul nu mai este valabil. Poți opri sugestiile din contul tău, la Setări, Notificări.",
+      "missingToken": "Linkul de dezabonare este incomplet.",
+      "goToSettings": "Deschide setările"
     }
   },
   "settings": {
@@ -746,6 +767,10 @@
       "streakMilestone": {
         "title": "Streak și realizări",
         "description": "Când atingi un număr de zile consecutive de studiu."
+      },
+      "tipsReminders": {
+        "title": "Sugestii și memento-uri",
+        "description": "Emailuri care te ajută să începi și să revii la învățat. Le poți opri oricând, inclusiv din emailul primit."
       }
     },
     "delivery": {

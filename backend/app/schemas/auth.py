@@ -118,3 +118,7 @@ class GoogleCallbackRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class UnsubscribeResponse(BaseModel):
+    unsubscribed: bool

@@ -1173,5 +1173,360 @@
     "ro": "pagini",
     "en": "pages",
     "fr": "pages"
+  },
+  "email.study_nudge.eyebrow": {
+    "ro": "Sugestii Reviss",
+    "en": "Reviss tips",
+    "fr": "Conseils Reviss"
+  },
+  "email.study_nudge.details_title": {
+    "ro": "Ce urmează",
+    "en": "What happens next",
+    "fr": "La suite"
+  },
+  "email.study_nudge.footer": {
+    "ro": "Primești acest email pentru că ai un cont Reviss și sugestiile sunt pornite. Le poți opri oricând din Setări, la Notificări.",
+    "en": "You are getting this email because you have a Reviss account and tips are on. You can turn them off any time in Settings, under Notifications.",
+    "fr": "Vous recevez cet e-mail car vous avez un compte Reviss et les conseils sont activés. Vous pouvez les désactiver à tout moment dans Paramètres, rubrique Notifications."
+  },
+  "email.study_nudge.unsubscribe": {
+    "ro": "Nu mai vreau aceste emailuri",
+    "en": "Stop these emails",
+    "fr": "Ne plus recevoir ces e-mails"
+  },
+  "email.study_nudge.tip.1": {
+    "ro": "Începe cu un singur capitol, nu cu tot cursul.",
+    "en": "Start with one chapter, not the whole course.",
+    "fr": "Commencez par un seul chapitre, pas par tout le cours."
+  },
+  "email.study_nudge.tip.2": {
+    "ro": "O poză clară a paginii e de ajuns: textul este citit automat.",
+    "en": "A clear photo of the page is enough: the text is read automatically.",
+    "fr": "Une photo nette de la page suffit : le texte est lu automatiquement."
+  },
+  "email.study_nudge.tip.3": {
+    "ro": "Un quiz de 8 întrebări îți arată în 5 minute ce nu știi.",
+    "en": "An eight-question quiz shows you in five minutes what you do not know.",
+    "fr": "Un quiz de huit questions vous montre en cinq minutes ce qui manque."
+  },
+  "email.study_nudge.start.first.subject": {
+    "ro": "Primul tău curs, gata în două minute",
+    "en": "Your first course, ready in two minutes",
+    "fr": "Votre premier cours, prêt en deux minutes"
+  },
+  "email.study_nudge.start.first.preheader": {
+    "ro": "Încarci un fișier, primești rezumat, flashcarduri și quiz.",
+    "en": "Upload one file and get a summary, flashcards and a quiz.",
+    "fr": "Importez un fichier et recevez résumé, flashcards et quiz."
+  },
+  "email.study_nudge.start.first.title": {
+    "ro": "Ai contul. Mai lipsește cursul.",
+    "en": "Your account is ready. The course is missing.",
+    "fr": "Votre compte est prêt. Il manque le cours."
+  },
+  "email.study_nudge.start.first.intro": {
+    "ro": "Ai nevoie de un singur fișier: un curs, un capitol, chiar și o poză a paginii. Reviss îți dă înapoi un rezumat structurat, flashcarduri și un quiz din materia ta.",
+    "en": "One file is enough: a course, a chapter, even a photo of the page. Reviss gives you back a structured summary, flashcards and a quiz from your own material.",
+    "fr": "Un seul fichier suffit : un cours, un chapitre, même une photo de la page. Reviss vous rend un résumé structuré, des flashcards et un quiz tirés de votre matière."
+  },
+  "email.study_nudge.start.first.detail1": {
+    "ro": "Încarci un PDF, un Word sau o poză a paginii.",
+    "en": "Upload a PDF, a Word file or a photo of the page.",
+    "fr": "Importez un PDF, un fichier Word ou une photo de la page."
+  },
+  "email.study_nudge.start.first.detail2": {
+    "ro": "În mai puțin de un minut ai rezumatul și flashcardurile.",
+    "en": "In under a minute you have the summary and the flashcards.",
+    "fr": "En moins d'une minute, vous avez le résumé et les flashcards."
+  },
+  "email.study_nudge.start.first.detail3": {
+    "ro": "Te verifici cu un quiz din materia ta, nu din altceva.",
+    "en": "You check yourself with a quiz from your own material, not someone else's.",
+    "fr": "Vous vous testez avec un quiz issu de votre matière, pas d'une autre."
+  },
+  "email.study_nudge.start.first.cta": {
+    "ro": "Încarcă primul curs",
+    "en": "Upload your first course",
+    "fr": "Importer le premier cours"
+  },
+  "email.study_nudge.start.first.note": {
+    "ro": "Planul Beginner e gratuit, fără card.",
+    "en": "The Beginner plan is free, no card needed.",
+    "fr": "Le plan Beginner est gratuit, sans carte."
+  },
+  "email.study_nudge.start.first.text": {
+    "ro": "Ai contul, mai lipsește cursul. Încarcă un PDF, un Word sau o poză a paginii și primești rezumat, flashcarduri și quiz în mai puțin de un minut. Începe aici: {url}\n\nNu mai vrei aceste emailuri? {unsubscribe_url}\n{app_name}",
+    "en": "Your account is ready, the course is missing. Upload a PDF, a Word file or a photo of the page and get a summary, flashcards and a quiz in under a minute. Start here: {url}\n\nDo not want these emails? {unsubscribe_url}\n{app_name}",
+    "fr": "Votre compte est prêt, il manque le cours. Importez un PDF, un fichier Word ou une photo de la page et recevez résumé, flashcards et quiz en moins d'une minute. Commencez ici : {url}\n\nVous ne voulez plus ces e-mails ? {unsubscribe_url}\n{app_name}"
+  },
+  "email.study_nudge.start.second.subject": {
+    "ro": "Cum arată un curs de 40 de pagini în Reviss",
+    "en": "What a 40-page course looks like in Reviss",
+    "fr": "À quoi ressemble un cours de 40 pages dans Reviss"
+  },
+  "email.study_nudge.start.second.preheader": {
+    "ro": "Rezumat de citit în 10 minute, flashcarduri și quizuri pe capitole.",
+    "en": "A summary you read in ten minutes, flashcards and quizzes per chapter.",
+    "fr": "Un résumé lu en dix minutes, des flashcards et des quiz par chapitre."
+  },
+  "email.study_nudge.start.second.title": {
+    "ro": "Din 40 de pagini rămân 10 minute de citit.",
+    "en": "Forty pages become ten minutes of reading.",
+    "fr": "Quarante pages deviennent dix minutes de lecture."
+  },
+  "email.study_nudge.start.second.intro": {
+    "ro": "Asta primești dintr-un singur fișier încărcat, fără să notezi nimic manual.",
+    "en": "That is what one uploaded file gives you, without writing a single note by hand.",
+    "fr": "Voilà ce qu'un seul fichier importé vous donne, sans prendre une seule note à la main."
+  },
+  "email.study_nudge.start.second.detail1": {
+    "ro": "Rezumat structurat, cu trimitere la paragraful din care vine fiecare idee.",
+    "en": "A structured summary that points to the paragraph each idea comes from.",
+    "fr": "Un résumé structuré qui renvoie au paragraphe d'où vient chaque idée."
+  },
+  "email.study_nudge.start.second.detail2": {
+    "ro": "Quizuri care îți arată exact ce ai greșit și unde să recitești.",
+    "en": "Quizzes that show exactly what you got wrong and what to reread.",
+    "fr": "Des quiz qui montrent exactement vos erreurs et ce qu'il faut relire."
+  },
+  "email.study_nudge.start.second.detail3": {
+    "ro": "Un traseu de învățare pe pași, pe care îi bifezi pe măsură ce îi faci.",
+    "en": "A study route in steps, ticked off as you go.",
+    "fr": "Un parcours d'étude par étapes, coché au fur et à mesure."
+  },
+  "email.study_nudge.start.second.cta": {
+    "ro": "Încearcă cu materialul tău",
+    "en": "Try it with your own material",
+    "fr": "Essayez avec votre matière"
+  },
+  "email.study_nudge.start.second.note": {
+    "ro": "Merge și cu un singur capitol, dacă nu ai timp de tot cursul.",
+    "en": "One chapter works too, if the whole course is too much right now.",
+    "fr": "Un seul chapitre suffit si tout le cours est trop pour l'instant."
+  },
+  "email.study_nudge.start.second.text": {
+    "ro": "Un curs de 40 de pagini devine un rezumat de 10 minute, flashcarduri și quizuri pe capitole. Încarcă materialul tău: {url}\n\nNu mai vrei aceste emailuri? {unsubscribe_url}\n{app_name}",
+    "en": "A 40-page course becomes a ten-minute summary, flashcards and quizzes per chapter. Upload your material: {url}\n\nDo not want these emails? {unsubscribe_url}\n{app_name}",
+    "fr": "Un cours de 40 pages devient un résumé de dix minutes, des flashcards et des quiz par chapitre. Importez votre matière : {url}\n\nVous ne voulez plus ces e-mails ? {unsubscribe_url}\n{app_name}"
+  },
+  "email.study_nudge.start.repeat.subject": {
+    "ro": "Un curs încărcat acum îți ia două minute",
+    "en": "Uploading a course takes two minutes",
+    "fr": "Importer un cours prend deux minutes"
+  },
+  "email.study_nudge.start.repeat.preheader": {
+    "ro": "Îți scriem rar. Contul te așteaptă cu tot ce ai nevoie.",
+    "en": "We write rarely. Your account is waiting with everything you need.",
+    "fr": "Nous écrivons rarement. Votre compte vous attend avec tout le nécessaire."
+  },
+  "email.study_nudge.start.repeat.title": {
+    "ro": "Când vine sesiunea, materialul tău e deja pregătit.",
+    "en": "When exams come, your material is already prepared.",
+    "fr": "Quand les examens arrivent, votre matière est déjà prête."
+  },
+  "email.study_nudge.start.repeat.intro": {
+    "ro": "Îți scriem rar, doar ca să-ți amintim că nu ai nevoie de mult timp ca să începi.",
+    "en": "We write rarely, only to remind you that starting does not take long.",
+    "fr": "Nous écrivons rarement, juste pour rappeler que commencer prend peu de temps."
+  },
+  "email.study_nudge.start.repeat.detail1": {
+    "ro": "Un fișier încărcat înseamnă rezumat, flashcarduri și quiz.",
+    "en": "One uploaded file means a summary, flashcards and a quiz.",
+    "fr": "Un fichier importé, c'est un résumé, des flashcards et un quiz."
+  },
+  "email.study_nudge.start.repeat.detail2": {
+    "ro": "Poți relua oricând de unde ai rămas, de pe telefon sau laptop.",
+    "en": "You can pick up where you left off, on your phone or your laptop.",
+    "fr": "Vous reprenez où vous en étiez, sur téléphone ou sur ordinateur."
+  },
+  "email.study_nudge.start.repeat.detail3": {
+    "ro": "Planul Beginner rămâne gratuit.",
+    "en": "The Beginner plan stays free.",
+    "fr": "Le plan Beginner reste gratuit."
+  },
+  "email.study_nudge.start.repeat.cta": {
+    "ro": "Încarcă un curs",
+    "en": "Upload a course",
+    "fr": "Importer un cours"
+  },
+  "email.study_nudge.start.repeat.note": {
+    "ro": "Primești acest mesaj o dată la două săptămâni, până când începi sau îl oprești.",
+    "en": "This message comes once every two weeks, until you start or turn it off.",
+    "fr": "Ce message arrive une fois toutes les deux semaines, jusqu'à ce que vous commenciez ou le désactiviez."
+  },
+  "email.study_nudge.start.repeat.text": {
+    "ro": "Materialul tău te așteaptă în Reviss. Un fișier încărcat înseamnă rezumat, flashcarduri și quiz: {url}\n\nNu mai vrei aceste emailuri? {unsubscribe_url}\n{app_name}",
+    "en": "Your material is waiting in Reviss. One uploaded file means a summary, flashcards and a quiz: {url}\n\nDo not want these emails? {unsubscribe_url}\n{app_name}",
+    "fr": "Votre matière vous attend dans Reviss. Un fichier importé, c'est un résumé, des flashcards et un quiz : {url}\n\nVous ne voulez plus ces e-mails ? {unsubscribe_url}\n{app_name}"
+  },
+  "email.study_nudge.resume.first.subject": {
+    "ro": "Rezumatul tău te așteaptă",
+    "en": "Your summary is waiting",
+    "fr": "Votre résumé vous attend"
+  },
+  "email.study_nudge.resume.first.preheader": {
+    "ro": "Ai proiectul gata. Îți lipsesc 10 minute de verificare.",
+    "en": "Your project is ready. Ten minutes of checking are missing.",
+    "fr": "Votre projet est prêt. Il manque dix minutes de vérification."
+  },
+  "email.study_nudge.resume.first.title": {
+    "ro": "Ai rezumatul. Îți lipsesc 10 minute de verificare.",
+    "en": "You have the summary. Ten minutes of checking are missing.",
+    "fr": "Vous avez le résumé. Il manque dix minutes de vérification."
+  },
+  "email.study_nudge.resume.first.intro": {
+    "ro": "Proiectul tău e generat, dar nu l-ai deschis încă la învățat. Verificarea e partea care te face să ții minte.",
+    "en": "Your project is generated, but you have not opened it to study yet. The checking is the part that makes it stick.",
+    "fr": "Votre projet est généré, mais vous ne l'avez pas encore ouvert pour étudier. C'est la vérification qui fait retenir."
+  },
+  "email.study_nudge.resume.first.detail1": {
+    "ro": "Marchează în rezumat ce e important, ca să revii direct acolo.",
+    "en": "Highlight what matters in the summary, so you come straight back to it.",
+    "fr": "Surlignez l'essentiel dans le résumé pour y revenir directement."
+  },
+  "email.study_nudge.resume.first.detail2": {
+    "ro": "Generează un quiz și vezi ce știi deja.",
+    "en": "Generate a quiz and see what you already know.",
+    "fr": "Générez un quiz et voyez ce que vous savez déjà."
+  },
+  "email.study_nudge.resume.first.detail3": {
+    "ro": "Bifează pașii din traseul de studiu, pe măsură ce îi faci.",
+    "en": "Tick off the steps of the study route as you do them.",
+    "fr": "Cochez les étapes du parcours au fur et à mesure."
+  },
+  "email.study_nudge.resume.first.cta": {
+    "ro": "Deschide proiectul",
+    "en": "Open your project",
+    "fr": "Ouvrir le projet"
+  },
+  "email.study_nudge.resume.first.note": {
+    "ro": "Zece minute de verificare fac mai mult decât o oră de recitit.",
+    "en": "Ten minutes of checking beat an hour of rereading.",
+    "fr": "Dix minutes de vérification valent mieux qu'une heure de relecture."
+  },
+  "email.study_nudge.resume.first.text": {
+    "ro": "Ai un proiect generat în Reviss, dar nu l-ai deschis la învățat. Zece minute de quiz îți arată ce știi: {url}\n\nNu mai vrei aceste emailuri? {unsubscribe_url}\n{app_name}",
+    "en": "You have a generated project in Reviss, but you have not opened it to study. Ten minutes of quiz show you what you know: {url}\n\nDo not want these emails? {unsubscribe_url}\n{app_name}",
+    "fr": "Vous avez un projet généré dans Reviss, mais vous ne l'avez pas ouvert pour étudier. Dix minutes de quiz montrent ce que vous savez : {url}\n\nVous ne voulez plus ces e-mails ? {unsubscribe_url}\n{app_name}"
+  },
+  "email.study_nudge.resume.second.subject": {
+    "ro": "Zece minute de quiz, nu o oră de recitit",
+    "en": "Ten minutes of quiz, not an hour of rereading",
+    "fr": "Dix minutes de quiz, pas une heure de relecture"
+  },
+  "email.study_nudge.resume.second.preheader": {
+    "ro": "Quizul îți arată ce nu știi și unde să recitești.",
+    "en": "The quiz shows what you do not know and what to reread.",
+    "fr": "Le quiz montre ce qui manque et ce qu'il faut relire."
+  },
+  "email.study_nudge.resume.second.title": {
+    "ro": "Recititul te liniștește. Quizul îți arată adevărul.",
+    "en": "Rereading feels safe. The quiz tells you the truth.",
+    "fr": "Relire rassure. Le quiz dit la vérité."
+  },
+  "email.study_nudge.resume.second.intro": {
+    "ro": "Ai deja materialul pregătit în Reviss. Un singur quiz îți arată ce a rămas și ce nu.",
+    "en": "Your material is already prepared in Reviss. One quiz shows you what stuck and what did not.",
+    "fr": "Votre matière est déjà prête dans Reviss. Un seul quiz montre ce qui est acquis et ce qui ne l'est pas."
+  },
+  "email.study_nudge.resume.second.detail1": {
+    "ro": "Fiecare întrebare îți spune de ce răspunsul corect e corect.",
+    "en": "Every question tells you why the right answer is right.",
+    "fr": "Chaque question explique pourquoi la bonne réponse est la bonne."
+  },
+  "email.study_nudge.resume.second.detail2": {
+    "ro": "La greșeli primești exact paragraful din rezumat de recitit.",
+    "en": "For each mistake you get the exact paragraph to reread.",
+    "fr": "Pour chaque erreur, vous recevez le paragraphe exact à relire."
+  },
+  "email.study_nudge.resume.second.detail3": {
+    "ro": "Greșelile pot deveni flashcarduri, cu un clic.",
+    "en": "Mistakes become flashcards with one click.",
+    "fr": "Les erreurs deviennent des flashcards en un clic."
+  },
+  "email.study_nudge.resume.second.cta": {
+    "ro": "Generează un quiz",
+    "en": "Generate a quiz",
+    "fr": "Générer un quiz"
+  },
+  "email.study_nudge.resume.second.note": {
+    "ro": "Poți alege dificultatea și numărul de întrebări.",
+    "en": "You choose the difficulty and how many questions.",
+    "fr": "Vous choisissez la difficulté et le nombre de questions."
+  },
+  "email.study_nudge.resume.second.text": {
+    "ro": "Un quiz de zece minute îți arată ce știi și ce mai ai de recitit. Generează unul: {url}\n\nNu mai vrei aceste emailuri? {unsubscribe_url}\n{app_name}",
+    "en": "A ten-minute quiz shows what you know and what to reread. Generate one: {url}\n\nDo not want these emails? {unsubscribe_url}\n{app_name}",
+    "fr": "Un quiz de dix minutes montre ce que vous savez et ce qu'il faut relire. Générez-en un : {url}\n\nVous ne voulez plus ces e-mails ? {unsubscribe_url}\n{app_name}"
+  },
+  "email.study_nudge.resume.repeat.subject": {
+    "ro": "Materialul tău din Reviss e tot acolo",
+    "en": "Your Reviss material is still there",
+    "fr": "Votre matière dans Reviss est toujours là"
+  },
+  "email.study_nudge.resume.repeat.preheader": {
+    "ro": "Îți scriem rar. Proiectul tău te așteaptă.",
+    "en": "We write rarely. Your project is waiting.",
+    "fr": "Nous écrivons rarement. Votre projet vous attend."
+  },
+  "email.study_nudge.resume.repeat.title": {
+    "ro": "Proiectul tău te așteaptă.",
+    "en": "Your project is waiting.",
+    "fr": "Votre projet vous attend."
+  },
+  "email.study_nudge.resume.repeat.intro": {
+    "ro": "Îți scriem rar, doar cât să nu uiți că materialul e deja pregătit.",
+    "en": "We write rarely, just so you do not forget the material is ready.",
+    "fr": "Nous écrivons rarement, juste pour que vous n'oubliiez pas que la matière est prête."
+  },
+  "email.study_nudge.resume.repeat.detail1": {
+    "ro": "Rezumatul, flashcardurile și quizurile rămân salvate în cont.",
+    "en": "The summary, the flashcards and the quizzes stay saved in your account.",
+    "fr": "Le résumé, les flashcards et les quiz restent enregistrés dans le compte."
+  },
+  "email.study_nudge.resume.repeat.detail2": {
+    "ro": "Poți relua în zece minute, de unde ai rămas.",
+    "en": "You can pick it up again in ten minutes, where you left off.",
+    "fr": "Vous pouvez reprendre en dix minutes, là où vous vous étiez arrêté."
+  },
+  "email.study_nudge.resume.repeat.detail3": {
+    "ro": "Dacă materia s-a schimbat, încarcă alt curs.",
+    "en": "If the subject changed, upload another course.",
+    "fr": "Si la matière a changé, importez un autre cours."
+  },
+  "email.study_nudge.resume.repeat.cta": {
+    "ro": "Deschide proiectul",
+    "en": "Open your project",
+    "fr": "Ouvrir le projet"
+  },
+  "email.study_nudge.resume.repeat.note": {
+    "ro": "Primești acest mesaj o dată la două săptămâni, până când reiei sau îl oprești.",
+    "en": "This message comes once every two weeks, until you pick it up again or turn it off.",
+    "fr": "Ce message arrive une fois toutes les deux semaines, jusqu'à ce que vous repreniez ou le désactiviez."
+  },
+  "email.study_nudge.resume.repeat.text": {
+    "ro": "Proiectul tău din Reviss te așteaptă, cu rezumat, flashcarduri și quizuri: {url}\n\nNu mai vrei aceste emailuri? {unsubscribe_url}\n{app_name}",
+    "en": "Your Reviss project is waiting, with its summary, flashcards and quizzes: {url}\n\nDo not want these emails? {unsubscribe_url}\n{app_name}",
+    "fr": "Votre projet Reviss vous attend, avec résumé, flashcards et quiz : {url}\n\nVous ne voulez plus ces e-mails ? {unsubscribe_url}\n{app_name}"
+  },
+  "notification.study_nudge.start.title": {
+    "ro": "Începe cu primul tău curs",
+    "en": "Start with your first course",
+    "fr": "Commencez par votre premier cours"
+  },
+  "notification.study_nudge.start.body": {
+    "ro": "Încarcă un curs și primești rezumat, flashcarduri și quiz în mai puțin de un minut.",
+    "en": "Upload a course and get a summary, flashcards and a quiz in under a minute.",
+    "fr": "Importez un cours et recevez résumé, flashcards et quiz en moins d'une minute."
+  },
+  "notification.study_nudge.resume.title": {
+    "ro": "Continuă de unde ai rămas",
+    "en": "Pick up where you left off",
+    "fr": "Reprenez où vous en étiez"
+  },
+  "notification.study_nudge.resume.body": {
+    "ro": "Ai un proiect generat, dar nu l-ai deschis la învățat. Zece minute de quiz fac diferența.",
+    "en": "You have a generated project you have not opened to study. Ten minutes of quiz make the difference.",
+    "fr": "Vous avez un projet généré que vous n'avez pas ouvert pour étudier. Dix minutes de quiz font la différence."
   }
 }
