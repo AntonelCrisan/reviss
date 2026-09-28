@@ -438,32 +438,38 @@ export default async function Home() {
     question: t(`faq.items.${id}.question`),
     answer: t(`faq.items.${id}.answer`),
   }));
+  // Google reads the site name shown above a search result from the WebSite
+  // node here. It wants the home page's own address, which is the root with
+  // its slash - the same address the bare domain redirects to - and it trusts
+  // the name more when the nodes point at each other by id.
+  const homeUrl = `${siteUrl}/`;
+  const organizationId = `${homeUrl}#organization`;
+  const websiteId = `${homeUrl}#website`;
   const homepageStructuredData = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
+        "@id": organizationId,
         name: siteName,
-        url: siteUrl,
+        url: homeUrl,
         logo: absoluteUrl("/assets/logos/Reviss_logo_dark.svg"),
       },
       {
         "@type": "WebSite",
+        "@id": websiteId,
         name: siteName,
-        url: siteUrl,
+        url: homeUrl,
+        publisher: { "@id": organizationId },
         inLanguage,
       },
       {
         "@type": "WebPage",
         name: t("meta.title"),
-        url: siteUrl,
+        url: homeUrl,
         description: t("meta.description"),
         inLanguage,
-        isPartOf: {
-          "@type": "WebSite",
-          name: siteName,
-          url: siteUrl,
-        },
+        isPartOf: { "@id": websiteId },
       },
       {
         "@type": "SoftwareApplication",
