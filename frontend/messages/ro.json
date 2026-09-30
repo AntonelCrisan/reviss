@@ -1800,6 +1800,7 @@
     "dupaAceastaDataContulTrece": "După această dată contul trece automat pe planul gratuit.",
     "facturi": "Facturi",
     "faraPlataRecurenta": "Nu există o plată recurentă și nicio dată de reînnoire. Planul rămâne activ până când un administrator îl schimbă.",
+    "dataLaOra": "{date}, la ora {time}",
     "planulCurrentplannameEsteActiv": "Planul {currentPlanName} este activ",
     "dataUrmatoareiPlatiNuEsteDisponibila": "Data următoarei plăți nu este disponibilă încă. Dacă tocmai ai plătit, apare imediat ce procesatorul de plăți ne trimite confirmarea.",
     "finalulPerioadeiPlatite": "finalul perioadei plătite",

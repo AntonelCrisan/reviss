@@ -768,7 +768,7 @@ async def grant_admin_user_manual_plan(
     service = StripePaymentService(session, settings)
 
     try:
-        refreshed_user, _ = await service.admin_grant_manual_plan(
+        outcome = await service.admin_grant_manual_plan(
             user=target_user,
             actor=admin_user,
             plan_slug=payload.plan_slug,
@@ -783,11 +783,15 @@ async def grant_admin_user_manual_plan(
     ) as exc:
         raise _stripe_http_error(exc) from exc
 
-    return await _subscription_action_response(
-        session,
-        refreshed_user,
-        "Planul a fost acordat manual.",
-    )
+    message = "Planul a fost acordat manual."
+    if outcome.stopped_subscriptions:
+        # The admin needs to know a payment was stopped, and that the days
+        # already paid for are not given back.
+        message = (
+            "Planul a fost acordat manual. Abonamentul platit a fost oprit "
+            "si nu se va reinnoi. Banii deja platiti nu se restituie."
+        )
+    return await _subscription_action_response(session, outcome.user, message)
 
 
 @router.delete(

@@ -152,6 +152,23 @@ function formatSubscriptionDate(
   }).format(date);
 }
 
+/** The clock time of a renewal, in the reader's own timezone.
+ *
+ * A date on its own reads as "some time today" and, on the day itself, as
+ * something that should already have happened. The hour is what tells the
+ * reader the charge is still ahead of them.
+ */
+function formatSubscriptionTime(locale: string, value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function startOfLocalDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
@@ -226,6 +243,14 @@ export function UpgradePage({
     locale,
     activeSubscription?.current_period_end,
   );
+  const accessUntilTime = formatSubscriptionTime(
+    locale,
+    activeSubscription?.current_period_end,
+  );
+  // The chips above stay short; only the notice carries the hour.
+  const accessUntilAtLabel = accessUntilTime
+    ? t("dataLaOra", { date: accessUntilLabel, time: accessUntilTime })
+    : accessUntilLabel;
   const daysToRenewal = daysUntil(activeSubscription?.current_period_end);
   const renewalCountdown = renewalCountdownLabel(t, daysToRenewal);
   const hasPeriodEnd =
@@ -259,7 +284,10 @@ export function UpgradePage({
     : cancellationPending
       ? {
           tone: "warning" as const,
-          title: t("abonamentulCurrentplannameExpiraPeAccess", { currentPlanName, accessUntilLabel }),
+          title: t("abonamentulCurrentplannameExpiraPeAccess", {
+            currentPlanName,
+            accessUntilLabel: accessUntilAtLabel,
+          }),
           detail:
             daysToRenewal !== null
               ? t("maiAiAccesRenewalcountdownDupa", { renewalCountdown })
@@ -267,7 +295,10 @@ export function UpgradePage({
         }
       : {
           tone: "neutral" as const,
-          title: t("abonamentulCurrentplannameSeReinnoiesteP", { currentPlanName, accessUntilLabel }),
+          title: t("abonamentulCurrentplannameSeReinnoiesteP", {
+            currentPlanName,
+            accessUntilLabel: accessUntilAtLabel,
+          }),
           detail:
             daysToRenewal !== null
               ? t("urmatoareaPlataAreLocRenewalcountdown", { renewalCountdown })

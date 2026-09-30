@@ -10,6 +10,7 @@ from app.services import stripe_payments as stripe_module
 from app.services.stripe_payments import (
     StripePaymentService,
     StripePlanUnavailableError,
+    StripeRequestError,
 )
 
 
@@ -312,7 +313,7 @@ def test_resync_without_a_stripe_customer_is_refused() -> None:
 # --- manual plan grants -----------------------------------------------------
 
 
-def _grant_service(session, plan, active_grant):
+def _grant_service(session, plan, active_grant, paid_subscriptions=None):
     service = _service(session)
 
     async def _scalar(_statement):
@@ -327,11 +328,40 @@ def _grant_service(session, plan, active_grant):
     async def _refreshed(user):
         return user
 
+    async def _fetch_active(*, user):  # noqa: ARG001
+        return list(paid_subscriptions or [])
+
     session.scalar = _scalar
     service._fetch_active_manual_grant = _fetch_grant
     service._reactivate_projects_for_plan = _reactivate
     service._refreshed_user = _refreshed
+    service._fetch_active_subscriptions = _fetch_active
     return service
+
+
+def _paid_subscription(stripe_id="sub_live_1"):
+    return SimpleNamespace(
+        id=uuid.uuid4(),
+        stripe_subscription_id=stripe_id,
+        status="active",
+        canceled_at=None,
+        cancel_at_period_end=False,
+        updated_at=None,
+    )
+
+
+def _stripe_client(monkeypatch, *, canceled, error=None):
+    class _Client:
+        def __init__(self, _settings) -> None:
+            pass
+
+        async def cancel_subscription(self, *, subscription_id):
+            if error is not None:
+                raise error
+            canceled.append(subscription_id)
+            return {"id": subscription_id, "status": "canceled"}
+
+    monkeypatch.setattr(stripe_module, "StripeClient", _Client)
 
 
 def test_manual_grant_sets_the_plan_and_records_the_reason() -> None:
@@ -344,7 +374,7 @@ def test_manual_grant_sets_the_plan_and_records_the_reason() -> None:
         current_plan_id=None,
     )
 
-    refreshed, grant = asyncio.run(
+    outcome = asyncio.run(
         service.admin_grant_manual_plan(
             user=user,
             actor=_actor(),
@@ -356,9 +386,74 @@ def test_manual_grant_sets_the_plan_and_records_the_reason() -> None:
     )
 
     # Entitlement checks all read current_plan_id, so the grant must write it.
-    assert refreshed.current_plan_id == plan.id
-    assert grant.reason == "compensatie pentru plata esuata"
+    assert outcome.user.current_plan_id == plan.id
+    assert outcome.grant.reason == "compensatie pentru plata esuata"
+    assert outcome.stopped_subscriptions == 0
     assert "admin.subscription.manual_plan.granted" in _audit_actions(session)
+
+
+def test_a_grant_stops_the_subscription_the_user_was_paying_for(monkeypatch) -> None:
+    """Nobody keeps paying for a plan an admin has just replaced by hand."""
+    session = _FakeSession()
+    plan = SimpleNamespace(id=uuid.uuid4(), slug="pro", name="Pro")
+    subscription = _paid_subscription()
+    service = _grant_service(
+        session, plan, active_grant=None, paid_subscriptions=[subscription]
+    )
+    canceled: list[str] = []
+    _stripe_client(monkeypatch, canceled=canceled)
+    user = SimpleNamespace(
+        id=uuid.uuid4(), email="student@example.com", current_plan_id=None
+    )
+
+    outcome = asyncio.run(
+        service.admin_grant_manual_plan(
+            user=user,
+            actor=_actor(),
+            plan_slug="pro",
+            reason="upgrade oferit de echipa",
+            user_agent=None,
+            ip_address=None,
+        )
+    )
+
+    assert canceled == ["sub_live_1"]
+    assert subscription.status == "canceled"
+    assert subscription.cancel_at_period_end is False
+    assert outcome.stopped_subscriptions == 1
+    assert "admin.subscription.manual_plan.payment_stopped" in _audit_actions(session)
+
+
+def test_a_grant_survives_stripe_being_unreachable(monkeypatch) -> None:
+    """The admin's decision stands; the failure is written down instead."""
+    session = _FakeSession()
+    plan = SimpleNamespace(id=uuid.uuid4(), slug="pro", name="Pro")
+    subscription = _paid_subscription()
+    service = _grant_service(
+        session, plan, active_grant=None, paid_subscriptions=[subscription]
+    )
+    _stripe_client(
+        monkeypatch, canceled=[], error=StripeRequestError("Stripe indisponibil")
+    )
+    user = SimpleNamespace(id=uuid.uuid4(), email="s@x.ro", current_plan_id=None)
+
+    outcome = asyncio.run(
+        service.admin_grant_manual_plan(
+            user=user,
+            actor=_actor(),
+            plan_slug="pro",
+            reason="upgrade oferit de echipa",
+            user_agent=None,
+            ip_address=None,
+        )
+    )
+
+    assert outcome.user.current_plan_id == plan.id
+    assert outcome.stopped_subscriptions == 0
+    assert subscription.status == "active"
+    assert "admin.subscription.manual_plan.payment_stop_failed" in _audit_actions(
+        session
+    )
 
 
 def test_a_second_live_manual_grant_is_refused() -> None:
@@ -488,6 +583,7 @@ def test_revoking_without_a_grant_is_refused() -> None:
 
     assert session.commits == 0
 
+
 # --- Stripe listing --------------------------------------------------------
 
 
@@ -542,3 +638,107 @@ def test_listing_stops_when_stripe_keeps_claiming_more() -> None:
     assert len(result) >= _MAX_LISTED_SUBSCRIPTIONS
     assert counter["n"] <= (_MAX_LISTED_SUBSCRIPTIONS // 100) + 1
 
+
+# --- a hand-granted plan versus Stripe's own events -------------------------
+
+
+def _upsert_service(session, *, existing, grant, latest_is_this=True):
+    """A service where only the plan decision is left to the code under test."""
+    service = _service(session)
+    canceled_superseded: list[object] = []
+    queue = [existing]
+
+    async def _scalar(_statement):
+        return queue.pop(0) if queue else None
+
+    async def _latest(*, user):  # noqa: ARG001
+        return existing if latest_is_this else SimpleNamespace(id=uuid.uuid4())
+
+    async def _fetch_grant(*, user):  # noqa: ARG001
+        return grant if grant is None or grant.revoked_at is None else None
+
+    async def _reactivate(**_kwargs):
+        return None
+
+    async def _cancel_superseded(**kwargs):
+        canceled_superseded.append(kwargs)
+
+    session.scalar = _scalar
+    service._latest_active_subscription = _latest
+    service._fetch_active_manual_grant = _fetch_grant
+    service._reactivate_projects_for_plan = _reactivate
+    service._cancel_superseded_subscriptions = _cancel_superseded
+    return service
+
+
+def _upsert(service, *, user, plan, status="active"):
+    return asyncio.run(
+        service._upsert_subscription(
+            user=user,
+            plan=plan,
+            stripe_customer_id="cus_1",
+            stripe_subscription_id="sub_1",
+            stripe_price_id="price_1",
+            status=status,
+            current_period_start=None,
+            current_period_end=None,
+            cancel_at_period_end=False,
+            canceled_at=None,
+        )
+    )
+
+
+def test_a_renewal_does_not_undo_a_plan_an_admin_granted() -> None:
+    """The old subscription keeps renewing; the granted plan still wins."""
+    session = _FakeSession()
+    granted_plan_id = uuid.uuid4()
+    subscription_plan = SimpleNamespace(id=uuid.uuid4(), slug="focus")
+    existing = _paid_subscription()
+    grant = SimpleNamespace(
+        plan_id=granted_plan_id, revoked_at=None, revoke_reason=None
+    )
+    service = _upsert_service(session, existing=existing, grant=grant)
+    user = SimpleNamespace(
+        id=uuid.uuid4(), email="s@x.ro", current_plan_id=granted_plan_id
+    )
+
+    _upsert(service, user=user, plan=subscription_plan)
+
+    assert user.current_plan_id == granted_plan_id
+    assert grant.revoked_at is None
+
+
+def test_buying_a_plan_ends_the_one_that_was_granted() -> None:
+    """A purchase is the user's own decision, so it settles the plan."""
+    session = _FakeSession()
+    subscription_plan = SimpleNamespace(id=uuid.uuid4(), slug="pro")
+    grant = SimpleNamespace(plan_id=uuid.uuid4(), revoked_at=None, revoke_reason=None)
+    service = _upsert_service(session, existing=None, grant=grant)
+    user = SimpleNamespace(
+        id=uuid.uuid4(),
+        email="s@x.ro",
+        full_name="Student Test",
+        current_plan_id=grant.plan_id,
+    )
+
+    _upsert(service, user=user, plan=subscription_plan)
+
+    assert user.current_plan_id == subscription_plan.id
+    assert grant.revoked_at is not None
+    assert "stripe.subscription.manual_plan.superseded" in _audit_actions(session)
+
+
+def test_losing_the_subscription_falls_back_to_the_granted_plan() -> None:
+    """Not to the free plan: the grant is still standing."""
+    session = _FakeSession()
+    subscription_plan = SimpleNamespace(id=uuid.uuid4(), slug="focus")
+    existing = _paid_subscription()
+    grant = SimpleNamespace(plan_id=uuid.uuid4(), revoked_at=None, revoke_reason=None)
+    service = _upsert_service(session, existing=existing, grant=grant)
+    user = SimpleNamespace(
+        id=uuid.uuid4(), email="s@x.ro", current_plan_id=subscription_plan.id
+    )
+
+    _upsert(service, user=user, plan=subscription_plan, status="canceled")
+
+    assert user.current_plan_id == grant.plan_id

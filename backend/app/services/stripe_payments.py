@@ -11,7 +11,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 from uuid import UUID, uuid4
 
 from anyio import to_thread
@@ -66,6 +66,14 @@ _MAX_LISTED_SUBSCRIPTIONS = 500
 # is in use, and without this every page load pays for another round trip to
 # Stripe and writes another error to the log.
 _SUBSCRIPTIONS_MISSING_IN_STRIPE: set[str] = set()
+
+
+class ManualPlanGrantOutcome(NamedTuple):
+    """What an admin grant did, including the payments it put a stop to."""
+
+    user: User
+    grant: ManualPlanGrant
+    stopped_subscriptions: int
 
 
 class StripeConfigurationError(Exception):
@@ -1161,6 +1169,14 @@ class StripePaymentService:
         if previous_plan_id != plan.id:
             await self._reactivate_projects_for_plan(user=user, plan=plan)
 
+        # Someone given a plan by hand must not keep paying for the one they
+        # had. Nothing is refunded - the days already paid for are theirs -
+        # but the subscription stops here and never renews.
+        stopped = await self._stop_paid_subscriptions_for_grant(
+            user=user,
+            actor=actor,
+        )
+
         add_audit_log(
             self._session,
             action="admin.subscription.manual_plan.granted",
@@ -1171,12 +1187,113 @@ class StripePaymentService:
                 "target_user_email": user.email,
                 "plan_slug": plan.slug,
                 "reason": reason.strip(),
+                "stopped_subscriptions": stopped,
             },
             ip_address=ip_address,
             user_agent=user_agent,
         )
         await self._session.commit()
-        return await self._refreshed_user(user), grant
+        return ManualPlanGrantOutcome(
+            user=await self._refreshed_user(user),
+            grant=grant,
+            stopped_subscriptions=stopped,
+        )
+
+    async def _stop_paid_subscriptions_for_grant(
+        self,
+        *,
+        user: User,
+        actor: User,
+    ) -> int:
+        """Cancel in Stripe every paid subscription the user still has.
+
+        Failures are recorded rather than raised: the grant itself has already
+        been decided by an admin, and leaving them without the plan because
+        Stripe was unreachable would be the worse outcome. The audit trail is
+        what tells an admin a payment is still running somewhere.
+        """
+        subscriptions = await self._fetch_active_subscriptions(user=user)
+        if not subscriptions:
+            return 0
+
+        try:
+            stripe = StripeClient(self._settings)
+        except StripeConfigurationError as exc:
+            for subscription in subscriptions:
+                self._log_grant_stop_failure(subscription, exc)
+            return 0
+
+        now = datetime.now(UTC)
+        stopped = 0
+        for subscription in subscriptions:
+            try:
+                await stripe.cancel_subscription(
+                    subscription_id=subscription.stripe_subscription_id,
+                )
+            except StripeRequestError as exc:
+                if exc.error_code != "resource_missing":
+                    self._log_grant_stop_failure(subscription, exc)
+                    continue
+                # Stripe never had it, so there is nothing left to cancel -
+                # only our own row to put straight.
+
+            subscription.status = "canceled"
+            subscription.canceled_at = now
+            subscription.cancel_at_period_end = False
+            subscription.updated_at = now
+            stopped += 1
+            add_audit_log(
+                self._session,
+                action="admin.subscription.manual_plan.payment_stopped",
+                actor=actor,
+                resource_type="user_subscription",
+                resource_id=str(subscription.id),
+                details={
+                    "target_user_email": user.email,
+                    "stripe_subscription_id": subscription.stripe_subscription_id,
+                },
+            )
+        return stopped
+
+    def _log_grant_stop_failure(
+        self,
+        subscription: UserSubscription,
+        error: Exception,
+    ) -> None:
+        add_audit_log(
+            self._session,
+            action="admin.subscription.manual_plan.payment_stop_failed",
+            status="failed",
+            resource_type="user_subscription",
+            resource_id=str(subscription.id),
+            details={
+                "stripe_subscription_id": subscription.stripe_subscription_id,
+                "error": _trim_delivery_error(error),
+            },
+        )
+
+    async def _revoke_grant_for_payment(
+        self,
+        *,
+        grant: ManualPlanGrant,
+        user: User,
+    ) -> None:
+        """End a hand-granted plan because the user bought one themselves.
+
+        Left standing, the grant would come back to haunt them: a re-sync
+        would put them on the granted plan again, and losing the paid
+        subscription would drop them to the free plan instead of the grant.
+        """
+        grant.revoked_at = datetime.now(UTC)
+        grant.revoke_reason = "Inlocuit de un abonament platit."
+        add_audit_log(
+            self._session,
+            action="stripe.subscription.manual_plan.superseded",
+            actor=user,
+            resource_type="user",
+            resource_id=str(user.id),
+            details={"target_user_email": user.email},
+        )
 
     async def admin_revoke_manual_plan(
         self,
@@ -1800,7 +1917,10 @@ class StripePaymentService:
                 latest_active_subscription is None
                 or latest_active_subscription.id == user_subscription.id
             ):
-                user.current_plan_id = user_subscription.plan_id
+                # Never reached for a brand new subscription, so a live grant
+                # here always outranks the invoice.
+                if await self._fetch_active_manual_grant(user=user) is None:
+                    user.current_plan_id = user_subscription.plan_id
                 await self._cancel_superseded_subscriptions(
                     user=user,
                     active_subscription=user_subscription,
@@ -2060,6 +2180,9 @@ class StripePaymentService:
                 UserSubscription.stripe_subscription_id == stripe_subscription_id
             )
         )
+        # A subscription we are seeing for the first time is a purchase the
+        # user just made; everything after that is its own later news.
+        is_new_subscription = user_subscription is None
         if user_subscription is None:
             user_subscription = UserSubscription(
                 user_id=user.id,
@@ -2096,10 +2219,18 @@ class StripePaymentService:
                 latest_active_subscription is None
                 or latest_active_subscription.id == user_subscription.id
             ):
-                previous_plan_id = user.current_plan_id
-                user.current_plan_id = plan.id
-                if previous_plan_id != plan.id:
-                    await self._reactivate_projects_for_plan(user=user, plan=plan)
+                grant = await self._fetch_active_manual_grant(user=user)
+                if grant is not None and is_new_subscription:
+                    # They paid for a plan themselves: that settles it.
+                    await self._revoke_grant_for_payment(grant=grant, user=user)
+                    grant = None
+                # An admin decided this account's plan by hand. A renewal of a
+                # subscription they had from before must not quietly undo it.
+                if grant is None:
+                    previous_plan_id = user.current_plan_id
+                    user.current_plan_id = plan.id
+                    if previous_plan_id != plan.id:
+                        await self._reactivate_projects_for_plan(user=user, plan=plan)
                 if cancel_superseded:
                     await self._cancel_superseded_subscriptions(
                         user=user,
@@ -2109,10 +2240,15 @@ class StripePaymentService:
             status in INACTIVE_SUBSCRIPTION_STATUSES
             and user.current_plan_id == plan.id
         ):
-            free_plan = await self._session.scalar(
-                select(SubscriptionPlan).where(SubscriptionPlan.slug == "start")
-            )
-            user.current_plan_id = free_plan.id if free_plan is not None else None
+            grant = await self._fetch_active_manual_grant(user=user)
+            if grant is not None:
+                # The subscription is gone, the hand-granted plan is not.
+                user.current_plan_id = grant.plan_id
+            else:
+                free_plan = await self._session.scalar(
+                    select(SubscriptionPlan).where(SubscriptionPlan.slug == "start")
+                )
+                user.current_plan_id = free_plan.id if free_plan is not None else None
 
     async def _latest_active_subscription(
         self,
