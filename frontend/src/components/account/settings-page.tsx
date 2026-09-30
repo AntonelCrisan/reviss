@@ -7,8 +7,10 @@ import {
   useRef,
   useState,
 } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { AccountAvatar } from "@/components/account/account-avatar";
 import { AccountStaticShell } from "@/components/account/account-static-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CookieSettingsButton } from "@/components/legal/cookie-consent";
@@ -19,12 +21,16 @@ import {
 import { useLanguage } from "@/components/language-provider";
 import {
   AuthApiError,
+  avatarUrl,
   type LanguagePreference,
+  removeAvatar,
   requestAccountDeletion,
   updateLanguagePreference,
   updateThemePreference,
+  uploadAvatar,
   withdrawNewsletterConsent,
 } from "@/lib/auth-api";
+
 import {
   getActivePlanBadge,
   getActivePlanMaterialLimit,
@@ -52,6 +58,16 @@ import {
 } from "@/lib/preferences-api";
 import { toast } from "@/lib/toast-store";
 import { SettingsPageSkeletonBody } from "@/components/account/account-page-skeletons";
+
+// Loaded the first time someone edits their picture. Most visits to this page
+// never open it, and the editor carries the whole cropping machinery with it.
+const AvatarCropDialog = dynamic(
+  () =>
+    import("@/components/account/avatar-crop-dialog").then(
+      (module) => module.AvatarCropDialog,
+    ),
+  { ssr: false },
+);
 
 type SettingsTabId =
   | "account"
@@ -224,17 +240,6 @@ function useActiveSectionLabel(
   return activeLabel;
 }
 
-function initials(name: string) {
-  return (
-    name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "RZ"
-  );
-}
-
 type PreviewColors = {
   app: string;
   surface: string;
@@ -289,6 +294,11 @@ export function SettingsPage() {
   const t = useTranslations("settings");
   const locale = useLocale();
   const { user, setUser } = useAuth();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  // The file waits here while the reader frames it; nothing is sent until
+  // they are happy with the square.
+  const [avatarToCrop, setAvatarToCrop] = useState<File | null>(null);
   const {
     preference,
     resolvedTheme,
@@ -624,6 +634,51 @@ export function SettingsPage() {
     }
   }
 
+  function handleAvatarPicked(file: File | undefined) {
+    if (!file || isSavingAvatar) return;
+    setAvatarToCrop(file);
+    // Cleared now, so picking the same file twice still opens the editor.
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  }
+
+  async function handleAvatarCropped(square: Blob) {
+    if (isSavingAvatar) return;
+
+    setIsSavingAvatar(true);
+    try {
+      setUser(await uploadAvatar(square));
+      setAvatarToCrop(null);
+      toast.success(t("toasts.avatarSaved"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("toasts.avatarFailed"),
+      );
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  }
+
+  function handleAvatarUnreadable() {
+    setAvatarToCrop(null);
+    toast.error(t("account.avatarUnreadable"));
+  }
+
+  async function handleAvatarRemove() {
+    if (isSavingAvatar) return;
+
+    setIsSavingAvatar(true);
+    try {
+      setUser(await removeAvatar());
+      toast.success(t("toasts.avatarRemoved"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("toasts.avatarFailed"),
+      );
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  }
+
   function renderActiveTab() {
     switch (activeTab) {
       case "account":
@@ -631,48 +686,84 @@ export function SettingsPage() {
           <div className="space-y-5">
             <section
               data-settings-section={t("account.section")}
-              className="rounded-xl border border-subtle bg-surface p-6 sm:p-7"
+              className="relative rounded-xl border border-subtle bg-surface p-6 sm:p-7"
             >
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                  <div className="relative w-fit">
-                    <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-action font-serif text-2xl font-semibold text-on-action">
-                      {initials(user?.full_name ?? t("account.defaultName"))}
-                    </span>
-                    <span className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border border-subtle bg-surface text-success">
-                      <svg
-                        aria-hidden="true"
-                        className="h-3.5 w-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      >
-                        <path
+              {/* Pinned to the corner rather than sitting beside the name: a
+                  long name used to push it onto its own line. */}
+              <span className="absolute right-6 top-6 inline-flex rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-success sm:right-7 sm:top-7">
+                {user?.is_active ? t("account.active") : t("account.unverified")}
+              </span>
+
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col items-center gap-5 pt-7 sm:flex-row sm:items-center sm:pr-36 sm:pt-0">
+                  <div className="flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={isSavingAvatar}
+                      className="group relative w-fit cursor-pointer rounded-full outline-none disabled:cursor-wait"
+                      aria-label={t("account.avatarChange")}
+                    >
+                      <AccountAvatar
+                        fullName={user?.full_name ?? t("account.defaultName")}
+                        imageUrl={user ? avatarUrl(user) : null}
+                        className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-action font-serif text-2xl font-semibold text-on-action"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center rounded-full bg-content/55 text-[10px] font-black uppercase tracking-[0.12em] text-surface opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                        {isSavingAvatar
+                          ? t("account.avatarSaving")
+                          : t("account.avatarChange")}
+                      </span>
+                      {/* Always on show: without it nothing says the circle
+                          can be clicked at all. */}
+                      <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-subtle bg-surface text-content shadow-sm transition group-hover:bg-action group-hover:text-on-action">
+                        <svg
+                          aria-hidden="true"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="m5 13 4 4L19 7"
-                        />
-                      </svg>
-                    </span>
+                        >
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                        </svg>
+                      </span>
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(event) =>
+                        handleAvatarPicked(event.target.files?.[0])
+                      }
+                    />
+                    {user?.avatar_updated_at ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleAvatarRemove()}
+                        disabled={isSavingAvatar}
+                        className="cursor-pointer text-xs font-bold text-muted underline-offset-4 transition hover:text-danger hover:underline disabled:cursor-wait"
+                      >
+                        {t("account.avatarRemove")}
+                      </button>
+                    ) : null}
                   </div>
 
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-serif text-3xl font-semibold leading-tight text-content">
-                        {user?.full_name ?? t("account.defaultName")}
-                      </h2>
-                      <span className="inline-flex rounded-md border border-success-border bg-success-soft px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-success">
-                        {user?.is_active ? t("account.active") : t("account.unverified")}
-                      </span>
-                    </div>
+                  <div className="min-w-0 text-center sm:text-left">
+                    <h2 className="font-serif text-3xl font-semibold leading-tight text-content">
+                      {user?.full_name ?? t("account.defaultName")}
+                    </h2>
                     <p className="mt-2 break-all text-sm text-muted">
                       {user?.email ?? "student@universitate.ro"}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid gap-3 border-t border-subtle pt-5 text-sm sm:grid-cols-2 xl:grid-cols-4 lg:min-w-[520px] lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                <div className="grid gap-3 border-t border-subtle pt-5 text-sm sm:grid-cols-2 xl:grid-cols-4">
                   <AccountDetail
                     label={t("account.memberSince")}
                     value={formatDate(locale, user?.created_at, unknownDate)}
@@ -1247,6 +1338,16 @@ export function SettingsPage() {
             onCancel={() => setIsAccountDeletionModalOpen(false)}
             onConfirm={() => void submitAccountDeletionRequest()}
             t={t}
+          />
+        ) : null}
+
+        {avatarToCrop ? (
+          <AvatarCropDialog
+            file={avatarToCrop}
+            isSaving={isSavingAvatar}
+            onCancel={() => setAvatarToCrop(null)}
+            onConfirm={(square) => void handleAvatarCropped(square)}
+            onUnreadable={handleAvatarUnreadable}
           />
         ) : null}
       </section>

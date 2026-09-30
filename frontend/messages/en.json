@@ -794,7 +794,10 @@
       "actionFailed": "The action could not be completed right now.",
       "newsletterWithdrawFailed": "Consent could not be withdrawn right now.",
       "deletionAlreadyPending": "You already have a deletion request on file. An administrator will process it.",
-      "deletionRequestFailed": "The deletion request could not be sent."
+      "deletionRequestFailed": "The deletion request could not be sent.",
+      "avatarSaved": "Your profile picture was saved.",
+      "avatarRemoved": "Your profile picture was removed.",
+      "avatarFailed": "The picture could not be saved."
     },
     "account": {
       "section": "Profile",
@@ -815,7 +818,16 @@
       "materialLimitDetail": "Set by your active subscription",
       "dataProtection": "Data protection",
       "secured": "Secured",
-      "securedDetail": "Authenticated session and protected data"
+      "securedDetail": "Authenticated session and protected data",
+      "avatarChange": "Change photo",
+      "avatarSaving": "Uploading",
+      "avatarRemove": "Remove photo",
+      "avatarUnreadable": "The image could not be read. Try a JPG or a PNG.",
+      "avatarCropTitle": "Adjust the photo",
+      "avatarCropHint": "Drag the picture to move it and use the slider to zoom. What shows inside the circle is what is kept.",
+      "avatarZoom": "Zoom",
+      "avatarCropSave": "Save photo",
+      "avatarCropCancel": "Cancel"
     },
     "study": {
       "paceSection": "Current pace",
@@ -1627,6 +1639,7 @@
     "extindeMeniul": "Expand the menu",
     "facturi": "Invoices",
     "iesire": "Sign out",
+    "contulTau": "Your account",
     "inchideMeniul": "Close menu",
     "meniuPrincipal": "Main menu",
     "notificari": "Notifications",

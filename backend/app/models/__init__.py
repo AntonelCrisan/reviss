@@ -56,7 +56,7 @@ from app.models.subscription import (
     SubscriptionPlanTranslation,
     UserSubscription,
 )
-from app.models.user import User
+from app.models.user import User, UserAvatar
 from app.models.visitor import VisitorVisit
 
 __all__ = [
@@ -110,6 +110,7 @@ __all__ = [
     "UserSubscription",
     "SubscriptionCancellation",
     "User",
+    "UserAvatar",
     "UserPreferences",
     "UserStudyActivity",
     "VisitorVisit",

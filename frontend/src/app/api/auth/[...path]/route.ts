@@ -10,6 +10,9 @@ const allowedRoutes = new Map([
   ["POST:register", "/api/auth/register"],
   ["POST:verify-email", "/api/auth/verify-email"],
   ["POST:notifications/unsubscribe", "/api/auth/notifications/unsubscribe"],
+  ["GET:me/avatar", "/api/auth/me/avatar"],
+  ["PUT:me/avatar", "/api/auth/me/avatar"],
+  ["DELETE:me/avatar", "/api/auth/me/avatar"],
   ["PATCH:me/password", "/api/auth/me/password"],
   ["PATCH:me/name", "/api/auth/me/name"],
   ["POST:me/email/change-request", "/api/auth/me/email/change-request"],
@@ -77,7 +80,10 @@ async function proxyAuthRequest(
     if (value) headers.set(headerName, value);
   }
 
-  const body = request.method === "GET" ? undefined : await request.text();
+  // Read as bytes, not text: the avatar upload is a binary multipart body and
+  // decoding it as a string would corrupt the image on the way through.
+  const body =
+    request.method === "GET" ? undefined : await request.arrayBuffer();
   const isDelete = request.method === "DELETE";
 
   // The query string carries ?token= for the unsubscribe link. Dropping it
@@ -102,6 +108,13 @@ async function proxyAuthRequest(
     );
     if (responseContentDisposition) {
       responseHeaders.set("content-disposition", responseContentDisposition);
+    }
+    // The avatar is served as an image from our own domain, so the promise
+    // not to sniff another type out of it has to survive this hop, and so
+    // does the caching the backend asked for.
+    for (const passThrough of ["cache-control", "x-content-type-options"]) {
+      const value = backendResponse.headers.get(passThrough);
+      if (value) responseHeaders.set(passThrough, value);
     }
 
     const setCookies = backendResponse.headers.getSetCookie();
@@ -148,6 +161,13 @@ export function GET(
 }
 
 export function POST(
+  request: Request,
+  context: AuthRouteContext,
+): Promise<Response> {
+  return proxyAuthRequest(request, context);
+}
+
+export function PUT(
   request: Request,
   context: AuthRouteContext,
 ): Promise<Response> {

@@ -794,7 +794,10 @@
       "actionFailed": "L'action n'a pas pu être finalisée pour le moment.",
       "newsletterWithdrawFailed": "Le consentement n'a pas pu être retiré pour le moment.",
       "deletionAlreadyPending": "Tu as déjà une demande de suppression enregistrée. Un administrateur la traitera.",
-      "deletionRequestFailed": "La demande de suppression n'a pas pu être envoyée."
+      "deletionRequestFailed": "La demande de suppression n'a pas pu être envoyée.",
+      "avatarSaved": "Votre photo de profil a été enregistrée.",
+      "avatarRemoved": "Votre photo de profil a été supprimée.",
+      "avatarFailed": "La photo n'a pas pu être enregistrée."
     },
     "account": {
       "section": "Profil",
@@ -815,7 +818,16 @@
       "materialLimitDetail": "Définie par l'abonnement actif",
       "dataProtection": "Protection des données",
       "secured": "Sécurisé",
-      "securedDetail": "Session authentifiée et données protégées"
+      "securedDetail": "Session authentifiée et données protégées",
+      "avatarChange": "Changer la photo",
+      "avatarSaving": "Envoi en cours",
+      "avatarRemove": "Supprimer la photo",
+      "avatarUnreadable": "L'image n'a pas pu être lue. Essayez un JPG ou un PNG.",
+      "avatarCropTitle": "Ajustez la photo",
+      "avatarCropHint": "Faites glisser l'image pour la déplacer et utilisez le curseur pour zoomer. Ce qui apparaît dans le cercle est conservé.",
+      "avatarZoom": "Zoom",
+      "avatarCropSave": "Enregistrer la photo",
+      "avatarCropCancel": "Annuler"
     },
     "study": {
       "paceSection": "Rythme actuel",
@@ -1627,6 +1639,7 @@
     "extindeMeniul": "Déplier le menu",
     "facturi": "Factures",
     "iesire": "Déconnexion",
+    "contulTau": "Votre compte",
     "inchideMeniul": "Fermer le menu",
     "meniuPrincipal": "Menu principal",
     "notificari": "Notifications",

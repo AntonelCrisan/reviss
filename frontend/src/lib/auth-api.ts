@@ -40,7 +40,15 @@ export type AuthUser = {
   language_preference: LanguagePreference;
   current_plan: AuthUserPlan | null;
   account_deletion_request_pending: boolean;
+  /** Null while the account still shows its initials. */
+  avatar_updated_at: string | null;
 };
+
+/** The picture's address, versioned so a new upload replaces the cached one. */
+export function avatarUrl(user: Pick<AuthUser, "avatar_updated_at">) {
+  if (!user.avatar_updated_at) return null;
+  return `/api/auth/me/avatar?v=${encodeURIComponent(user.avatar_updated_at)}`;
+}
 
 type ApiErrorPayload = {
   detail?: string | Array<{ msg?: string }>;
@@ -133,6 +141,38 @@ export function verifyEmail(token: string): Promise<AuthUser> {
     method: "POST",
     body: JSON.stringify({ token }),
   });
+}
+
+/** Sends the square the browser has already cropped and scaled. */
+export async function uploadAvatar(file: Blob): Promise<AuthUser> {
+  const body = new FormData();
+  body.append("file", file, "avatar");
+
+  const response = await fetch("/api/auth/me/avatar", {
+    method: "PUT",
+    credentials: "same-origin",
+    // No Content-Type here on purpose: the browser adds it with the multipart
+    // boundary, which a hand-written header would leave out.
+    body,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    let payload: ApiErrorPayload = {};
+    try {
+      payload = (await response.json()) as ApiErrorPayload;
+    } catch {
+      // Falls through to the generic message below.
+    }
+    throw new AuthApiError(extractErrorMessage(payload), response.status);
+  }
+
+  return (await response.json()) as AuthUser;
+}
+
+/** Back to the initials. */
+export function removeAvatar(): Promise<AuthUser> {
+  return authRequest<AuthUser>("me/avatar", { method: "DELETE" });
 }
 
 /** Stops the tips and reminders from the link in one of those emails. */

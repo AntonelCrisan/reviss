@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
 import { createPortal } from "react-dom";
+import { AccountAvatar } from "@/components/account/account-avatar";
 import {
   AccountSidebarTooltip,
   getAccountSidebarLabelClass,
@@ -11,6 +13,8 @@ import {
 type AccountSidebarFooterProps = {
   fullName: string;
   email: string;
+  /** The profile picture, or null while the account shows its initials. */
+  avatarUrl: string | null;
   isCollapsed: boolean;
   isLoggingOut: boolean;
   /** Runs once the reader confirms; the shell owns the session. */
@@ -50,15 +54,6 @@ function SignOutIcon() {
   );
 }
 
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 /**
  * The foot of both sidebars: the way out, then who is signed in.
  *
@@ -69,6 +64,7 @@ function initials(name: string) {
 export function AccountSidebarFooter({
   fullName,
   email,
+  avatarUrl,
   isCollapsed,
   isLoggingOut,
   onLogout,
@@ -98,24 +94,33 @@ export function AccountSidebarFooter({
         </AccountSidebarTooltip>
       </button>
 
-      <div
-        className={`mt-3 flex items-center gap-3 border-t border-subtle px-2 pt-3 ${
-          isCollapsed ? "lg:justify-center lg:gap-0 lg:px-0" : ""
-        }`}
-      >
-        <span
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-subtle bg-success-soft text-xs font-bold text-success ${
-            isCollapsed ? "lg:hidden" : ""
+      {/* The whole block is the way into the account settings, picture
+          included: collapsed, the picture is the only thing left of it. The
+          separator stays on the wrapper so the hover highlight can be a
+          rounded block inside it rather than a full-width bar. */}
+      <div className="mt-3 border-t border-subtle pt-3">
+        <Link
+          href="/settings#account"
+          className={`group/sidebar-item relative flex items-center gap-3 rounded-md px-2 py-1.5 outline-none transition hover:bg-surface-hover focus-visible:bg-surface-hover ${
+            isCollapsed ? "lg:justify-center lg:gap-0 lg:px-0" : ""
           }`}
+          aria-label={t("contulTau")}
         >
-          {initials(fullName)}
-        </span>
-        <span className={getAccountSidebarLabelClass(isCollapsed)}>
-          <span className="block truncate text-sm font-semibold text-content">
-            {fullName}
+          <AccountAvatar
+            fullName={fullName}
+            imageUrl={avatarUrl}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-subtle bg-success-soft text-xs font-bold text-success"
+          />
+          <span className={getAccountSidebarLabelClass(isCollapsed)}>
+            <span className="block truncate text-sm font-semibold text-content">
+              {fullName}
+            </span>
+            <span className="block truncate text-xs text-muted">{email}</span>
           </span>
-          <span className="block truncate text-xs text-muted">{email}</span>
-        </span>
+          <AccountSidebarTooltip enabled={isCollapsed}>
+            {t("contulTau")}
+          </AccountSidebarTooltip>
+        </Link>
       </div>
 
       {/* Rendered into <body>, not here: the sidebar animates with `translate`

@@ -2,7 +2,15 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    LargeBinary,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -51,6 +59,13 @@ class User(Base):
         nullable=False,
         default="user",
         server_default="user",
+    )
+    # Set when a picture is uploaded, cleared when it is removed. The picture
+    # itself lives in its own table so that loading a user - which happens on
+    # every single request - never drags the bytes along.
+    avatar_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -131,4 +146,29 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
         passive_deletes=True,
+    )
+
+
+class UserAvatar(Base):
+    """The profile picture, kept apart from the user row on purpose.
+
+    One row per user, written rarely and read only when the image itself is
+    served. The bytes are small - the browser scales the picture down to a
+    square before sending it - so the database is a better home for them than
+    a disk that a redeploy can wipe.
+    """
+
+    __tablename__ = "user_avatars"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    content_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    image: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
     )

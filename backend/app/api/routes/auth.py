@@ -1,8 +1,17 @@
 import hashlib
 from datetime import UTC, datetime
+from typing import Annotated
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    File,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy import func, select
 
 from app.api.dependencies import (
@@ -49,6 +58,11 @@ from app.services.auth import (
     InvalidEmailTokenError,
     PendingEmailConfirmationError,
 )
+from app.services.avatars import (
+    MAX_AVATAR_BYTES,
+    AvatarRejectedError,
+    AvatarService,
+)
 from app.services.billing_window import current_billing_window
 from app.services.google_oauth import GoogleOAuthError
 from app.services.pdf_export import account_data_export_pdf
@@ -75,6 +89,7 @@ AUTH_RATE_LIMIT_IDENTITY_POLICIES = {
     "me/data-export": 10,
     "me/study-preferences": 20,
     "me/usage": 30,
+    "avatar": 10,
     "password-reset/request": 5,
     "password-reset/confirm": 10,
 }
@@ -94,6 +109,7 @@ AUTH_RATE_LIMIT_IP_POLICIES = {
     "me/usage": 60,
     "password-reset/request": 20,
     "password-reset/confirm": 30,
+    "avatar": 20,
 }
 _auth_rate_limit_buckets = _memory_rate_limit_buckets
 
@@ -454,6 +470,81 @@ async def get_me(
     service: AuthServiceDependency,
 ) -> UserResponse:
     return await _user_response(current_user, service)
+
+
+@router.put("/me/avatar", response_model=UserResponse)
+async def upload_avatar(
+    request: Request,
+    file: Annotated[UploadFile, File()],
+    current_user: CurrentUser,
+    session: DbSession,
+    settings: AppSettings,
+    service: AuthServiceDependency,
+) -> UserResponse:
+    """Replace the initials with a picture the reader chose."""
+    _protect_auth_origin(request, settings)
+    await _enforce_auth_rate_limit(request, "avatar", identity=str(current_user.id))
+
+    data = await file.read(MAX_AVATAR_BYTES + 1)
+    try:
+        await AvatarService(session).save(
+            user=current_user,
+            content_type=file.content_type,
+            data=data,
+        )
+    except AvatarRejectedError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    await session.commit()
+    return await _user_response(current_user, service)
+
+
+@router.delete("/me/avatar", response_model=UserResponse)
+async def delete_avatar(
+    request: Request,
+    current_user: CurrentUser,
+    session: DbSession,
+    settings: AppSettings,
+    service: AuthServiceDependency,
+) -> UserResponse:
+    """Go back to the initials."""
+    _protect_auth_origin(request, settings)
+
+    await AvatarService(session).remove(user=current_user)
+    await session.commit()
+    return await _user_response(current_user, service)
+
+
+@router.get("/me/avatar")
+async def get_avatar(
+    current_user: CurrentUser,
+    session: DbSession,
+) -> Response:
+    """Serve the picture itself.
+
+    Cached hard and privately: the address carries the moment the picture was
+    uploaded, so a new one arrives at a new address and this copy can never go
+    stale. Without that, every page with a sidebar on it would fetch the same
+    image again.
+    """
+    avatar = await AvatarService(session).fetch(user_id=current_user.id)
+    if avatar is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Contul nu are o imagine de profil.",
+        )
+
+    return Response(
+        content=avatar.image,
+        media_type=avatar.content_type,
+        headers={
+            "Cache-Control": "private, max-age=31536000, immutable",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.patch("/me/preferences", response_model=UserResponse)

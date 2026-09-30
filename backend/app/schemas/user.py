@@ -49,6 +49,9 @@ class UserResponse(BaseModel):
     created_at: datetime
     theme_preference: ThemePreference
     language_preference: LanguagePreference
+    # Null means the account still shows its initials. When set, it doubles as
+    # the version that makes a newly uploaded picture replace the cached one.
+    avatar_updated_at: datetime | None = None
     current_plan: UserPlanResponse | None = None
     account_deletion_request_pending: bool = False
 

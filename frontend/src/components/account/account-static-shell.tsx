@@ -10,6 +10,7 @@ import { AccountShellSkeleton } from "@/components/account/account-page-skeleton
 import { usePathname, useRouter } from "next/navigation";
 import { type MouseEvent, type ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { avatarUrl } from "@/lib/auth-api";
 import { BrandLogo } from "@/components/brand-logo";
 import {
   ACCOUNT_SIDEBAR_COLLAPSED_STORAGE_KEY,
@@ -545,6 +546,7 @@ export function AccountStaticShell({
         <AccountSidebarFooter
           fullName={user.full_name}
           email={user.email}
+          avatarUrl={avatarUrl(user)}
           isCollapsed={isSidebarCollapsed}
           isLoggingOut={isLoggingOut}
           onLogout={handleLogout}

@@ -794,7 +794,10 @@
       "actionFailed": "Acțiunea nu a putut fi finalizată momentan.",
       "newsletterWithdrawFailed": "Consimțământul nu a putut fi retras momentan.",
       "deletionAlreadyPending": "Ai deja o solicitare de ștergere înregistrată. Un administrator o va procesa.",
-      "deletionRequestFailed": "Solicitarea de ștergere nu a putut fi trimisă."
+      "deletionRequestFailed": "Solicitarea de ștergere nu a putut fi trimisă.",
+      "avatarSaved": "Poza de profil a fost salvată.",
+      "avatarRemoved": "Poza de profil a fost ștearsă.",
+      "avatarFailed": "Poza nu a putut fi salvată."
     },
     "account": {
       "section": "Profil",
@@ -815,7 +818,16 @@
       "materialLimitDetail": "Stabilită de abonamentul activ",
       "dataProtection": "Protecție date",
       "secured": "Securizat",
-      "securedDetail": "Sesiune autentificată și date protejate"
+      "securedDetail": "Sesiune autentificată și date protejate",
+      "avatarChange": "Schimbă poza",
+      "avatarSaving": "Se încarcă",
+      "avatarRemove": "Șterge poza",
+      "avatarUnreadable": "Imaginea nu a putut fi citită. Încearcă un JPG sau un PNG.",
+      "avatarCropTitle": "Ajustează poza",
+      "avatarCropHint": "Trage de imagine ca s-o muți și folosește cursorul pentru apropiere. Ce se vede în cerc rămâne.",
+      "avatarZoom": "Apropiere",
+      "avatarCropSave": "Salvează poza",
+      "avatarCropCancel": "Renunță"
     },
     "study": {
       "paceSection": "Ritmul curent",
@@ -1627,6 +1639,7 @@
     "extindeMeniul": "Extinde meniul",
     "facturi": "Facturi",
     "iesire": "Ieșire",
+    "contulTau": "Contul tău",
     "inchideMeniul": "Închide meniul",
     "meniuPrincipal": "Meniu principal",
     "notificari": "Notificări",

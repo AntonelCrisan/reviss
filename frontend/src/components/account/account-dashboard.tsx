@@ -49,6 +49,7 @@ import {
 } from "@/components/account/account-sidebar-ui";
 import { useLanguage } from "@/components/language-provider";
 import {
+  avatarUrl,
   getCurrentUser,
   type AuthUserPlan,
 } from "@/lib/auth-api";
@@ -2292,6 +2293,7 @@ export function AccountDashboard({
         <AccountSidebarFooter
           fullName={user.full_name}
           email={user.email}
+          avatarUrl={avatarUrl(user)}
           isCollapsed={isSidebarCollapsed}
           isLoggingOut={isLoggingOut}
           onLogout={handleLogout}

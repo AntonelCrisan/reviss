@@ -159,6 +159,10 @@
     "en": "The account was not deleted because the confirmation email could not be sent.",
     "fr": "Le compte n'a pas été supprimé car l'email de confirmation n'a pas pu être envoyé."
   },
+  "Contul nu are o imagine de profil.": {
+    "en": "The account has no profile picture.",
+    "fr": "Le compte n'a pas de photo de profil."
+  },
   "Conținutul secțiunii conține HTML nesigur.": {
     "en": "The section content contains unsafe HTML.",
     "fr": "Le contenu de la section contient du HTML non sécurisé."
@@ -307,6 +311,10 @@
     "en": "The requested file does not exist.",
     "fr": "Le fichier demandé n'existe pas."
   },
+  "Fisierul este gol.": {
+    "en": "The file is empty.",
+    "fr": "Le fichier est vide."
+  },
   "Fisierul incarcat nu a putut fi salvat pe server. Incearca din nou.": {
     "en": "The uploaded file could not be saved on the server. Please try again.",
     "fr": "Le fichier envoyé n'a pas pu être enregistré sur le serveur. Veuillez réessayer."
@@ -326,6 +334,10 @@
   "Fisierul nu a fost gasit.": {
     "en": "The file was not found.",
     "fr": "Le fichier est introuvable."
+  },
+  "Fisierul nu este o imagine valida.": {
+    "en": "The file is not a valid image.",
+    "fr": "Le fichier n'est pas une image valide."
   },
   "Fisierul text incarcat nu pare valid.": {
     "en": "The uploaded text file does not look valid.",
@@ -362,6 +374,10 @@
   "Flashcardul nu a fost gasit.": {
     "en": "The flashcard was not found.",
     "fr": "La flashcard est introuvable."
+  },
+  "Foloseste o imagine PNG, JPG sau WEBP.": {
+    "en": "Use a PNG, JPG or WEBP image.",
+    "fr": "Utilisez une image PNG, JPG ou WEBP."
   },
   "Formatul de imagine {path.suffix or '(fara extensie)'} nu poate fi citit.": {
     "en": "The image format {path.suffix or '(no extension)'} cannot be read.",
@@ -422,6 +438,10 @@
   "Imaginea WEBP nu pare validă.": {
     "en": "The WEBP image does not look valid.",
     "fr": "L'image WEBP ne semble pas valide."
+  },
+  "Imaginea este prea mare.": {
+    "en": "The image is too large.",
+    "fr": "L'image est trop grande."
   },
   "Imaginea flashcardului nu exista.": {
     "en": "The flashcard image does not exist.",
