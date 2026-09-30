@@ -107,7 +107,8 @@ emails land better in the morning, while the digest above runs in the evening,
 and running the digest twice a day would send it twice.
 
 ```bash
-curl -X POST https://api.reviss.app/api/internal/nudges/run-daily \n  -H "X-Cron-Secret: <same value as CRON_SECRET>"
+curl -X POST https://api.reviss.app/api/internal/nudges/run-daily \
+  -H "X-Cron-Secret: <same value as CRON_SECRET>"
 ```
 
 Recommended: the digest at 21:00 and the nudges at 09:00 Romanian time,

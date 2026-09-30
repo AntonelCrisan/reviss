@@ -48,8 +48,17 @@ class CurrentSubscriptionResponse(BaseModel):
     canceled_at: datetime | None
 
 
+class ManualPlanGrantResponse(BaseModel):
+    plan_slug: str
+    plan_name: str
+    granted_at: datetime
+
+
 class SubscriptionStatusResponse(BaseModel):
     subscription: CurrentSubscriptionResponse | None
+    # Set when an admin put the account on this plan by hand. There is no
+    # Stripe subscription behind it and no next payment to announce.
+    manual_plan: ManualPlanGrantResponse | None = None
 
 
 class SubscriptionActionResponse(BaseModel):

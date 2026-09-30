@@ -13,6 +13,7 @@ import {
   resumeCurrentSubscription,
   syncCheckoutSession,
   type CurrentSubscription,
+  type ManualPlanGrant,
 } from "@/lib/payments-api";
 import type { SubscriptionPlanPublic } from "@/lib/plans-api";
 import { planDetailPath } from "@/lib/seo";
@@ -199,6 +200,11 @@ export function UpgradePage({
   const syncedCheckoutSessionRef = useRef<string | null>(null);
   const [currentSubscription, setCurrentSubscription] =
     useState<CurrentSubscription | null>(null);
+  const [manualPlan, setManualPlan] = useState<ManualPlanGrant | null>(null);
+  // Until the subscription request answers, nothing here knows whether the
+  // plan is paid for or granted. Saying either would be a guess that the
+  // reader watches correct itself.
+  const [subscriptionChecked, setSubscriptionChecked] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isUpdatingSubscription, setIsUpdatingSubscription] = useState(false);
   const currentUserId = user?.id ?? null;
@@ -228,13 +234,14 @@ export function UpgradePage({
     Boolean(activeSubscription?.current_period_end);
   // Shown only while the plan keeps auto-renewing.
   const showRenewalInfo = hasPeriodEnd && !cancellationPending;
-  // A paid plan with no Stripe subscription behind it was granted by an
-  // admin. There is genuinely no next payment to show, and saying so beats
-  // leaving the page silent about a plan the reader can see is active.
-  const isGrantedPlan = userPlanIsPaid && !activeSubscription;
+  // Said by the server, not guessed from a missing subscription: an old row
+  // from an abandoned checkout can sit next to a granted plan, and then the
+  // guess is wrong and the page says nothing at all.
+  const isGrantedPlan = Boolean(manualPlan);
 
-  // Always render the period end for a paid plan, whichever way it is heading:
-  // a renewal charge, or the day access stops.
+  // A paid plan always gets a line about where it stands. Real billing dates
+  // come first, then a plan an admin granted, and last a paid plan whose
+  // dates have not arrived yet -- which is still worth saying out loud.
   const billingNotice = !hasPeriodEnd
     ? isGrantedPlan
       ? {
@@ -242,7 +249,13 @@ export function UpgradePage({
           title: t("planAcordatDeAdministrator", { currentPlanName }),
           detail: t("faraPlataRecurenta"),
         }
-      : null
+      : currentPlanIsPaid
+        ? {
+            tone: "neutral" as const,
+            title: t("planulCurrentplannameEsteActiv", { currentPlanName }),
+            detail: t("dataUrmatoareiPlatiNuEsteDisponibila"),
+          }
+        : null
     : cancellationPending
       ? {
           tone: "warning" as const,
@@ -274,10 +287,16 @@ export function UpgradePage({
       .then((response) => {
         if (!isMounted) return;
         setCurrentSubscription(response.subscription);
+        setManualPlan(response.manual_plan);
       })
       .catch(() => {
         if (!isMounted) return;
         setCurrentSubscription(null);
+        setManualPlan(null);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setSubscriptionChecked(true);
       });
 
     return () => {
@@ -314,6 +333,7 @@ export function UpgradePage({
           const subscriptionStatus = await getCurrentSubscription();
           if (!isMounted) return;
           setCurrentSubscription(subscriptionStatus.subscription);
+          setManualPlan(subscriptionStatus.manual_plan);
           router.refresh();
           return;
         } catch {
@@ -425,7 +445,7 @@ export function UpgradePage({
           </div>
         </div>
 
-        {billingNotice ? (
+        {subscriptionChecked && billingNotice ? (
           <div
             className={`flex flex-col gap-1 rounded-md border px-5 py-4 ${
               billingNotice.tone === "warning"

@@ -36,8 +36,16 @@ export type CurrentSubscription = {
   canceled_at: string | null;
 };
 
+/** A plan an admin put on the account by hand, with no Stripe behind it. */
+export type ManualPlanGrant = {
+  plan_slug: string;
+  plan_name: string;
+  granted_at: string;
+};
+
 export type SubscriptionStatusResponse = {
   subscription: CurrentSubscription | null;
+  manual_plan: ManualPlanGrant | null;
 };
 
 export type SubscriptionActionResponse = {

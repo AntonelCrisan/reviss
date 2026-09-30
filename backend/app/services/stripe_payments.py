@@ -61,6 +61,13 @@ _MAX_LISTED_SUBSCRIPTIONS = 500
 
 
 
+# Subscriptions Stripe has never heard of, remembered for the life of the
+# process. A row left behind by test mode is gone for good once the live key
+# is in use, and without this every page load pays for another round trip to
+# Stripe and writes another error to the log.
+_SUBSCRIPTIONS_MISSING_IN_STRIPE: set[str] = set()
+
+
 class StripeConfigurationError(Exception):
     pass
 
@@ -891,6 +898,8 @@ class StripePaymentService:
         stripe_subscription_id = subscription.stripe_subscription_id
         if stripe_subscription_id in self._period_backfill_attempted:
             return False
+        if stripe_subscription_id in _SUBSCRIPTIONS_MISSING_IN_STRIPE:
+            return False
         self._period_backfill_attempted.add(stripe_subscription_id)
 
         try:
@@ -898,8 +907,20 @@ class StripePaymentService:
             stripe_subscription = await stripe.retrieve_subscription(
                 subscription_id=stripe_subscription_id,
             )
-        except (StripeConfigurationError, StripeRequestError):
-            # A read path must not fail because Stripe is unavailable or unset.
+        except StripeRequestError as exc:
+            if exc.error_code == "resource_missing":
+                # Nothing will ever fill this one in: asking again on every
+                # page load only burns a request and buries the real errors.
+                _SUBSCRIPTIONS_MISSING_IN_STRIPE.add(stripe_subscription_id)
+                logger.warning(
+                    "Abonamentul %s nu exista in Stripe (cheia in uz). "
+                    "Nu mai cerem perioada pentru el.",
+                    stripe_subscription_id,
+                )
+            # A read path must not fail because Stripe is unavailable.
+            return False
+        except StripeConfigurationError:
+            # Nor because Stripe is not configured at all.
             return False
 
         period_start, period_end = self._subscription_period(stripe_subscription)
@@ -926,6 +947,16 @@ class StripePaymentService:
                 await self._session.commit()
 
         return subscription
+
+    async def get_active_manual_plan(self, *, user: User) -> ManualPlanGrant | None:
+        """The hand-granted plan a user is on, if any.
+
+        The upgrade page needs this straight from the database. Inferring it
+        from a missing subscription looks right until a stale row from an old
+        checkout turns up, and then the page falls silent about a plan the
+        reader can plainly see is active.
+        """
+        return await self._fetch_active_manual_grant(user=user)
 
     async def schedule_subscription_cancellation(
         self,

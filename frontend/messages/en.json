@@ -1800,6 +1800,8 @@
     "dupaAceastaDataContulTrece": "After that date the account switches automatically to the free plan.",
     "facturi": "Invoices",
     "faraPlataRecurenta": "There is no recurring payment and no renewal date. The plan stays active until an administrator changes it.",
+    "planulCurrentplannameEsteActiv": "The {currentPlanName} plan is active",
+    "dataUrmatoareiPlatiNuEsteDisponibila": "The next payment date is not available yet. If you have just paid, it appears as soon as the payment provider confirms it.",
     "finalulPerioadeiPlatite": "the end of the paid period",
     "maiAiAccesRenewalcountdownDupa": "You still have access {renewalCountdown}. After that date the account switches automatically to the free plan.",
     "maine": "tomorrow",

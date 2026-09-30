@@ -1800,6 +1800,8 @@
     "dupaAceastaDataContulTrece": "Après cette date, le compte passe automatiquement au forfait gratuit.",
     "facturi": "Factures",
     "faraPlataRecurenta": "Il n'y a ni paiement récurrent ni date de renouvellement. Le plan reste actif jusqu'à ce qu'un administrateur le modifie.",
+    "planulCurrentplannameEsteActiv": "Le plan {currentPlanName} est actif",
+    "dataUrmatoareiPlatiNuEsteDisponibila": "La date du prochain paiement n'est pas encore disponible. Si vous venez de payer, elle apparaît dès que le prestataire de paiement la confirme.",
     "finalulPerioadeiPlatite": "la fin de la période payée",
     "maiAiAccesRenewalcountdownDupa": "Tu as encore accès {renewalCountdown}. Après cette date, le compte passe automatiquement au forfait gratuit.",
     "maine": "demain",

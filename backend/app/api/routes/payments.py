@@ -3,12 +3,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from app.api.dependencies import AppSettings, CurrentUser, DbSession
 from app.api.security import protect_state_changing_request
 from app.core.rate_limit import consume_rate_limit
-from app.models import UserSubscription
+from app.models import ManualPlanGrant, UserSubscription
 from app.schemas.payments import (
     CheckoutSessionCreateRequest,
     CheckoutSessionResponse,
     CheckoutSessionSyncRequest,
     CurrentSubscriptionResponse,
+    ManualPlanGrantResponse,
     SubscriptionActionResponse,
     SubscriptionInvoiceResponse,
     SubscriptionStatusResponse,
@@ -70,6 +71,19 @@ def _subscription_response(
         current_period_end=subscription.current_period_end,
         cancel_at_period_end=subscription.cancel_at_period_end,
         canceled_at=subscription.canceled_at,
+    )
+
+
+def _manual_plan_response(
+    grant: ManualPlanGrant | None,
+) -> ManualPlanGrantResponse | None:
+    if grant is None or grant.plan is None:
+        return None
+
+    return ManualPlanGrantResponse(
+        plan_slug=grant.plan.slug,
+        plan_name=grant.plan.name,
+        granted_at=grant.created_at,
     )
 
 
@@ -136,8 +150,10 @@ async def get_subscription_status(
 ) -> SubscriptionStatusResponse:
     service = StripePaymentService(session, settings)
     subscription = await service.get_current_paid_subscription(user=current_user)
+    manual_plan = await service.get_active_manual_plan(user=current_user)
     return SubscriptionStatusResponse(
         subscription=_subscription_response(subscription),
+        manual_plan=_manual_plan_response(manual_plan),
     )
 
 
